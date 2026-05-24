@@ -1,0 +1,37 @@
+<div *ngIf="uiState.isNewClientModalOpen()" class="fixed inset-0 bg-presuOscuro/70 backdrop-blur-xs flex items-center justify-center z-[60] transition-all duration-300">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 mx-4 border-t-4 border-presuOxido">
+        <div class="flex items-center justify-between border-b border-zinc-200 pb-3 mb-5">
+            <div class="flex items-center gap-2">
+                <i class="ph ph-user-plus text-xl text-presuOxido"></i>
+                <h3 class="text-base font-bold text-presuOscuro uppercase tracking-wide">Añadir Cliente</h3>
+            </div>
+            <button (click)="closeModal()" class="text-zinc-400 hover:text-red-500 text-xl transition"><i class="ph ph-x font-bold"></i></button>
+        </div>
+        
+        <div class="space-y-4">
+            <div class="flex flex-col">
+                <label class="text-xs font-bold text-presuOscuro mb-1 uppercase tracking-wide">Nombre del Cliente <span class="text-red-500">*</span></label>
+                <input type="text" [(ngModel)]="name" placeholder="Ej. Constructora ABC / Juan Pérez" class="bg-presuFondo border border-zinc-300 rounded-lg p-2.5 text-xs font-semibold focus:outline-none focus:border-presuOxido shadow-inner">
+            </div>
+            <div class="flex flex-col">
+                <label class="text-xs font-bold text-presuOscuro mb-1 uppercase tracking-wide">Correo Electrónico (Opcional)</label>
+                <input type="email" [(ngModel)]="email" placeholder="Ej. contacto@empresa.com" class="bg-presuFondo border border-zinc-300 rounded-lg p-2.5 text-xs font-semibold focus:outline-none focus:border-presuOxido shadow-inner">
+            </div>
+            <div class="flex flex-col">
+                <label class="text-xs font-bold text-presuOscuro mb-1 uppercase tracking-wide">Teléfono (Opcional)</label>
+                <input type="text" [(ngModel)]="phone" placeholder="Ej. +1 809-555-5555" class="bg-presuFondo border border-zinc-300 rounded-lg p-2.5 text-xs font-semibold focus:outline-none focus:border-presuOxido shadow-inner">
+            </div>
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-zinc-200 flex justify-end gap-3">
+            <button (click)="closeModal()" class="bg-zinc-200 hover:bg-zinc-300 px-4 py-2 rounded-lg text-xs font-bold uppercase text-presuOscuro transition">
+                Cancelar
+            </button>
+            <button (click)="save()" [disabled]="isSaving || !name.trim()" class="bg-presuOxido text-white px-5 py-2 rounded-lg text-xs font-bold uppercase shadow-md hover:bg-amber-800 transition disabled:opacity-50 flex items-center gap-2">
+                <i *ngIf="isSaving" class="ph ph-spinner animate-spin"></i>
+                <i *ngIf="!isSaving" class="ph ph-check-circle"></i>
+                Guardar Cliente
+            </button>
+        </div>
+    </div>
+</div>

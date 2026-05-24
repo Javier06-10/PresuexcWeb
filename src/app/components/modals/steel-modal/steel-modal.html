@@ -1,0 +1,225 @@
+<div id="modalAceroSecciones" class="fixed inset-0 bg-presuOscuro/70 backdrop-blur-xs flex items-center justify-center z-50 transition-all duration-300" [class.opacity-0]="!uiState.isSteelModalOpen()" [class.pointer-events-none]="!uiState.isSteelModalOpen()">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-5xl p-6 mx-4 transform transition-all duration-300 border-t-4 border-presuOxido" [class.scale-95]="!uiState.isSteelModalOpen()">
+            
+            <div class="flex items-center justify-between border-b border-zinc-200 pb-3 mb-4">
+                <div class="flex items-center gap-2">
+                    <i class="ph ph-dots-six-vertical text-xl text-presuOxido"></i>
+                    <h3 class="text-base font-bold text-presuOscuro uppercase tracking-wide">Barras de Acero</h3>
+                </div>
+                <button (click)="backToConfig()" class="text-zinc-400 hover:text-presuOscuro flex items-center gap-1 text-xs font-bold uppercase transition">
+                    <i class="ph ph-arrow-left font-bold"></i> Volver
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 min-h-[440px]">
+                
+                <div class="md:col-span-1 border-r border-zinc-200 pr-3 space-y-1.5">
+                    <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-3">Secciones del Acero</p>
+                    
+                    <button (click)="activeTab.set('pres')" [class.bg-orange-50]="activeTab() === 'pres'" [class.border-l-4]="activeTab() === 'pres'" [class.border-presuOxido]="activeTab() === 'pres'" [class.text-presuOxido]="activeTab() === 'pres'" [class.bg-zinc-100]="activeTab() !== 'pres'" [class.text-zinc-500]="activeTab() !== 'pres'" class="w-full text-left p-3 rounded-xl text-xs font-bold transition uppercase shadow-sm flex items-center gap-2">
+                        <i class="ph ph-eye text-sm"></i> Presentación
+                    </button>
+                    
+                    <button (click)="activeTab.set('pesos')" [class.bg-orange-50]="activeTab() === 'pesos'" [class.border-l-4]="activeTab() === 'pesos'" [class.border-presuOxido]="activeTab() === 'pesos'" [class.text-presuOxido]="activeTab() === 'pesos'" [class.bg-zinc-100]="activeTab() !== 'pesos'" [class.text-zinc-500]="activeTab() !== 'pesos'" class="w-full text-left p-3 rounded-xl text-xs font-bold transition uppercase flex items-center gap-2 hover:bg-zinc-100">
+                        <i class="ph ph-scales text-sm"></i> Pesos de Acero
+                    </button>
+
+                    <button (click)="activeTab.set('solapes')" [class.bg-orange-50]="activeTab() === 'solapes'" [class.border-l-4]="activeTab() === 'solapes'" [class.border-presuOxido]="activeTab() === 'solapes'" [class.text-presuOxido]="activeTab() === 'solapes'" [class.bg-zinc-100]="activeTab() !== 'solapes'" [class.text-zinc-500]="activeTab() !== 'solapes'" class="w-full text-left p-3 rounded-xl text-xs font-bold transition uppercase flex items-center gap-2 hover:bg-zinc-100">
+                        <i class="ph ph-intersect text-sm"></i> Solapes / Traslapes
+                    </button>
+
+                    <button (click)="activeTab.set('longitudes')" [class.bg-orange-50]="activeTab() === 'longitudes'" [class.border-l-4]="activeTab() === 'longitudes'" [class.border-presuOxido]="activeTab() === 'longitudes'" [class.text-presuOxido]="activeTab() === 'longitudes'" [class.bg-zinc-100]="activeTab() !== 'longitudes'" [class.text-zinc-500]="activeTab() !== 'longitudes'" class="w-full text-left p-3 rounded-xl text-xs font-bold transition uppercase flex items-center gap-2 hover:bg-zinc-100 mt-1 border-presuOxido">
+                        <i class="ph ph-arrow-right text-sm"></i> Longitud de Barras
+                    </button>
+                </div>
+
+                <div class="md:col-span-3 pl-1 max-h-[460px] overflow-y-auto pr-1">
+                    
+                    <div id="pane-acero-pres" [class.hidden]="activeTab() !== 'pres'" class="subtab-pane space-y-4">
+                        <div>
+                            <p class="text-xs font-bold text-presuOscuro uppercase tracking-wide mb-1">Visualización del Diámetro</p>
+                            <p class="text-[11px] text-zinc-500">Selecciona el formato comercial para los cómputos métricos en el despiece.</p>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-3">
+                            <div (click)="setFormat('n_num')" [class.border-presuOxido]="configService.formatoActualGlobal() === 'n_num'" [class.bg-orange-50]="configService.formatoActualGlobal() === 'n_num'" class="card-pres-acero border-2 p-3 rounded-xl cursor-pointer text-center transition font-bold text-xs uppercase border-zinc-300 hover:border-zinc-400">Varilla n#</div>
+                            <div (click)="setFormat('mm')" [class.border-presuOxido]="configService.formatoActualGlobal() === 'mm'" [class.bg-orange-50]="configService.formatoActualGlobal() === 'mm'" class="card-pres-acero border-2 p-3 rounded-xl cursor-pointer text-center transition font-bold text-xs uppercase border-zinc-300 hover:border-zinc-400">Milímetros</div>
+                            <div (click)="setFormat('pulg')" [class.border-presuOxido]="configService.formatoActualGlobal() === 'pulg'" [class.bg-orange-50]="configService.formatoActualGlobal() === 'pulg'" class="card-pres-acero border-2 p-3 rounded-xl cursor-pointer text-center transition font-bold text-xs uppercase border-zinc-300 hover:border-zinc-400">Pulgadas</div>
+                        </div>
+
+                        <div class="border border-zinc-300 rounded-xl bg-zinc-50 p-4 space-y-2">
+                            <span class="bg-presuOxido text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase">Vista Previa</span>
+                            <div class="bg-white border border-zinc-300 rounded-lg overflow-hidden w-full mx-auto mt-2 shadow-sm">
+                                <table class="w-full text-center text-xs border-collapse">
+                                    <thead>
+                                        <tr class="bg-zinc-800 text-white text-[9px] uppercase font-bold">
+                                            <th class="p-2">{{ configService.formatoActualGlobal() === 'n_num' ? 'Varilla n#' : (configService.formatoActualGlobal() === 'mm' ? 'Milímetros' : 'Pulgadas') }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="font-bold text-presuOscuro">
+                                        <tr *ngFor="let b of configService.listadoBarras()" class="border-b border-zinc-200">
+                                            <td class="p-2">{{ configService.formatoActualGlobal() === 'n_num' ? b.n : (configService.formatoActualGlobal() === 'mm' ? b.mm : b.pulg) }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="pane-acero-pesos" [class.hidden]="activeTab() !== 'pesos'" class="subtab-pane space-y-4">
+                        <div class="bg-zinc-50 border border-zinc-300 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+                            <div>
+                                <label class="text-xs font-black text-presuOscuro uppercase tracking-wide block">Unidad de Peso del Acero</label>
+                                <span class="text-[10px] text-zinc-400">Define los factores de conversión para los cálculos globales.</span>
+                            </div>
+                            <div class="flex flex-col gap-2 items-end">
+                                <select [ngModel]="configService.unidadPesoActual()" (change)="setWeightUnit($event)" class="bg-white border border-zinc-300 rounded-lg p-2 text-xs font-bold text-presuOscuro focus:outline-none cursor-pointer shadow-inner w-full sm:w-auto">
+                                    <option value="kg_m">Kilogramo por Metro (kg/m)</option>
+                                    <option value="lb_ft">Libras por Pie (lb/ft)</option>
+                                </select>
+                                <button (click)="restoreDefaultWeights()" class="text-[10px] bg-zinc-200 hover:bg-red-50 hover:text-red-700 text-zinc-600 font-bold px-2.5 py-1 rounded transition border border-zinc-300 flex items-center gap-1">
+                                    <i class="ph ph-arrow-counter-clockwise-bold"></i> Restaurar por defecto
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="border border-zinc-300 rounded-xl overflow-hidden bg-white shadow-sm">
+                            <table class="w-full text-left text-xs border-collapse">
+                                <thead>
+                                    <tr class="bg-zinc-800 text-white text-[10px] uppercase font-bold tracking-wider">
+                                        <th class="p-3 border-r border-zinc-700 w-1/2">Barra Seleccionada</th>
+                                        <th class="p-3 w-1/2">Peso Teórico ({{ configService.unidadPesoActual() === 'kg_m' ? 'kg/m' : 'lb/ft' }})</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="font-bold text-presuOscuro">
+                                    <tr *ngFor="let b of configService.listadoBarras(); let i = index" class="border-b border-zinc-200 bg-zinc-50 fila-acero-hover relative group">
+                                        <td class="p-3 border-r border-zinc-200 relative">
+                                            <span class="flex items-center gap-2">
+                                                <i class="ph ph-dots-six-vertical text-zinc-400 cursor-move"></i> 
+                                                Varilla {{ b.n }} ({{ b.mm }} - {{ b.pulg }})
+                                            </span>
+                                            <!-- Botón Eliminar de Angular -->
+                                            <button class="absolute top-1/2 -translate-y-1/2 right-2 text-red-500 hover:bg-red-100 p-1 rounded transition opacity-0 group-hover:opacity-100">
+                                                <i class="ph ph-trash"></i>
+                                            </button>
+                                        </td>
+                                        <td class="p-2 bg-white">
+                                            <input *ngIf="configService.unidadPesoActual() === 'kg_m'" type="number" [(ngModel)]="b.peso_kg" class="w-full bg-zinc-50 border border-zinc-300 rounded p-1.5 text-xs focus:outline-none focus:border-presuOxido">
+                                            <input *ngIf="configService.unidadPesoActual() === 'lb_ft'" type="number" [(ngModel)]="b.peso_lb" class="w-full bg-zinc-50 border border-zinc-300 rounded p-1.5 text-xs focus:outline-none focus:border-presuOxido">
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="flex justify-start">
+                            <button (click)="openNewBar()" class="flex items-center justify-center gap-1.5 bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow transition">
+                                <i class="ph ph-plus-bold"></i>
+                                <span>Añadir Barra</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="pane-acero-solapes" [class.hidden]="activeTab() !== 'solapes'" class="subtab-pane space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div>
+                                <p class="text-xs font-bold text-presuOscuro uppercase tracking-wide mb-1">Longitudes de Solapes / Traslapes</p>
+                                <p class="text-[11px] text-zinc-500">Establece la longitud de traslape mecánico requerida por barra según el elemento estructural.</p>
+                            </div>
+                            <button class="text-[10px] bg-zinc-200 hover:bg-zinc-300 text-zinc-600 font-bold px-3 py-2 rounded transition shadow-xs">
+                                Restaurar por defecto
+                            </button>
+                        </div>
+
+                        <div class="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-zinc-300 scrollbar-track-zinc-100">
+                            <button (click)="activeSolapeElement.set('CIMENTACIONES')" [class.bg-presuOxido]="activeSolapeElement() === 'CIMENTACIONES'" [class.text-white]="activeSolapeElement() === 'CIMENTACIONES'" [class.border-presuOxido]="activeSolapeElement() === 'CIMENTACIONES'" [class.bg-zinc-50]="activeSolapeElement() !== 'CIMENTACIONES'" [class.text-zinc-500]="activeSolapeElement() !== 'CIMENTACIONES'" [class.border-zinc-200]="activeSolapeElement() !== 'CIMENTACIONES'" class="px-3 py-1.5 text-[10px] font-black rounded uppercase tracking-wider transition border whitespace-nowrap">Cimentaciones</button>
+                            <button (click)="activeSolapeElement.set('COLUMNAS')" [class.bg-presuOxido]="activeSolapeElement() === 'COLUMNAS'" [class.text-white]="activeSolapeElement() === 'COLUMNAS'" [class.border-presuOxido]="activeSolapeElement() === 'COLUMNAS'" [class.bg-zinc-50]="activeSolapeElement() !== 'COLUMNAS'" [class.text-zinc-500]="activeSolapeElement() !== 'COLUMNAS'" [class.border-zinc-200]="activeSolapeElement() !== 'COLUMNAS'" class="px-3 py-1.5 text-[10px] font-black rounded uppercase tracking-wider transition border whitespace-nowrap">Columnas/Castillos/Pilar</button>
+                            <button (click)="activeSolapeElement.set('VIGAS')" [class.bg-presuOxido]="activeSolapeElement() === 'VIGAS'" [class.text-white]="activeSolapeElement() === 'VIGAS'" [class.border-presuOxido]="activeSolapeElement() === 'VIGAS'" [class.bg-zinc-50]="activeSolapeElement() !== 'VIGAS'" [class.text-zinc-500]="activeSolapeElement() !== 'VIGAS'" [class.border-zinc-200]="activeSolapeElement() !== 'VIGAS'" class="px-3 py-1.5 text-[10px] font-black rounded uppercase tracking-wider transition border whitespace-nowrap">Viga/Trabe</button>
+                            <button (click)="activeSolapeElement.set('LOSA')" [class.bg-presuOxido]="activeSolapeElement() === 'LOSA'" [class.text-white]="activeSolapeElement() === 'LOSA'" [class.border-presuOxido]="activeSolapeElement() === 'LOSA'" [class.bg-zinc-50]="activeSolapeElement() !== 'LOSA'" [class.text-zinc-500]="activeSolapeElement() !== 'LOSA'" [class.border-zinc-200]="activeSolapeElement() !== 'LOSA'" class="px-3 py-1.5 text-[10px] font-black rounded uppercase tracking-wider transition border whitespace-nowrap">Losa</button>
+                            <button (click)="activeSolapeElement.set('LOSA_ALIGERADA')" [class.bg-presuOxido]="activeSolapeElement() === 'LOSA_ALIGERADA'" [class.text-white]="activeSolapeElement() === 'LOSA_ALIGERADA'" [class.border-presuOxido]="activeSolapeElement() === 'LOSA_ALIGERADA'" [class.bg-zinc-50]="activeSolapeElement() !== 'LOSA_ALIGERADA'" [class.text-zinc-500]="activeSolapeElement() !== 'LOSA_ALIGERADA'" [class.border-zinc-200]="activeSolapeElement() !== 'LOSA_ALIGERADA'" class="px-3 py-1.5 text-[10px] font-black rounded uppercase tracking-wider transition border whitespace-nowrap">Losa Aligerada</button>
+                            <button (click)="activeSolapeElement.set('MAMPOSTERIA')" [class.bg-presuOxido]="activeSolapeElement() === 'MAMPOSTERIA'" [class.text-white]="activeSolapeElement() === 'MAMPOSTERIA'" [class.border-presuOxido]="activeSolapeElement() === 'MAMPOSTERIA'" [class.bg-zinc-50]="activeSolapeElement() !== 'MAMPOSTERIA'" [class.text-zinc-500]="activeSolapeElement() !== 'MAMPOSTERIA'" [class.border-zinc-200]="activeSolapeElement() !== 'MAMPOSTERIA'" class="px-3 py-1.5 text-[10px] font-black rounded uppercase tracking-wider transition border whitespace-nowrap">Mampostería/Muros</button>
+                        </div>
+
+                        <div class="border border-zinc-300 rounded-xl overflow-hidden bg-white shadow-sm mt-2">
+                            <table class="w-full text-left text-xs border-collapse">
+                                <thead>
+                                    <tr class="bg-zinc-800 text-white text-[11px] font-bold tracking-wider">
+                                        <th class="p-3 border-r border-zinc-700 w-1/2 uppercase">Barra del Listado</th>
+                                        <th class="p-3 w-1/2 uppercase flex items-center gap-2">
+                                            <span>Longitud de Solape</span> 
+                                            <span class="text-amber-400">(CM)</span>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="font-bold text-presuOscuro">
+                                    <tr *ngFor="let b of configService.listadoBarras(); let i = index" class="border-b border-zinc-200 bg-white">
+                                        <td class="p-3 border-r border-zinc-200 relative">
+                                            {{ b.n }}
+                                        </td>
+                                        <td class="p-2 bg-white flex items-center gap-2">
+                                            <input type="number" [value]="getSolape(b.id)" (input)="updateSolape(b.id, $event)" class="w-24 bg-white border border-zinc-300 rounded p-1.5 text-xs focus:outline-none focus:border-presuOxido text-center font-bold text-presuOscuro">
+                                            <span class="text-[10px] text-zinc-500 font-bold">cm</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="pane-acero-longitudes" [class.hidden]="activeTab() !== 'longitudes'" class="subtab-pane space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div>
+                                <p class="text-xs font-bold text-presuOscuro uppercase tracking-wide mb-1">Longitudes Comerciales</p>
+                                <p class="text-[11px] text-zinc-500">Define las longitudes de fábrica en las que se adquieren las barras.</p>
+                            </div>
+                            <button (click)="restoreDefaultLengths()" class="text-[10px] bg-zinc-200 hover:bg-red-50 hover:text-red-700 text-zinc-600 font-bold px-2.5 py-1.5 rounded transition border border-zinc-300 flex items-center gap-1 self-start sm:self-auto shadow-xs">
+                                Restaurar por defecto
+                            </button>
+                        </div>
+
+                        <div class="border border-zinc-300 rounded-xl overflow-hidden bg-white shadow-sm">
+                            <table class="w-full text-left text-xs border-collapse">
+                                <thead>
+                                    <tr class="bg-zinc-800 text-white text-[11px] uppercase font-bold tracking-wider">
+                                        <th class="p-3">Longitud de Barra</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="font-bold text-presuOscuro">
+                                    <tr *ngFor="let lon of configService.longitudesBarras(); let i = index" class="border-b border-zinc-200 bg-white relative group">
+                                        <td class="p-3 relative">
+                                            <div class="flex items-center gap-3">
+                                                <div class="flex items-center gap-2">
+                                                    <input type="number" [(ngModel)]="lon.m" class="w-20 border border-zinc-300 text-presuOxido font-bold text-center rounded p-1.5 focus:outline-none focus:border-presuOxido">
+                                                    <span class="font-black text-xs text-presuOscuro">m</span>
+                                                </div>
+                                                <div class="flex items-center gap-2">
+                                                    <div class="bg-zinc-100 text-zinc-400 font-bold text-[10px] px-3 py-1.5 rounded flex items-center gap-1">
+                                                        <span>&asymp;</span> {{ (lon.m * 3.28084).toFixed(2) }} ft
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <button (click)="removeLength(i)" class="absolute top-1/2 -translate-y-1/2 right-2 text-red-500 hover:bg-red-100 p-1 rounded transition opacity-0 group-hover:opacity-100">
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="flex justify-start items-center gap-3">
+                            <input type="number" [(ngModel)]="newLength" placeholder="Nueva (m)" class="w-24 border border-zinc-300 font-bold text-center rounded-xl p-2 text-xs focus:outline-none focus:border-presuOxido">
+                            <button (click)="addNewLength()" class="flex items-center justify-center gap-1.5 bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow transition">
+                                <span>Añadir</span>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="mt-5 pt-3 border-t border-zinc-200 flex justify-end">
+                <button (click)="confirm()" class="bg-presuOxido text-white font-bold px-6 py-2 rounded-lg text-xs uppercase shadow shadow-md">Confirmar</button>
+            </div>
+        </div>
+    </div>

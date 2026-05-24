@@ -1,0 +1,180 @@
+<div *ngIf="uiState.isApuEditorOpen()" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-5xl border border-zinc-200 overflow-hidden flex flex-col h-[90vh]">
+        
+        <!-- Header -->
+        <div class="bg-presuOscuro text-white p-4 flex items-center justify-between border-b border-white/10 relative">
+            <div class="flex flex-col gap-1">
+                <h2 class="text-xl font-black tracking-tight flex items-center gap-2">
+                    <i class="ph ph-cube text-presuOxido"></i> Editor de APU
+                </h2>
+                <div *ngIf="activeApu()" class="flex items-center gap-3 text-sm text-zinc-300">
+                    <span class="font-bold bg-white/10 px-2 py-0.5 rounded text-white">{{ activeApu()?.code || 'S/C' }}</span>
+                    <span>{{ activeApu()?.name }}</span>
+                    <span class="text-zinc-500">|</span>
+                    <span class="font-bold text-presuOxido uppercase">{{ activeApu()?.unit }}</span>
+                </div>
+            </div>
+            
+            <button (click)="closeModal()" class="text-zinc-400 hover:text-white transition w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-800">
+                <i class="ph ph-x text-lg font-bold"></i>
+            </button>
+        </div>
+
+        <!-- Toolbar Superior -->
+        <div class="bg-zinc-100 border-b border-zinc-300 p-3 flex gap-2 justify-between items-center shadow-sm z-10 relative">
+            <div class="flex gap-2">
+                <button (click)="openPicker('material')" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded shadow-sm text-sm font-bold flex items-center gap-2 transition">
+                    <i class="ph ph-plus-circle text-lg"></i> Añadir Material
+                </button>
+                <button (click)="openPicker('labor')" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded shadow-sm text-sm font-bold flex items-center gap-2 transition">
+                    <i class="ph ph-plus-circle text-lg"></i> Añadir Mano de Obra
+                </button>
+                <button (click)="openPicker('equipment')" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded shadow-sm text-sm font-bold flex items-center gap-2 transition">
+                    <i class="ph ph-plus-circle text-lg"></i> Añadir Equipo
+                </button>
+            </div>
+            
+            <div class="bg-white px-4 py-2 rounded border border-zinc-300 shadow-inner flex items-center gap-3">
+                <span class="text-xs font-bold text-zinc-500 uppercase tracking-widest">Costo Directo Total</span>
+                <span class="text-xl font-black text-presuOscuro">$ {{ activeApu()?.total_unit | number:'1.2-2' }}</span>
+            </div>
+        </div>
+
+        <!-- Contenido principal: Lista de items agrupados -->
+        <div class="flex-1 overflow-auto p-6 bg-zinc-50">
+            <div *ngIf="apuService.isLoading()" class="flex justify-center items-center py-20 text-zinc-400">
+                <i class="ph ph-spinner animate-spin text-3xl mb-2 text-presuOxido"></i>
+            </div>
+
+            <ng-container *ngIf="!apuService.isLoading() && activeApu()">
+                
+                <!-- SECCION: MATERIALES -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-black text-presuOscuro border-b-2 border-blue-500 pb-2 mb-4 flex items-center justify-between">
+                        <span class="flex items-center gap-2"><i class="ph ph-stack text-blue-500"></i> Materiales</span>
+                        <span class="text-sm font-bold text-zinc-500">$ {{ getSubtotal('material') | number:'1.2-2' }}</span>
+                    </h3>
+                    
+                    <div class="bg-white border border-zinc-200 rounded-lg shadow-sm overflow-hidden">
+                        <table class="w-full text-sm text-left">
+                            <thead class="text-xs uppercase bg-zinc-100 text-zinc-600 font-bold border-b border-zinc-200">
+                                <tr>
+                                    <th class="px-4 py-2">Descripción</th>
+                                    <th class="px-4 py-2 w-24 text-center">Und.</th>
+                                    <th class="px-4 py-2 w-32 text-center">Cantidad</th>
+                                    <th class="px-4 py-2 w-32 text-right">Precio Ud.</th>
+                                    <th class="px-4 py-2 w-32 text-right">Subtotal</th>
+                                    <th class="px-4 py-2 w-16 text-center"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngIf="getItems('material').length === 0">
+                                    <td colspan="6" class="p-6 text-center text-zinc-400 italic">No hay materiales añadidos a esta receta.</td>
+                                </tr>
+                                <tr *ngFor="let item of getItems('material')" class="border-b border-zinc-100 hover:bg-blue-50 transition group">
+                                    <td class="px-4 py-2 font-medium text-presuOscuro">{{ item.description }}</td>
+                                    <td class="px-4 py-2 text-center text-xs font-bold text-zinc-500 uppercase">{{ item.unit }}</td>
+                                    <td class="px-4 py-2 text-center">
+                                        <input type="number" [(ngModel)]="item.quantity" (change)="updateItemQuantity(item)" class="w-20 text-center border border-zinc-300 rounded px-2 py-1 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition">
+                                    </td>
+                                    <td class="px-4 py-2 text-right font-medium text-zinc-600">$ {{ item.unit_price | number:'1.2-2' }}</td>
+                                    <td class="px-4 py-2 text-right font-black text-presuOscuro">$ {{ (item.quantity * (item.unit_price || 0)) | number:'1.2-2' }}</td>
+                                    <td class="px-4 py-2 text-center">
+                                        <button (click)="removeItem(item.id)" class="text-zinc-400 hover:text-red-500 transition opacity-0 group-hover:opacity-100">
+                                            <i class="ph ph-trash text-lg"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- SECCION: MANO DE OBRA -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-black text-presuOscuro border-b-2 border-amber-500 pb-2 mb-4 flex items-center justify-between">
+                        <span class="flex items-center gap-2"><i class="ph ph-users text-amber-500"></i> Mano de Obra</span>
+                        <span class="text-sm font-bold text-zinc-500">$ {{ getSubtotal('labor_activity') | number:'1.2-2' }}</span>
+                    </h3>
+                    
+                    <div class="bg-white border border-zinc-200 rounded-lg shadow-sm overflow-hidden">
+                        <table class="w-full text-sm text-left">
+                            <thead class="text-xs uppercase bg-zinc-100 text-zinc-600 font-bold border-b border-zinc-200">
+                                <tr>
+                                    <th class="px-4 py-2">Descripción</th>
+                                    <th class="px-4 py-2 w-24 text-center">Und.</th>
+                                    <th class="px-4 py-2 w-32 text-center">Rendimiento</th>
+                                    <th class="px-4 py-2 w-32 text-right">Precio Ud.</th>
+                                    <th class="px-4 py-2 w-32 text-right">Subtotal</th>
+                                    <th class="px-4 py-2 w-16 text-center"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngIf="getItems('labor_activity').length === 0">
+                                    <td colspan="6" class="p-6 text-center text-zinc-400 italic">No hay mano de obra asignada.</td>
+                                </tr>
+                                <tr *ngFor="let item of getItems('labor_activity')" class="border-b border-zinc-100 hover:bg-amber-50 transition group">
+                                    <td class="px-4 py-2 font-medium text-presuOscuro">{{ item.description }}</td>
+                                    <td class="px-4 py-2 text-center text-xs font-bold text-zinc-500 uppercase">{{ item.unit }}</td>
+                                    <td class="px-4 py-2 text-center">
+                                        <input type="number" [(ngModel)]="item.quantity" (change)="updateItemQuantity(item)" class="w-20 text-center border border-zinc-300 rounded px-2 py-1 text-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition" title="Cantidad o Rendimiento">
+                                    </td>
+                                    <td class="px-4 py-2 text-right font-medium text-zinc-600">$ {{ item.unit_price | number:'1.2-2' }}</td>
+                                    <td class="px-4 py-2 text-right font-black text-presuOscuro">$ {{ (item.quantity * (item.unit_price || 0)) | number:'1.2-2' }}</td>
+                                    <td class="px-4 py-2 text-center">
+                                        <button (click)="removeItem(item.id)" class="text-zinc-400 hover:text-red-500 transition opacity-0 group-hover:opacity-100">
+                                            <i class="ph ph-trash text-lg"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- SECCION: EQUIPOS -->
+                <div class="mb-4">
+                    <h3 class="text-lg font-black text-presuOscuro border-b-2 border-emerald-500 pb-2 mb-4 flex items-center justify-between">
+                        <span class="flex items-center gap-2"><i class="ph ph-truck text-emerald-500"></i> Equipos y Herramientas</span>
+                        <span class="text-sm font-bold text-zinc-500">$ {{ getSubtotal('equipment') | number:'1.2-2' }}</span>
+                    </h3>
+                    
+                    <div class="bg-white border border-zinc-200 rounded-lg shadow-sm overflow-hidden">
+                        <table class="w-full text-sm text-left">
+                            <thead class="text-xs uppercase bg-zinc-100 text-zinc-600 font-bold border-b border-zinc-200">
+                                <tr>
+                                    <th class="px-4 py-2">Descripción</th>
+                                    <th class="px-4 py-2 w-24 text-center">Und.</th>
+                                    <th class="px-4 py-2 w-32 text-center">Cantidad</th>
+                                    <th class="px-4 py-2 w-32 text-right">Tarifa Ud.</th>
+                                    <th class="px-4 py-2 w-32 text-right">Subtotal</th>
+                                    <th class="px-4 py-2 w-16 text-center"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngIf="getItems('equipment').length === 0">
+                                    <td colspan="6" class="p-6 text-center text-zinc-400 italic">No hay equipos asignados.</td>
+                                </tr>
+                                <tr *ngFor="let item of getItems('equipment')" class="border-b border-zinc-100 hover:bg-emerald-50 transition group">
+                                    <td class="px-4 py-2 font-medium text-presuOscuro">{{ item.description }}</td>
+                                    <td class="px-4 py-2 text-center text-xs font-bold text-zinc-500 uppercase">{{ item.unit }}</td>
+                                    <td class="px-4 py-2 text-center">
+                                        <input type="number" [(ngModel)]="item.quantity" (change)="updateItemQuantity(item)" class="w-20 text-center border border-zinc-300 rounded px-2 py-1 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition">
+                                    </td>
+                                    <td class="px-4 py-2 text-right font-medium text-zinc-600">$ {{ item.unit_price | number:'1.2-2' }}</td>
+                                    <td class="px-4 py-2 text-right font-black text-presuOscuro">$ {{ (item.quantity * (item.unit_price || 0)) | number:'1.2-2' }}</td>
+                                    <td class="px-4 py-2 text-center">
+                                        <button (click)="removeItem(item.id)" class="text-zinc-400 hover:text-red-500 transition opacity-0 group-hover:opacity-100">
+                                            <i class="ph ph-trash text-lg"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </ng-container>
+        </div>
+    </div>
+</div>

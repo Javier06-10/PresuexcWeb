@@ -1,0 +1,15 @@
+
+        // Configuramos los colores exactos de PresuXcel en Tailwind
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        presuOscuro: '#3A3838',  // Gris oscuro
+                        presuOxido: '#8C4F2B',   // Marrón/Óxido técnico
+                        presuFondo: '#F2F2F2',   // Fondo gris claro
+                        presuHeader: '#E0E0E0'   // Gris claro de la cinta superior
+                    }
+                }
+            }
+        }
+    

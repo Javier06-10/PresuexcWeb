@@ -1,0 +1,218 @@
+<section id="vista-presupuesto-detalle" class="fuente-dinamica flex-1 max-w-[1400px] w-full mx-auto p-4 md:p-6 bg-white shadow-2xl my-4 rounded-lg border border-zinc-300" [class.hidden]="uiState.activeView() !== 'budget'" [style.fontFamily]="configService.fuenteConsolidadaPresupuesto()">
+        
+        <div class="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6 border-b border-zinc-200 pb-4" *ngIf="projectService.activeProject() as proy">
+            <div class="flex items-center gap-4 w-full sm:w-auto">
+                <div class="relative group w-32 h-24 bg-zinc-50 border border-zinc-300 rounded-xl overflow-hidden flex items-center justify-center cursor-pointer shadow-inner" (click)="fileInput.click()" title="Haz clic para cambiar el logo">
+                    <img id="hoja-logo-img" [src]="configService.logoConsolidadoBase64() || 'assets/ICONO PresuXcel.png'" alt="Logo Presupuesto" class="w-full h-full object-contain p-1">
+                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition duration-200 flex flex-col items-center justify-center text-white text-[10px] font-bold text-center p-1 uppercase">
+                        <i class="ph ph-camera text-base mb-1"></i>
+                        Cambiar Imagen
+                    </div>
+                    <input type="file" #fileInput accept="image/*" (change)="cambiarLogoDirectoDesdeHoja(fileInput.files)" class="hidden">
+                </div>
+                
+                <div class="space-y-1 flex-1 min-w-[300px]">
+                    <div class="flex border border-zinc-400">
+                        <span class="w-20 font-bold uppercase text-zinc-500 bg-zinc-100 px-3 py-1 text-xs border-r border-zinc-400">Cliente</span>
+                        <span id="hoja-cliente" class="px-3 py-1 text-xs flex-1 outline-none">{{ clientService.getClientName(proy.client_id) }}</span>
+                    </div>
+                    <div class="flex border border-zinc-400">
+                        <span class="w-20 font-bold uppercase text-zinc-500 bg-zinc-100 px-3 py-1 text-xs border-r border-zinc-400">Proyecto</span>
+                        <span id="hoja-proyecto" class="px-3 py-1 text-xs flex-1 outline-none font-bold">{{ proy.name }}</span>
+                    </div>
+                    <div class="flex border border-zinc-400">
+                        <span class="w-20 font-bold uppercase text-zinc-500 bg-zinc-100 px-3 py-1 text-xs border-r border-zinc-400">Cotización</span>
+                        <span id="hoja-cotizacion" class="px-3 py-1 text-xs flex-1 outline-none">{{ proy.code || '---' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-right space-y-2 w-full sm:w-auto flex flex-col items-end">
+                <div class="flex items-center gap-2">
+                    <button (click)="saveBudget()" [disabled]="projectService.isSaving()" class="text-white text-[10px] px-4 py-1.5 rounded uppercase font-bold shadow transition flex items-center gap-1.5" [ngClass]="projectService.hasUnsavedChanges() ? 'bg-orange-500 hover:bg-orange-600 animate-pulse' : 'bg-green-600 hover:bg-green-700'">
+                        <i class="ph" [class.ph-floppy-disk]="!projectService.isSaving()" [class.ph-spinner]="projectService.isSaving()" [class.animate-spin]="projectService.isSaving()"></i> 
+                        {{ projectService.isSaving() ? 'Guardando...' : projectService.hasUnsavedChanges() ? '● Guardar Cambios' : '✓ Guardado' }}
+                    </button>
+                    <button (click)="imprimir()" class="bg-blue-600 text-white text-[10px] px-3 py-1 rounded uppercase font-bold hover:bg-blue-700 shadow transition flex items-center gap-1"><i class="ph ph-printer"></i> Imprimir</button>
+                    <button (click)="volverAlPanel()" class="bg-zinc-800 text-white text-[10px] px-3 py-1 rounded uppercase font-bold hover:bg-zinc-700 shadow transition flex items-center gap-1"><i class="ph ph-arrow-left"></i> Volver al Panel</button>
+                </div>
+                <div class="text-[11px] font-bold text-presuOscuro">Fecha: <span class="bg-amber-50 px-2 py-0.5 border border-amber-200">{{ currentDate }}</span></div>
+                
+                <div class="text-[11px] font-bold text-blue-800 italic">Cotización válida por: <span>15</span> días</div>
+            </div>
+        </div>
+        <div class="overflow-x-auto border border-zinc-800">
+            <table class="w-full border-collapse text-[11px]">
+                <thead>
+                    <tr class="bg-[#002060] text-white uppercase tracking-wider">
+                        <th class="border border-zinc-400 p-1 w-12">no.</th>
+                        <th class="border border-zinc-400 p-1 text-left">DESCRIPCIÓN</th>
+                        <th class="border border-zinc-400 p-1 w-20">CANTIDAD</th>
+                        <th class="border border-zinc-400 p-1 w-20">UNIDAD</th>
+                        <th class="border border-zinc-400 p-1 w-28">PRECIO UNIT.</th>
+                        <th class="border border-zinc-400 p-1 w-32">TOTAL</th>
+                        <th class="border border-zinc-400 p-1 w-40">OBSERVACIONES</th>
+                    </tr>
+                </thead>
+                <tbody class="font-bold text-presuOscuro">
+                    <ng-container *ngIf="projectService.activeBudget() as budget">
+                        <ng-container *ngFor="let nivel of projectService.activeBudgetLevels(); let lvlIdx = index">
+                            
+                            <!-- Header de Nivel -->
+                            <tr class="font-black text-center text-white border border-zinc-400 group relative" [style.backgroundColor]="configService.colorFilaSubConsolidado()">
+                                <td colspan="5" class="border border-zinc-400 p-1 uppercase tracking-wide relative">
+                                    {{ nivel.name }}
+                                    <button (click)="projectService.removeLevel(lvlIdx)" class="absolute left-1 top-1/2 -translate-y-1/2 bg-red-500 hover:bg-red-600 text-white w-5 h-5 rounded items-center justify-center transition shadow z-10 cursor-pointer text-[12px] opacity-0 group-hover:opacity-100 flex" title="Eliminar Nivel"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button>
+                                </td>
+                                <td class="border border-zinc-400 p-1 uppercase text-left">TOTAL $</td>
+                                <td class="border border-zinc-400 p-1 bg-white text-zinc-400 font-normal text-center relative">
+                                    <button (click)="uiState.activeLevelForChapterAdd.set(nivel); uiState.isAddChapterModalOpen.set(true)" class="bg-blue-500 hover:bg-blue-600 text-white w-[18px] h-[18px] rounded-full flex flex-shrink-0 items-center justify-center shadow cursor-pointer text-[10px] m-auto opacity-0 group-hover:opacity-100 transition"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+                                </td>
+                            </tr>
+                            
+                            <!-- Capítulos del nivel -->
+                            <ng-container *ngFor="let cap of nivel.chapters; let capIdx = index">
+                                <!-- Capítulo Titulo Principal -->
+                                <tr class="text-white font-bold border border-zinc-400 group relative" [style.backgroundColor]="configService.colorFilaTitConsolidado()">
+                                    <td class="border border-zinc-400 p-1 text-center w-12">
+                                        <div class="flex items-center justify-center gap-1.5">
+                                            <button (click)="uiState.activeLevelForChapterAdd.set(nivel); uiState.isAddChapterModalOpen.set(true)" class="bg-blue-500 hover:bg-blue-600 text-white w-[18px] h-[18px] rounded-full flex flex-shrink-0 items-center justify-center shadow cursor-pointer text-[10px] opacity-0 group-hover:opacity-100 transition" title="Añadir Renglón"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+                                            <input type="text" [(ngModel)]="cap.chapter_number" class="w-5 bg-transparent text-center focus:outline-none placeholder:text-white/50 text-[11px]">
+                                        </div>
+                                    </td>
+                                    <td colspan="6" class="border border-zinc-400 p-1 px-4 uppercase text-[10px] tracking-wide relative">
+                                        <input type="text" [(ngModel)]="cap.name" class="w-full bg-transparent focus:outline-none placeholder:text-white/50 uppercase pr-8">
+                                        <button (click)="projectService.removeChapter(nivel, capIdx)" class="absolute right-1 top-1/2 -translate-y-1/2 bg-red-500 hover:bg-red-600 text-white w-5 h-5 rounded items-center justify-center transition shadow z-10 cursor-pointer text-[12px] opacity-0 group-hover:opacity-100 flex" title="Eliminar Renglón"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Partidas del Capítulo -->
+                                <tr *ngFor="let item of cap.items; let itemIdx = index" class="hover:bg-zinc-50 transition border border-zinc-300 bg-white group">
+                                    <td class="border border-zinc-400 p-1 text-center text-zinc-400 font-normal w-12">
+                                        <div class="flex items-center justify-center gap-1.5">
+                                            <button (click)="projectService.addItem(cap)" class="bg-blue-500 hover:bg-blue-600 text-white w-[18px] h-[18px] rounded-full flex flex-shrink-0 items-center justify-center transition shadow cursor-pointer text-[10px] opacity-0 group-hover:opacity-100" title="Añadir partida en blanco"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+                                            <input type="text" [(ngModel)]="item.item_number" (ngModelChange)="projectService.updateItemGranular(lvlIdx, capIdx, itemIdx, item)" class="w-5 bg-transparent text-center focus:outline-none placeholder:text-zinc-300 text-zinc-600 font-bold text-[11px]">
+                                        </div>
+                                    </td>
+                                    <td class="border border-zinc-400 p-1 outline-none text-presuOscuro font-medium">
+                                        <input type="text" [(ngModel)]="item.description" 
+                                               (click)="openItemOptions(cap, item)"
+                                               [readonly]="!item.description" 
+                                               [ngStyle]="{'cursor': !item.description ? 'pointer' : 'text'}"
+                                               placeholder="Clic aquí para partida o APU..."
+                                               (ngModelChange)="projectService.updateItemGranular(lvlIdx, capIdx, itemIdx, item)" 
+                                               class="w-full bg-transparent focus:outline-none placeholder:text-zinc-400">
+                                    </td>
+                                    <td class="border border-zinc-400 p-1 outline-none text-center font-bold text-presuOscuro">
+                                        <input type="number" [(ngModel)]="item.quantity" (ngModelChange)="projectService.updateItemGranular(lvlIdx, capIdx, itemIdx, item)" class="w-full bg-transparent text-center focus:outline-none placeholder:text-zinc-300">
+                                    </td>
+                                    <td class="border border-zinc-400 p-1 outline-none text-center uppercase font-bold text-zinc-500">
+                                        <input type="text" [(ngModel)]="item.unit" (ngModelChange)="projectService.updateItemGranular(lvlIdx, capIdx, itemIdx, item)" class="w-full bg-transparent text-center focus:outline-none placeholder:text-zinc-300 uppercase">
+                                    </td>
+                                    <td class="border border-zinc-400 p-1 outline-none text-right px-2 font-semibold text-presuOscuro">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-zinc-400">$</span>
+                                            <input type="number" [(ngModel)]="item.unit_price" (ngModelChange)="projectService.updateItemGranular(lvlIdx, capIdx, itemIdx, item)" class="w-full bg-transparent text-right focus:outline-none placeholder:text-zinc-300 ml-1">
+                                        </div>
+                                    </td>
+                                    <td class="border border-zinc-400 p-1 outline-none text-right px-2 font-black text-presuOscuro bg-zinc-50">
+                                        $ {{ item.total | number:'1.2-2' }}
+                                    </td>
+                                    <td class="border border-zinc-400 p-1 outline-none italic text-zinc-400 font-medium relative">
+                                        <input type="text" [(ngModel)]="item.observations" (ngModelChange)="projectService.updateItemGranular(lvlIdx, capIdx, itemIdx, item)" class="w-full bg-transparent focus:outline-none placeholder:text-zinc-300">
+                                        <button (click)="projectService.removeItem(cap, itemIdx)" class="btn-flotante absolute right-1 top-1/2 -translate-y-1/2 bg-red-500 hover:bg-red-600 text-white w-5 h-5 rounded items-center justify-center transition shadow z-10 cursor-pointer text-[12px] opacity-0 group-hover:opacity-100 flex" title="Eliminar Partida"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button>
+                                    </td>
+                                </tr>
+                            </ng-container>
+
+                            <!-- Subtotal del Nivel -->
+                            <tr class="font-black text-white border border-zinc-400" [style.backgroundColor]="configService.colorFilaSubConsolidado()">
+                                <td colspan="5" class="border border-zinc-400 p-1 text-right pr-4 uppercase tracking-wide">SUB-TOTAL</td>
+                                <td class="border border-zinc-400 p-1 text-right px-2 font-black">$ {{ nivel.subtotal | number:'1.2-2' }}</td>
+                                <td class="border border-zinc-400 p-1 bg-white"></td>
+                            </tr>
+                            
+                            <!-- Espaciador -->
+                            <tr class="h-2 bg-presuFondo">
+                                <td colspan="7" class="border-none p-0 h-2"></td>
+                            </tr>
+
+                        </ng-container>
+                        
+                        <!-- Botón para añadir nuevo nivel (si está vacío o se quiere otro) -->
+                        <tr>
+                            <td colspan="7" class="p-2 text-center">
+                                <button (click)="addNewLevelAndOpenChapters()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded uppercase font-bold shadow transition text-xs inline-flex items-center gap-1">
+                                    <i class="ph ph-plus-circle text-sm"></i> Añadir Nivel
+                                </button>
+                            </td>
+                        </tr>
+
+                        <!-- Subtotal de Costos Directos -->
+                        <tr class="font-bold text-presuOscuro border border-zinc-400 text-sm bg-zinc-100">
+                            <td colspan="5" class="border border-zinc-400 p-2 text-right pr-4 uppercase tracking-wide">SUB-TOTAL COSTOS DIRECTOS</td>
+                            <td class="border border-zinc-400 p-2 text-right px-2 font-black">$ {{ budget.subtotal | number:'1.2-2' }}</td>
+                            <td class="border border-zinc-400 p-2 bg-white"></td>
+                        </tr>
+
+                        <!-- Overhead / Gastos Generales -->
+                        <tr class="font-medium text-presuOscuro border border-zinc-400 text-sm bg-white hover:bg-zinc-50 transition">
+                            <td colspan="4" class="border border-zinc-400 p-1 text-right pr-4 tracking-wide">Gastos Generales e Indirectos</td>
+                            <td class="border border-zinc-400 p-1 text-center w-24">
+                                <div class="flex items-center justify-center">
+                                    <input type="number" [(ngModel)]="budget.overhead_rate" (change)="projectService.updateTotal()" class="w-12 text-center border-b border-dashed border-zinc-400 bg-transparent focus:outline-none focus:border-presuOxido">%
+                                </div>
+                            </td>
+                            <td class="border border-zinc-400 p-1 text-right px-2 text-zinc-600">$ {{ budget.overhead_total | number:'1.2-2' }}</td>
+                            <td class="border border-zinc-400 p-1 bg-white"></td>
+                        </tr>
+
+                        <!-- Contingency / Imprevistos -->
+                        <tr class="font-medium text-presuOscuro border border-zinc-400 text-sm bg-white hover:bg-zinc-50 transition">
+                            <td colspan="4" class="border border-zinc-400 p-1 text-right pr-4 tracking-wide">Imprevistos</td>
+                            <td class="border border-zinc-400 p-1 text-center w-24">
+                                <div class="flex items-center justify-center">
+                                    <input type="number" [(ngModel)]="budget.contingency_rate" (change)="projectService.updateTotal()" class="w-12 text-center border-b border-dashed border-zinc-400 bg-transparent focus:outline-none focus:border-presuOxido">%
+                                </div>
+                            </td>
+                            <td class="border border-zinc-400 p-1 text-right px-2 text-zinc-600">$ {{ budget.contingency_total | number:'1.2-2' }}</td>
+                            <td class="border border-zinc-400 p-1 bg-white"></td>
+                        </tr>
+
+                        <!-- Profit / Beneficios -->
+                        <tr class="font-medium text-presuOscuro border border-zinc-400 text-sm bg-white hover:bg-zinc-50 transition">
+                            <td colspan="4" class="border border-zinc-400 p-1 text-right pr-4 tracking-wide">Beneficios / Utilidad</td>
+                            <td class="border border-zinc-400 p-1 text-center w-24">
+                                <div class="flex items-center justify-center">
+                                    <input type="number" [(ngModel)]="budget.profit_rate" (change)="projectService.updateTotal()" class="w-12 text-center border-b border-dashed border-zinc-400 bg-transparent focus:outline-none focus:border-presuOxido">%
+                                </div>
+                            </td>
+                            <td class="border border-zinc-400 p-1 text-right px-2 text-zinc-600">$ {{ budget.profit_total | number:'1.2-2' }}</td>
+                            <td class="border border-zinc-400 p-1 bg-white"></td>
+                        </tr>
+
+                        <!-- ITBIS -->
+                        <tr class="font-medium text-presuOscuro border border-zinc-400 text-sm bg-white hover:bg-zinc-50 transition">
+                            <td colspan="4" class="border border-zinc-400 p-1 text-right pr-4 tracking-wide">ITBIS (Impuestos)</td>
+                            <td class="border border-zinc-400 p-1 text-center w-24">
+                                <div class="flex items-center justify-center">
+                                    <input type="number" [(ngModel)]="budget.itbis_rate" (change)="projectService.updateTotal()" class="w-12 text-center border-b border-dashed border-zinc-400 bg-transparent focus:outline-none focus:border-presuOxido">%
+                                </div>
+                            </td>
+                            <td class="border border-zinc-400 p-1 text-right px-2 text-zinc-600">$ {{ budget.itbis_total | number:'1.2-2' }}</td>
+                            <td class="border border-zinc-400 p-1 bg-white"></td>
+                        </tr>
+                        
+                        <!-- Total Final -->
+                        <tr class="font-black text-white border border-zinc-400 text-sm" [style.backgroundColor]="configService.colorFilaSubConsolidado()">
+                            <td colspan="5" class="border border-zinc-400 p-2 text-right pr-4 uppercase tracking-wide">GRAN TOTAL GENERAL</td>
+                            <td class="border border-zinc-400 p-2 text-right px-2 font-black text-amber-300">$ {{ budget.grand_total | number:'1.2-2' }}</td>
+                            <td class="border border-zinc-400 p-2 bg-white text-zinc-400 font-normal text-center relative text-[10px]">
+                                <button (click)="projectService.updateTotal()" class="bg-presuOxido hover:bg-amber-800 text-white w-full h-full p-1 rounded shadow cursor-pointer m-auto uppercase">Recalcular</button>
+                            </td>
+                        </tr>
+                    </ng-container>
+                </tbody>
+            </table>
+        </div>
+    </section>

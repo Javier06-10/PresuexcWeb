@@ -1,0 +1,103 @@
+<div
+  id="modalNuevoProy"
+  class="fixed inset-0 bg-presuOscuro/70 backdrop-blur-xs flex items-center justify-center z-50 transition-all duration-300"
+  [class.opacity-0]="!uiState.isNewProjectModalOpen()"
+  [class.pointer-events-none]="!uiState.isNewProjectModalOpen()"
+>
+  <div
+    class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 mx-4 transform transition-all duration-300 border-t-4 border-presuOxido"
+    [class.scale-95]="!uiState.isNewProjectModalOpen()"
+  >
+    <div class="flex items-center justify-between border-b border-zinc-200 pb-3 mb-4">
+      <div class="flex items-center gap-2">
+        <i class="ph ph-folder-plus text-xl text-presuOxido"></i>
+        <div class="text-base font-bold text-presuOscuro uppercase tracking-wide">
+          Nuevo Presupuesto
+        </div>
+      </div>
+      <button (click)="closeModal()" class="text-zinc-400 text-xl hover:text-red-500 transition">
+        <i class="ph ph-x font-bold"></i>
+      </button>
+    </div>
+
+    <div class="space-y-4">
+      <div class="flex flex-col">
+        <label class="text-xs font-bold text-presuOscuro mb-1 uppercase tracking-wide"
+          >Número de Cotización</label
+        >
+        <input
+          type="text"
+          [(ngModel)]="nCotizacion"
+          placeholder="Ej. 002"
+          class="bg-presuFondo border border-zinc-300 rounded-lg p-2.5 text-xs font-semibold focus:outline-none focus:border-presuOxido shadow-inner"
+        />
+      </div>
+      <div class="flex flex-col">
+        <div class="flex items-center justify-between mb-1">
+          <label class="text-xs font-bold text-presuOscuro uppercase tracking-wide">Cliente</label>
+          <button
+            (click)="openNewClientModal()"
+            class="text-presuOxido hover:text-amber-800 text-[10px] font-bold uppercase flex items-center gap-1 transition"
+          >
+            <i class="ph ph-plus-circle text-sm"></i> Añadir Cliente
+          </button>
+        </div>
+        <select
+          [(ngModel)]="client_id"
+          class="bg-presuFondo border border-zinc-300 rounded-lg p-2.5 text-xs font-semibold focus:outline-none focus:border-presuOxido shadow-inner"
+        >
+          <option value="">-- Sin Cliente Asignado --</option>
+          <option *ngFor="let c of clientService.clients()" [value]="c.id">{{ c.name }}</option>
+        </select>
+      </div>
+      <div class="flex flex-col">
+        <label class="text-xs font-bold text-presuOscuro mb-1 uppercase tracking-wide"
+          >Nombre del Proyecto</label
+        >
+        <input
+          type="text"
+          [(ngModel)]="proyecto"
+          placeholder="Ej. Vivienda AG"
+          class="bg-presuFondo border border-zinc-300 rounded-lg p-2.5 text-xs font-semibold focus:outline-none focus:border-presuOxido shadow-inner"
+        />
+      </div>
+      <div class="flex flex-col">
+        <label class="text-xs font-bold text-presuOscuro mb-1 uppercase tracking-wide"
+          >Vencimiento de Cotización (En días)</label
+        >
+        <input
+          type="number"
+          [(ngModel)]="vencimiento"
+          placeholder="Ej. 20"
+          class="bg-presuFondo border border-zinc-300 rounded-lg p-2.5 text-xs font-semibold focus:outline-none focus:border-presuOxido shadow-inner"
+        />
+      </div>
+      <div class="flex flex-col">
+        <label class="text-xs font-bold text-presuOscuro mb-1 uppercase tracking-wide"
+          >Profesional encargado</label
+        >
+        <input
+          type="text"
+          [(ngModel)]="profesional"
+          placeholder="Ej. Ing. Joel Javier"
+          class="bg-presuFondo border border-zinc-300 rounded-lg p-2.5 text-xs font-semibold focus:outline-none focus:border-presuOxido shadow-inner"
+        />
+      </div>
+    </div>
+
+    <div class="mt-6 pt-3 border-t border-zinc-200 flex justify-end gap-2">
+      <button
+        (click)="closeModal()"
+        class="bg-zinc-200 hover:bg-zinc-300 px-4 py-2 rounded-lg text-xs font-bold uppercase text-presuOscuro transition"
+      >
+        Cancelar
+      </button>
+      <button
+        (click)="save()"
+        class="bg-presuOxido text-white px-4 py-2 rounded-lg text-xs font-bold uppercase shadow-md hover:bg-amber-800 transition"
+      >
+        Confirmar
+      </button>
+    </div>
+  </div>
+</div>

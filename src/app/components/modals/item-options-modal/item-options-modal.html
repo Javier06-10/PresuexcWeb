@@ -1,0 +1,46 @@
+<div *ngIf="uiState.isItemOptionsModalOpen()" class="fixed inset-0 bg-presuOscuro/70 backdrop-blur-xs flex items-center justify-center z-[60] transition-all duration-300">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 mx-4 text-center transform transition-all duration-300 border-t-4 border-presuOxido">
+        
+        <div class="mb-6">
+            <h2 class="text-lg font-black text-presuOscuro tracking-tight">Opciones de Partida</h2>
+            <p class="text-xs text-zinc-500 mt-1">Seleccione cómo desea ingresar este insumo</p>
+        </div>
+        
+        <div class="flex flex-col gap-3" *ngIf="!isCreatingApuMode">
+            <button (click)="openCatalog()" class="w-full border border-zinc-300 text-zinc-600 font-bold text-sm py-3 rounded-lg hover:bg-zinc-50 hover:border-presuOxido transition shadow-sm">
+                Elegir de Base de Datos
+            </button>
+            <button (click)="openApuEditor()" class="w-full bg-presuOxido text-white font-bold text-sm py-3 rounded-lg hover:bg-amber-800 transition shadow-md">
+                Crear APU Nuevo
+            </button>
+        </div>
+
+        <div class="flex flex-col gap-3" *ngIf="isCreatingApuMode">
+            <div class="text-left">
+                <label class="text-xs font-bold text-zinc-500 uppercase">Nombre del APU</label>
+                <input type="text" [(ngModel)]="newApuName" placeholder="Ej: Muro de Bloques de 6" class="w-full bg-white border border-zinc-300 rounded px-3 py-2 text-sm mt-1 focus:border-presuOxido focus:ring-1 focus:ring-presuOxido outline-none font-bold text-presuOscuro">
+            </div>
+            <div class="text-left">
+                <label class="text-xs font-bold text-zinc-500 uppercase">Unidad de Medida</label>
+                <div class="relative mt-1">
+                    <select [(ngModel)]="newApuUnit" class="w-full bg-white border border-zinc-300 rounded px-3 py-2 text-sm focus:border-presuOxido focus:ring-1 focus:ring-presuOxido outline-none font-bold text-presuOscuro uppercase appearance-none cursor-pointer">
+                        <option *ngFor="let unit of availableUnits()" [value]="unit">{{ unit }}</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-zinc-500">
+                        <i class="ph ph-caret-down"></i>
+                    </div>
+                </div>
+            </div>
+            <button (click)="confirmCreateApu()" [disabled]="!newApuName.trim()" class="w-full bg-presuOxido text-white font-bold text-sm py-3 mt-2 rounded-lg hover:bg-amber-800 transition shadow-md flex justify-center items-center gap-2 disabled:opacity-50">
+                <i class="ph ph-check font-bold"></i> Crear y Editar APU
+            </button>
+        </div>
+        
+        <div class="mt-6 pt-4 border-t border-zinc-200">
+            <button (click)="closeModal()" class="text-red-500 font-bold text-xs hover:text-red-700 transition">
+                Cancelar
+            </button>
+        </div>
+        
+    </div>
+</div>

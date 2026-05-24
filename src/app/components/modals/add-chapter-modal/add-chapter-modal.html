@@ -1,0 +1,76 @@
+<div *ngIf="uiState.isAddChapterModalOpen()" class="fixed inset-0 bg-presuOscuro/70 backdrop-blur-xs flex items-center justify-center z-[60] transition-all duration-300">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl p-6 mx-4 transform transition-all duration-300 border-t-4 border-presuOxido max-h-[90vh] overflow-y-auto">
+        
+        <div class="mb-4 flex items-center gap-3">
+            <button (click)="closeModal()" class="text-zinc-400 hover:text-presuOxido transition">
+                <i class="ph ph-x text-xl"></i>
+            </button>
+            <div>
+                <h2 class="text-base font-bold text-presuOscuro uppercase tracking-wide">Añadir Renglones</h2>
+                <p class="text-xs text-zinc-500 mt-1">Seleccione las categorías a incluir en el nivel: 
+                    <span class="font-bold text-presuOscuro">{{ uiState.activeLevelForChapterAdd()?.name }}</span>
+                </p>
+            </div>
+        </div>
+
+        <div class="my-6">
+            <div class="border border-zinc-200 rounded-lg overflow-hidden">
+                <div class="bg-zinc-100 px-4 py-2 font-bold text-presuOscuro border-b border-zinc-200 text-sm flex justify-between items-center">
+                    <span>Opciones Disponibles</span>
+                    <div class="flex items-center gap-4">
+                        <button (click)="toggleSelectAll()" class="text-[10px] text-blue-600 hover:text-blue-800 font-bold uppercase transition flex items-center gap-1.5">
+                            <i class="ph" [class.ph-check-square-offset]="!areAllSelected()" [class.ph-squares-four]="areAllSelected()"></i> 
+                            {{ areAllSelected() ? 'Deseleccionar todos' : 'Seleccionar todos' }}
+                        </button>
+                        <span class="text-[10px] text-zinc-500 font-normal">{{ selectedChapters.length }} seleccionados</span>
+                    </div>
+                </div>
+                
+                <div class="p-4">
+                    <!-- Standard Chapters -->
+                    <div class="flex flex-wrap gap-2">
+                        <button *ngFor="let cap of defaultChapters" 
+                                (click)="toggleChapter(cap)"
+                                class="px-3 py-1.5 rounded-full text-[11px] font-semibold transition border select-none"
+                                [ngClass]="selectedChapters.includes(cap) ? 'bg-presuOxido text-white border-presuOxido shadow-sm' : 'bg-white text-zinc-500 border-zinc-300 hover:border-presuOxido hover:text-presuOxido'">
+                            <i class="ph" [class.ph-check]="selectedChapters.includes(cap)" [class.ph-plus]="!selectedChapters.includes(cap)"></i> 
+                            {{ cap }}
+                        </button>
+                        
+                        <!-- Custom Chapters selected -->
+                        <ng-container *ngFor="let cap of selectedChapters">
+                            <button *ngIf="!defaultChapters.includes(cap)"
+                                    (click)="toggleChapter(cap)"
+                                    class="px-3 py-1.5 rounded-full text-[11px] font-semibold transition border select-none bg-presuOscuro text-white border-presuOscuro shadow-sm">
+                                <i class="ph ph-check"></i> {{ cap }}
+                            </button>
+                        </ng-container>
+                    </div>
+                    
+                    <!-- Add custom chapter input -->
+                    <div class="mt-4 pt-3 border-t border-zinc-100 flex gap-2 items-center max-w-xs">
+                        <input type="text" [(ngModel)]="newCustomChapter" placeholder="Añadir renglón personalizado..." (keyup.enter)="addCustomChapter()"
+                               class="flex-1 bg-presuFondo border border-zinc-300 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-presuOxido uppercase">
+                        <button (click)="addCustomChapter()" [disabled]="!newCustomChapter.trim()"
+                                class="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white w-7 h-7 rounded flex items-center justify-center transition shadow">
+                            <i class="ph ph-plus font-bold"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-zinc-200 flex justify-end gap-2">
+            <button (click)="closeModal()" class="text-zinc-500 hover:text-zinc-700 px-4 py-2 text-xs font-bold transition">
+                Cancelar
+            </button>
+            <button (click)="insertChapters()" [disabled]="selectedChapters.length === 0 || projectService.isSaving()" 
+                    class="bg-green-600 text-white px-5 py-2 rounded-lg text-xs font-bold uppercase shadow-md hover:bg-green-700 transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                <i *ngIf="projectService.isSaving()" class="ph ph-spinner animate-spin"></i>
+                <i *ngIf="!projectService.isSaving()" class="ph ph-plus-circle"></i>
+                Añadir al Presupuesto
+            </button>
+        </div>
+        
+    </div>
+</div>

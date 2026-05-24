@@ -1,0 +1,119 @@
+<div id="modalMedidas" class="fixed inset-0 bg-presuOscuro/70 backdrop-blur-xs flex items-center justify-center z-50 transition-all duration-300" [class.opacity-0]="!uiState.isMeasuresModalOpen()" [class.pointer-events-none]="!uiState.isMeasuresModalOpen()">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-xl p-6 mx-4 transform transition-all duration-300 border-t-4 border-presuOxido" [class.scale-95]="!uiState.isMeasuresModalOpen()">
+            <div class="flex items-center justify-between border-b border-zinc-200 pb-3 mb-5">
+                <div class="flex items-center gap-2">
+                    <i class="ph ph-sliders text-xl text-presuOxido"></i>
+                    <h3 class="text-base font-bold text-presuOscuro uppercase tracking-wide">Configuración</h3>
+                </div>
+                <button (click)="backToConfig()" class="text-zinc-400 hover:text-presuOscuro flex items-center gap-1 text-xs font-bold uppercase transition">
+                    <i class="ph ph-arrow-left font-bold"></i> Volver
+                </button>
+            </div>
+
+            <div class="space-y-4 max-h-[460px] overflow-y-auto pr-1">
+                <div class="bg-zinc-50 border border-zinc-300 rounded-xl p-4 space-y-2 shadow-sm">
+                    <label class="text-xs font-black text-presuOscuro uppercase tracking-wide">Estructura y Obra Bruta</label>
+                    <select id="selector-estructura-medida" onchange="actualizarUnidadSolapeLabel()" class="w-full bg-white border-2 border-zinc-300 rounded-lg p-3 text-xs font-bold text-presuOscuro focus:outline-none cursor-pointer">
+                        <option value="metrico_mixto">Sistema Métrico Mixto (m, m², m³ / cm)</option>
+                        <option value="metrico_absoluto">Sistema Métrico Absoluto (m, m², m³)</option>
+                        <option value="imperial_mixto">Sistema Anglo-Sajón Mixto (ft / in)</option>
+                        <option value="imperial_absoluto">Sistema Anglo-Sajón Absoluto (ft, ft², ft³)</option>
+                    </select>
+                </div>
+
+                <div class="bg-zinc-50 border border-zinc-300 rounded-xl p-4 space-y-2 shadow-sm">
+                    <label class="text-xs font-black text-presuOscuro uppercase tracking-wide">Movimiento de Tierras</label>
+                    <select class="w-full bg-white border-2 border-zinc-300 rounded-lg p-3 text-xs font-bold text-presuOscuro focus:outline-none cursor-pointer">
+                        <option value="tierras_metros">METROS (m³)</option>
+                        <option value="tierras_pies">PIES (ft³)</option>
+                    </select>
+                </div>
+
+                <div class="bg-zinc-50 border border-zinc-300 rounded-xl p-4 space-y-2 shadow-sm">
+                    <label class="text-xs font-black text-presuOscuro uppercase tracking-wide">Barras de Acero</label>
+                    <select class="w-full bg-white border-2 border-zinc-300 rounded-lg p-3 text-xs font-bold text-presuOscuro focus:outline-none cursor-pointer">
+                        <option value="barras_und">BARRAS (und)</option>
+                        <option value="quintal">QUINTAL (qq)</option>
+                        <option value="atado">ATADO (atd)</option>
+                        <option value="kilogramo">KILOGRAMO (kg)</option>
+                        <option value="tonelada">TONELADA (Tn)</option>
+                    </select>
+                </div>
+
+                <div class="bg-zinc-50 border border-zinc-300 rounded-xl p-4 space-y-2 shadow-sm">
+                    <label class="text-xs font-black text-presuOscuro uppercase tracking-wide">Alambre Picado</label>
+                    <select class="w-full bg-white border-2 border-zinc-300 rounded-lg p-3 text-xs font-bold text-presuOscuro focus:outline-none cursor-pointer">
+                        <option value="alambre_lb">LIBRAS (lb)</option>
+                        <option value="alambre_kg">KILOGRAMOS (kg)</option>
+                    </select>
+                </div>
+
+                <div class="bg-zinc-50 border border-zinc-300 rounded-xl p-4 space-y-2 shadow-sm">
+                    <label class="text-xs font-black text-presuOscuro uppercase tracking-wide">Agua de Mezclado / Curado</label>
+                    <select class="w-full bg-white border-2 border-zinc-300 rounded-lg p-3 text-xs font-bold text-presuOscuro focus:outline-none cursor-pointer">
+                        <option value="agua_litro">LITROS (L)</option>
+                        <option value="agua_galon">GALONES (Gl)</option>
+                    </select>
+                </div>
+
+                <div class="bg-zinc-50 border border-zinc-300 rounded-xl p-4 space-y-2 shadow-sm">
+                    <label class="text-xs font-black text-presuOscuro uppercase tracking-wide">Instalaciones Eléctricas (Materiales)</label>
+                    <select class="w-full bg-white border-2 border-zinc-300 rounded-lg p-3 text-xs font-bold text-presuOscuro focus:outline-none cursor-pointer">
+                        <option value="elec_mat_metros">METROS (m)</option>
+                        <option value="elec_mat_pies">PIES (ft)</option>
+                    </select>
+                </div>
+
+                <div class="bg-zinc-50 border border-zinc-300 rounded-xl p-4 space-y-2 shadow-sm">
+                    <label class="text-xs font-black text-presuOscuro uppercase tracking-wide">Instalaciones Sanitarias (Materiales)</label>
+                    <select class="w-full bg-white border-2 border-zinc-300 rounded-lg p-3 text-xs font-bold text-presuOscuro focus:outline-none cursor-pointer">
+                        <option value="san_mat_metros">METROS (m)</option>
+                        <option value="san_mat_pies">PIES (ft)</option>
+                    </select>
+                </div>
+
+                <div class="bg-zinc-50 border border-zinc-300 rounded-xl p-4 space-y-2 shadow-sm">
+                    <label class="text-xs font-black text-presuOscuro uppercase tracking-wide">Instalaciones Sanitarias (Mano de Obra)</label>
+                    <select class="w-full bg-white border-2 border-zinc-300 rounded-lg p-3 text-xs font-bold text-presuOscuro focus:outline-none cursor-pointer">
+                        <option value="san_mo_metros">METROS (m)</option>
+                        <option value="san_mo_pies">PIES (ft)</option>
+                    </select>
+                </div>
+
+                <div class="bg-zinc-50 border border-zinc-300 rounded-xl p-4 space-y-2 shadow-sm">
+                    <label class="text-xs font-black text-presuOscuro uppercase tracking-wide">Gabinetes</label>
+                    <select class="w-full bg-white border-2 border-zinc-300 rounded-lg p-3 text-xs font-bold text-presuOscuro focus:outline-none cursor-pointer">
+                        <option value="gab_metros">METROS (m)</option>
+                        <option value="gab_pies">PIES (ft)</option>
+                    </select>
+                </div>
+
+                <div class="bg-zinc-50 border border-zinc-300 rounded-xl p-4 space-y-2 shadow-sm">
+                    <label class="text-xs font-black text-presuOscuro uppercase tracking-wide">Ventanas</label>
+                    <select class="w-full bg-white border-2 border-zinc-300 rounded-lg p-3 text-xs font-bold text-presuOscuro focus:outline-none cursor-pointer">
+                        <option value="ven_metros">METROS (m)</option>
+                        <option value="ven_pies">PIES (ft)</option>
+                    </select>
+                </div>
+
+                <div class="bg-zinc-50 border border-zinc-300 rounded-xl p-4 space-y-2 shadow-sm">
+                    <label class="text-xs font-black text-presuOscuro uppercase tracking-wide">Barandas</label>
+                    <select class="w-full bg-white border-2 border-zinc-300 rounded-lg p-3 text-xs font-bold text-presuOscuro focus:outline-none cursor-pointer">
+                        <option value="bar_metros">METROS (m)</option>
+                        <option value="bar_pies">PIES (ft)</option>
+                    </select>
+                </div>
+
+                <div class="bg-zinc-50 border border-zinc-300 rounded-xl p-4 space-y-2 shadow-sm">
+                    <label class="text-xs font-black text-presuOscuro uppercase tracking-wide">Herrería</label>
+                    <select class="w-full bg-white border-2 border-zinc-300 rounded-lg p-3 text-xs font-bold text-presuOscuro focus:outline-none cursor-pointer">
+                        <option value="her_metros">METROS (m)</option>
+                        <option value="her_pies">PIES (ft)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-zinc-200 flex justify-end">
+                <button (click)="backToConfig()" class="bg-presuOxido text-white font-bold px-6 py-2 rounded-lg text-xs uppercase shadow">Confirmar</button>
+            </div>
+        </div>
+    </div>

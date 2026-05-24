@@ -1,0 +1,16 @@
+<div id="modalNuevaBarra" class="fixed inset-0 bg-presuOscuro/80 backdrop-blur-xs flex items-center justify-center z-50 transition-all duration-300" [class.opacity-0]="!uiState.isNewBarModalOpen()" [class.pointer-events-none]="!uiState.isNewBarModalOpen()">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm p-5 mx-4 transform transition-all duration-300 border-t-4 border-presuOxido" [class.scale-95]="!uiState.isNewBarModalOpen()">
+            <div class="flex items-center justify-between border-b border-zinc-200 pb-2 mb-4">
+                <h4 class="text-xs font-black text-presuOscuro uppercase tracking-wide">Nueva Barra</h4>
+                <button (click)="close()" class="text-zinc-400 text-lg hover:text-red-500 transition"><i class="ph ph-x font-bold"></i></button>
+            </div>
+            <div class="space-y-4">
+                <div class="flex flex-col"><label class="text-[10px] font-bold text-presuOscuro mb-1 uppercase tracking-wide">Nombre de la Barra</label><input type="text" [(ngModel)]="nombreBarra" placeholder="Ej: #14 o 45 mm" class="bg-presuFondo border border-zinc-300 rounded-lg p-2.5 text-xs font-semibold focus:outline-none focus:border-presuOxido shadow-inner"></div>
+                <div class="flex flex-col"><label class="text-[10px] font-bold text-presuOscuro mb-1 uppercase tracking-wide">Colocar el Peso ({{ configService.unidadPesoActual() === 'kg_m' ? 'kg/m' : 'lb/ft' }})</label><input type="number" [(ngModel)]="pesoBarra" placeholder="Ej. 12.51" step="0.01" class="bg-presuFondo border border-zinc-300 rounded-lg p-2.5 text-xs font-semibold focus:outline-none focus:border-presuOxido shadow-inner"></div>
+            </div>            
+            <div class="mt-6 pt-3 border-t border-zinc-200 flex justify-end gap-2">
+                <button (click)="close()" class="bg-zinc-200 px-4 py-2 rounded-lg text-xs font-bold uppercase text-presuOscuro hover:bg-zinc-300 transition">Cancelar</button>
+                <button (click)="confirm()" class="bg-presuOxido text-white px-4 py-2 rounded-lg text-xs font-bold uppercase shadow-md hover:bg-amber-800 transition">Confirmar</button>
+            </div>
+        </div>
+    </div>

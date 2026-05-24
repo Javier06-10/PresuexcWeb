@@ -1,0 +1,192 @@
+<div
+  *ngIf="uiState.isConcreteModalOpen()"
+  class="fixed inset-0 bg-presuOscuro/70 backdrop-blur-xs flex items-center justify-center z-50 transition-all duration-300"
+>
+  <div
+    class="bg-white rounded-xl shadow-2xl w-full max-w-3xl p-6 mx-4 border-t-4 border-presuOxido"
+  >
+    <div class="flex items-center justify-between border-b border-zinc-200 pb-3 mb-5">
+      <div class="flex items-center gap-3">
+        <button (click)="backToConfig()" class="text-zinc-400 hover:text-presuOxido transition">
+          <i class="ph ph-arrow-left text-xl"></i>
+        </button>
+        <div class="bg-orange-50 p-2 rounded-lg text-presuOxido">
+          <i class="ph ph-wall text-2xl"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-presuOscuro uppercase tracking-wide leading-tight">
+            Configuración de Hormigón
+          </h3>
+          <p class="text-[11px] text-zinc-500 font-bold uppercase tracking-wide">
+            Métodos de cálculo
+          </p>
+        </div>
+      </div>
+      <button
+        (click)="closeModal()"
+        class="text-zinc-400 hover:text-presuOscuro text-xl transition bg-zinc-100 hover:bg-zinc-200 p-1.5 rounded-lg"
+      >
+        <i class="ph ph-x font-bold"></i>
+      </button>
+    </div>
+
+    <div class="mb-6">
+      <h4
+        class="text-xs font-bold text-presuOscuro uppercase tracking-wide mb-3 border-b border-zinc-200 pb-2"
+      >
+        Método de Cálculo para Hormigón In Situ
+      </h4>
+      <div class="space-y-3">
+        <!-- Fuller -->
+        <div
+          class="flex items-center justify-between p-3 border rounded-lg transition"
+          [ngClass]="
+            configService.metodoCalculoHormigon() === 'fuller'
+              ? 'border-presuOxido bg-orange-50'
+              : 'border-zinc-300 hover:border-zinc-400 hover:bg-zinc-50'
+          "
+        >
+          <label class="flex items-start gap-3 cursor-pointer flex-1">
+            <input
+              type="radio"
+              name="concreteMethod"
+              [checked]="configService.metodoCalculoHormigon() === 'fuller'"
+              (change)="setMethod('fuller')"
+              class="mt-0.5 w-4 h-4 text-presuOxido focus:ring-presuOxido accent-presuOxido"
+            />
+            <div class="flex flex-col">
+              <span class="text-sm font-bold text-presuOscuro"
+                >Método de Proporciones (Fuller)</span
+              >
+              <span class="text-[11px] text-zinc-500 leading-tight"
+                >Cálculo basado en la curva granulométrica ideal. Recomendado para mezclas
+                tradicionales.</span
+              >
+            </div>
+          </label>
+          <button
+            *ngIf="configService.metodoCalculoHormigon() === 'fuller'"
+            (click)="openFullerModal()"
+            class="text-zinc-400 hover:text-presuOxido transition text-sm flex items-center gap-1 font-bold"
+          >
+            Editar
+            <i class="ph ph-edit"></i>
+          </button>
+        </div>
+
+        <!-- Empirico -->
+        <div class="flex items-center justify-between p-3 border rounded-lg transition" [ngClass]="configService.metodoCalculoHormigon() === 'empirico' ? 'border-presuOxido bg-orange-50' : 'border-zinc-300 hover:border-zinc-400 hover:bg-zinc-50'">
+            <label class="flex items-start gap-3 cursor-pointer flex-1">
+                <input type="radio" name="concreteMethod" [checked]="configService.metodoCalculoHormigon() === 'empirico'" (change)="setMethod('empirico')" class="mt-0.5 w-4 h-4 text-presuOxido focus:ring-presuOxido accent-presuOxido">
+                <div class="flex flex-col">
+                    <span class="text-sm font-bold text-presuOscuro">Método Empírico</span>
+                    <span class="text-[11px] text-zinc-500 leading-tight">Basado en experiencias previas del constructor</span>
+                </div>
+            </label>
+            <button *ngIf="configService.metodoCalculoHormigon() === 'empirico'" (click)="openEmpiricoModal()" class="text-zinc-400 hover:text-presuOxido transition text-sm flex items-center gap-1 font-bold">
+                Editar
+                <i class="ph ph-edit"></i>
+            </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-6 border-t border-zinc-200 pt-5">
+      <div class="flex items-center justify-between mb-3 border-b border-zinc-200 pb-2">
+        <h4 class="text-xs font-bold text-presuOscuro uppercase tracking-wide">
+          Hormigón Suministrado por Camión Mezclador
+        </h4>
+        <span class="text-[10px] text-zinc-500 font-bold uppercase"
+          >{{ configService.hormigonesSuministrados().length }} configurados</span
+        >
+      </div>
+
+      <div class="grid grid-cols-12 gap-3 mb-4">
+        <div class="col-span-4 flex flex-col">
+          <label class="text-[10px] font-bold text-zinc-500 uppercase mb-1"
+            >Resistencia (kg/cm²)</label
+          >
+          <input
+            type="number"
+            [(ngModel)]="newReadyMixResistencia"
+            placeholder="Ej. 210"
+            class="bg-presuFondo border border-zinc-300 rounded-lg p-2 text-xs font-semibold focus:outline-none focus:border-presuOxido"
+          />
+        </div>
+        <div class="col-span-5 flex flex-col">
+          <label class="text-[10px] font-bold text-zinc-500 uppercase mb-1"
+            >Precio por m³ ({{ configService.monedaGlobal() }})</label
+          >
+          <input
+            type="number"
+            [(ngModel)]="newReadyMixPrecio"
+            placeholder="Ej. 7200"
+            class="bg-presuFondo border border-zinc-300 rounded-lg p-2 text-xs font-semibold focus:outline-none focus:border-presuOxido"
+          />
+        </div>
+        <div class="col-span-3 flex items-end">
+          <button
+            (click)="addReadyMix()"
+            [disabled]="!newReadyMixResistencia || !newReadyMixPrecio"
+            class="w-full bg-presuOscuro text-white p-2 rounded-lg text-xs font-bold uppercase transition disabled:opacity-50 hover:bg-zinc-700 flex justify-center items-center gap-1 shadow-sm h-[34px]"
+          >
+            <i class="ph ph-plus font-bold"></i> Añadir
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-presuFondo rounded-xl border border-zinc-200 overflow-hidden">
+        <table class="w-full text-left border-collapse">
+          <thead
+            class="bg-zinc-200/60 text-[10px] uppercase text-zinc-500 border-b border-zinc-200"
+          >
+            <tr>
+              <th class="p-3 font-black">Resistencia (f'c)</th>
+              <th class="p-3 font-black">Precio m³</th>
+              <th class="p-3 font-black text-center w-16">Acción</th>
+            </tr>
+          </thead>
+          <tbody class="text-xs">
+            <tr
+              *ngFor="let item of configService.hormigonesSuministrados(); let i = index"
+              class="border-b border-zinc-100 last:border-0 hover:bg-zinc-50 transition"
+            >
+              <td class="p-3 font-bold text-presuOscuro">{{ item.resistencia }} kg/cm²</td>
+              <td class="p-3 font-semibold text-zinc-700">
+                {{ configService.monedaGlobal() }} {{ item.precio | number: '1.2-2' }}
+              </td>
+              <td class="p-3 text-center">
+                <button
+                  (click)="removeReadyMix(i)"
+                  class="text-zinc-400 hover:text-red-500 transition hover:bg-red-50 p-1.5 rounded-lg"
+                >
+                  <i class="ph ph-trash font-bold"></i>
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="configService.hormigonesSuministrados().length === 0">
+              <td colspan="3" class="p-6 text-center text-zinc-400 text-xs italic">
+                No hay tipos de hormigón suministrado configurados.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="mt-6 pt-4 border-t border-zinc-200 flex justify-end gap-3">
+      <button
+        (click)="closeModal()"
+        class="text-zinc-500 hover:text-zinc-800 px-4 py-2 rounded-lg text-xs font-bold uppercase transition bg-zinc-100 hover:bg-zinc-200"
+      >
+        Cancelar
+      </button>
+      <button
+        (click)="confirm()"
+        class="bg-presuOxido text-white px-5 py-2 rounded-lg text-xs font-bold uppercase shadow-md hover:bg-amber-800 transition"
+      >
+        Confirmar
+      </button>
+    </div>
+  </div>
+</div>

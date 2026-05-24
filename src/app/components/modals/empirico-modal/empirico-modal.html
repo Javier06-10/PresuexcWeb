@@ -1,0 +1,101 @@
+<div *ngIf="uiState.isEmpiricoModalOpen()" class="fixed inset-0 bg-presuOscuro/70 backdrop-blur-xs flex items-center justify-center z-[60] transition-all duration-300">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl p-6 mx-4 border-t-4 border-presuOxido">
+        <div class="flex items-center justify-between border-b border-zinc-200 pb-3 mb-5">
+            <div class="flex items-center gap-3">
+                <div class="bg-orange-50 p-2 rounded-lg text-presuOxido">
+                    <i class="ph ph-hand text-2xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-presuOscuro uppercase tracking-wide leading-tight">MÉTODO EMPÍRICO</h3>
+                    <p class="text-[11px] text-zinc-500 font-bold uppercase tracking-wide">{{ configService.empiricoDosificaciones().length }} configurados</p>
+                </div>
+            </div>
+            <button (click)="closeModal()" class="text-zinc-400 hover:text-red-500 text-xl transition"><i class="ph ph-x font-bold"></i></button>
+        </div>
+        
+        <div class="bg-zinc-50 p-4 rounded-xl border border-zinc-200 mb-4 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <label class="text-xs font-bold text-presuOscuro uppercase">Nombre / Tipo:</label>
+                    <input type="text" [(ngModel)]="nombre" placeholder="Ej. Hormigón 210" class="bg-white border border-zinc-300 rounded-lg p-2 text-xs font-semibold focus:outline-none focus:border-presuOxido w-40">
+                </div>
+                <div class="flex items-center gap-2">
+                    <label class="text-xs font-bold text-presuOscuro uppercase">Para un metraje:</label>
+                    <input type="number" [(ngModel)]="metraje" class="bg-white border border-zinc-300 rounded-lg p-2 text-xs font-semibold focus:outline-none focus:border-presuOxido w-20 text-center">
+                    <span class="text-xs font-bold text-zinc-500">{{ unidad }}</span>
+                </div>
+            </div>
+            
+            <div>
+                <select [(ngModel)]="unidad" class="bg-white border border-zinc-300 rounded-lg p-2 text-xs font-bold uppercase focus:outline-none focus:border-presuOxido text-zinc-600 cursor-pointer shadow-sm">
+                    <option value="m3">m³</option>
+                    <option value="cubetas">Cubetas</option>
+                    <option value="carretillas">Carretillas</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-12 gap-4 mb-5">
+            <div class="col-span-3 flex flex-col">
+                <label class="text-[10px] font-bold text-zinc-500 uppercase mb-1">Cemento (und)</label>
+                <input type="number" [(ngModel)]="cemento" placeholder="Ej. 1" class="bg-presuFondo border border-zinc-300 rounded-lg p-2.5 text-sm font-semibold focus:outline-none focus:border-presuOxido">
+            </div>
+            <div class="col-span-3 flex flex-col">
+                <label class="text-[10px] font-bold text-zinc-500 uppercase mb-1">Arena ({{ unidad }})</label>
+                <input type="number" [(ngModel)]="arena" placeholder="Ej. 2" class="bg-presuFondo border border-zinc-300 rounded-lg p-2.5 text-sm font-semibold focus:outline-none focus:border-presuOxido">
+            </div>
+            <div class="col-span-3 flex flex-col">
+                <label class="text-[10px] font-bold text-zinc-500 uppercase mb-1">Grava ({{ unidad }})</label>
+                <input type="number" [(ngModel)]="grava" placeholder="Ej. 4" class="bg-presuFondo border border-zinc-300 rounded-lg p-2.5 text-sm font-semibold focus:outline-none focus:border-presuOxido">
+            </div>
+            <div class="col-span-3 flex items-end">
+                <button (click)="addEmpiricoConfig()" [disabled]="!nombre || !metraje || !cemento || !arena || !grava" class="w-full bg-presuOscuro text-white p-2.5 rounded-lg text-xs font-bold uppercase transition disabled:opacity-50 hover:bg-zinc-700 flex justify-center items-center gap-2 shadow-md">
+                    <i class="ph ph-plus font-bold text-sm"></i> Añadir
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-presuFondo rounded-xl border border-zinc-200 overflow-hidden">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-zinc-200/60 text-[10px] uppercase text-zinc-500 border-b border-zinc-200">
+                    <tr>
+                        <th class="p-3 font-black">Nombre / Tipo</th>
+                        <th class="p-3 font-black">Metraje Base</th>
+                        <th class="p-3 font-black">Cemento (und)</th>
+                        <th class="p-3 font-black">Arena</th>
+                        <th class="p-3 font-black">Grava</th>
+                        <th class="p-3 font-black text-center w-16">Acción</th>
+                    </tr>
+                </thead>
+                <tbody class="text-xs">
+                    <tr *ngFor="let item of configService.empiricoDosificaciones(); let i = index" class="border-b border-zinc-100 last:border-0 hover:bg-zinc-50 transition">
+                        <td class="p-3 font-bold text-presuOscuro">{{ item.nombre }}</td>
+                        <td class="p-3 font-semibold text-zinc-600">{{ item.metraje }} {{ item.unidad }}</td>
+                        <td class="p-3 font-semibold text-zinc-600">{{ item.cemento }}</td>
+                        <td class="p-3 font-semibold text-zinc-600">{{ item.arena }} {{ item.unidad }}</td>
+                        <td class="p-3 font-semibold text-zinc-600">{{ item.grava }} {{ item.unidad }}</td>
+                        <td class="p-3 text-center">
+                            <button (click)="removeEmpiricoConfig(i)" class="text-zinc-400 hover:text-red-500 transition hover:bg-red-50 p-1.5 rounded-lg">
+                                <i class="ph ph-trash font-bold"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr *ngIf="configService.empiricoDosificaciones().length === 0">
+                        <td colspan="6" class="p-8 text-center text-zinc-400 text-xs italic">
+                            No hay configuraciones del método empírico guardadas.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-zinc-200 flex justify-end gap-3">
+            <button (click)="closeModal()" class="bg-zinc-200 hover:bg-zinc-300 px-4 py-2 rounded-lg text-xs font-bold uppercase text-presuOscuro transition">
+                Cancelar
+            </button>
+            <button (click)="save()" class="bg-presuOxido text-white px-5 py-2 rounded-lg text-xs font-bold uppercase shadow-md hover:bg-amber-800 transition">
+                Confirmar
+            </button>
+        </div>
+    </div>
+</div>

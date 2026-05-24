@@ -1,1 +1,42 @@
-/* You can add global styles to this file, and also import other style files */
+/* Eliminado Tailwind Native config, se usa CDN */
+/* Ocultar flechas nativas de inputs numéricos */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+/* Variable CSS Global para inyectar la fuente dinámicamente */
+:root {
+    --fuente-presupuesto: 'Arial', sans-serif;
+}
+
+/* Fuerza la tipografía seleccionada en toda la sección de la hoja de presupuesto de manera absoluta */
+.fuente-dinamica, 
+.fuente-dinamica *, 
+.fuente-dinamica [contenteditable="true"],
+.fuente-dinamica span,
+.fuente-dinamica td,
+.fuente-dinamica th {
+    font-family: var(--fuente-presupuesto) !important;
+}
+
+/* Estilo para mostrar la X de eliminación solo al pasar el cursor (Hover) */
+.fila-acero-hover .btn-eliminar-barra {
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+.fila-acero-hover:hover .btn-eliminar-barra {
+    opacity: 1;
+}
+
+/* Quitamos el padding extra para mantener el diseño súper compacto */
+.btn-flotante {
+    display: none;
+}
+.group:hover .btn-flotante {
+    display: flex;
+}

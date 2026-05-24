@@ -1,0 +1,59 @@
+<header id="header-dinamico" class="bg-presuHeader border-b border-zinc-300 shadow-sm p-4 sticky top-0 z-40" [class.hidden]="uiState.activeView() !== 'projects'">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            
+            <div class="flex items-center gap-3">
+                <img id="img-logo-principal" src="assets/ICONO PresuXcel.png" alt="Logo PresuXcel" class="h-20 w-auto object-contain" onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='block';">
+                <div id="logo-fallback" class="hidden">
+                    <h1 class="text-3xl font-bold text-presuOscuro tracking-wide">PresuXcel</h1>
+                </div>
+            
+            <div class="flex items-center gap-1">
+            <button (click)="uiState.activeView.set('projects')" 
+                    [class.bg-zinc-800]="uiState.activeView() !== 'catalogs'"
+                    [class.text-white]="uiState.activeView() !== 'catalogs'"
+                    [class.bg-transparent]="uiState.activeView() === 'catalogs'"
+                    [class.text-zinc-400]="uiState.activeView() === 'catalogs'"
+                    [class.hover:bg-zinc-800]="uiState.activeView() === 'catalogs'"
+                    class="px-4 py-1.5 rounded-lg font-bold text-sm transition">
+                Mis Presupuestos
+            </button>
+            <button (click)="uiState.activeView.set('catalogs')" 
+                    [class.bg-zinc-800]="uiState.activeView() === 'catalogs'"
+                    [class.text-white]="uiState.activeView() === 'catalogs'"
+                    [class.bg-transparent]="uiState.activeView() !== 'catalogs'"
+                    [class.text-zinc-400]="uiState.activeView() !== 'catalogs'"
+                    [class.hover:bg-zinc-800]="uiState.activeView() !== 'catalogs'"
+                    class="px-4 py-1.5 rounded-lg font-bold text-sm transition flex items-center gap-2">
+                <i class="ph ph-database"></i> Base de Precios
+            </button>
+        </div>
+        </div>
+
+            <div class="flex items-center gap-3">
+                
+                <div class="flex items-center gap-2 bg-white border border-zinc-300 rounded-xl px-3 py-1.5 shadow-inner">
+                    <i class="ph ph-coins text-presuOxido text-lg"></i>
+                    <select [ngModel]="configService.monedaGlobal()" (ngModelChange)="configService.monedaGlobal.set($event)" class="text-xs bg-transparent border-none focus:outline-none font-bold text-presuOscuro cursor-pointer">
+                        <option value="RD$">RD$ - Peso Dominicano</option>
+                        <option value="US$">US$ - Dólar Estadounidense</option>
+                        <option value="€">€ - Euro</option>
+                        <option value="MXN">$MXN - Peso Mexicano</option>
+                        <option value="COP">$COP - Peso Colombiano</option>
+                        <option value="CLP">$CLP - Peso Chileno</option>
+                        <option value="S/.">S/. - Sol Peruano</option>
+                    </select>
+                </div>
+
+                <button (click)="openConfig()" class="flex items-center gap-2 bg-presuOxido hover:bg-amber-800 text-white px-4 py-2 rounded-xl shadow-md transition duration-200 group text-xs font-bold uppercase tracking-wider">
+                    <i class="ph ph-gear text-base group-hover:rotate-45 transition duration-300"></i>
+                    <span>Configuración</span>
+                </button>
+                
+                <button (click)="logout()" class="flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-white px-3 py-2 rounded-xl shadow-md transition duration-200 text-xs font-bold uppercase tracking-wider" title="Cerrar sesión">
+                    <i class="ph ph-sign-out text-base"></i>
+                </button>
+
+            </div>
+
+        </div>
+    </header>

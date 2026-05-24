@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx ng *)",
+      "Bash(New-Item -ItemType Directory -Force -Path \"c:\\\\Users\\\\CELULARES 360\\\\Desktop\\\\PresuXcel-Web\\\\src\\\\app\\\\components\\\\modals\\\\parametric-apu-modal\")",
+      "Bash(mkdir -p \"c:/Users/CELULARES 360/Desktop/PresuXcel-Web/src/app/components/modals/parametric-apu-modal\")",
+      "Bash(mkdir -p \"c:/Users/CELULARES 360/.claude/projects/c--Users-CELULARES-360-Desktop-PresuXcel-Web/memory\")",
+      "Bash(npx tsc *)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\CELULARES 360\\Desktop\\PresuXcel-Web\\src\\app\\components\\modals",
+      "c:\\Users\\CELULARES 360\\.claude\\projects\\c--Users-CELULARES-360-Desktop-PresuXcel-Web\\memory"
+    ]
+  }
+}

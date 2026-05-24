@@ -1,0 +1,150 @@
+<div *ngIf="uiState.isParametricApuModalOpen() && apu" class="fixed inset-0 z-[120] flex items-center justify-center bg-black/70 backdrop-blur-sm">
+  <div class="bg-white rounded-xl shadow-2xl w-full max-w-5xl border border-zinc-200 overflow-hidden flex flex-col max-h-[92vh]">
+
+    <!-- Header -->
+    <div class="bg-presuOscuro text-white p-4 flex items-center justify-between border-b border-white/10">
+      <div>
+        <div class="flex items-center gap-2 mb-1">
+          <i class="ph ph-function text-presuOxido text-xl"></i>
+          <h2 class="text-lg font-black tracking-tight">APU Paramétrico</h2>
+          <span class="bg-purple-600 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full tracking-widest ml-1">PARAM</span>
+        </div>
+        <p class="text-sm text-zinc-300 font-medium">{{ apu.name }}</p>
+      </div>
+      <button (click)="closeModal()" class="text-zinc-400 hover:text-white w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-800 transition">
+        <i class="ph ph-x text-lg"></i>
+      </button>
+    </div>
+
+    <div class="flex flex-1 overflow-hidden">
+
+      <!-- Panel izquierdo: parámetros -->
+      <div class="w-72 flex-shrink-0 bg-zinc-50 border-r border-zinc-200 p-5 overflow-y-auto">
+        <h3 class="text-xs font-black text-zinc-500 uppercase tracking-widest mb-4">Parámetros de cálculo</h3>
+        <div class="space-y-3">
+          <div *ngFor="let param of parameters()" class="flex flex-col gap-1">
+            <label class="text-xs font-bold text-presuOscuro uppercase tracking-wide">
+              {{ param.label }}
+              <span class="text-zinc-400 font-normal lowercase">({{ param.unit }})</span>
+            </label>
+            <input
+              type="number"
+              [value]="getParamValue(param.key, param.default)"
+              (input)="updateParam(param.key, $any($event.target).value)"
+              step="any"
+              class="w-full bg-white border border-zinc-300 rounded-lg px-3 py-2 text-sm font-bold text-presuOscuro focus:outline-none focus:border-presuOxido focus:ring-1 focus:ring-presuOxido transition shadow-sm">
+          </div>
+        </div>
+
+        <!-- Total destaque -->
+        <div class="mt-6 pt-4 border-t border-zinc-300">
+          <div class="bg-presuOscuro text-white rounded-xl p-4 text-center shadow-lg">
+            <div class="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1">Costo Total / {{ apu.unit }}</div>
+            <div class="text-2xl font-black text-amber-300">$ {{ totalApu() | number:'1.2-2' }}</div>
+            <div class="text-[9px] text-zinc-400 mt-1 font-medium uppercase">{{ getUnitLabel() }}</div>
+          </div>
+          <div class="mt-3 space-y-1 text-xs">
+            <div class="flex justify-between text-zinc-500">
+              <span>Materiales</span>
+              <span class="font-bold">$ {{ subtotalMat() | number:'1.2-2' }}</span>
+            </div>
+            <div class="flex justify-between text-zinc-500">
+              <span>Mano de Obra</span>
+              <span class="font-bold">$ {{ subtotalMO() | number:'1.2-2' }}</span>
+            </div>
+            <div class="flex justify-between text-zinc-500">
+              <span>Imprevistos ({{ imprevistosPct() }}%)</span>
+              <span class="font-bold">$ {{ imprevistos() | number:'1.2-2' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel derecho: preview de cálculo -->
+      <div class="flex-1 overflow-y-auto p-5 bg-white">
+
+        <!-- MATERIALES -->
+        <div class="mb-6" *ngIf="materialesRows().length > 0">
+          <h3 class="text-sm font-black text-presuOscuro border-b-2 border-blue-500 pb-2 mb-3 flex items-center justify-between">
+            <span class="flex items-center gap-2"><i class="ph ph-stack text-blue-500"></i> Materiales / Suministros</span>
+            <span class="text-xs font-bold text-zinc-500">$ {{ subtotalMat() | number:'1.2-2' }}</span>
+          </h3>
+          <table class="w-full text-xs">
+            <thead class="bg-zinc-100 text-zinc-600 uppercase font-bold border-b border-zinc-200">
+              <tr>
+                <th class="px-3 py-2 text-left">Descripción</th>
+                <th class="px-3 py-2 w-16 text-center">Und.</th>
+                <th class="px-3 py-2 w-24 text-right">Cantidad</th>
+                <th class="px-3 py-2 w-28 text-right">Precio Ref.</th>
+                <th class="px-3 py-2 w-28 text-right">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of materialesRows()" class="border-b border-zinc-100 hover:bg-blue-50 transition">
+                <td class="px-3 py-1.5 font-medium text-presuOscuro">{{ row.description }}</td>
+                <td class="px-3 py-1.5 text-center text-zinc-500 uppercase">{{ row.unit }}</td>
+                <td class="px-3 py-1.5 text-right font-bold text-presuOscuro">{{ row.qty | number:'1.3-3' }}</td>
+                <td class="px-3 py-1.5 text-right text-zinc-600">$ {{ row.price | number:'1.2-2' }}</td>
+                <td class="px-3 py-1.5 text-right font-black text-presuOscuro">$ {{ row.subtotal | number:'1.2-2' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- MANO DE OBRA -->
+        <div class="mb-6" *ngIf="manoObraRows().length > 0">
+          <h3 class="text-sm font-black text-presuOscuro border-b-2 border-amber-500 pb-2 mb-3 flex items-center justify-between">
+            <span class="flex items-center gap-2"><i class="ph ph-users text-amber-500"></i> Mano de Obra</span>
+            <span class="text-xs font-bold text-zinc-500">$ {{ subtotalMO() | number:'1.2-2' }}</span>
+          </h3>
+          <table class="w-full text-xs">
+            <thead class="bg-zinc-100 text-zinc-600 uppercase font-bold border-b border-zinc-200">
+              <tr>
+                <th class="px-3 py-2 text-left">Descripción</th>
+                <th class="px-3 py-2 w-16 text-center">Und.</th>
+                <th class="px-3 py-2 w-24 text-right">Rendimiento</th>
+                <th class="px-3 py-2 w-28 text-right">Precio Ref.</th>
+                <th class="px-3 py-2 w-28 text-right">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of manoObraRows()" class="border-b border-zinc-100 hover:bg-amber-50 transition">
+                <td class="px-3 py-1.5 font-medium text-presuOscuro">{{ row.description }}</td>
+                <td class="px-3 py-1.5 text-center text-zinc-500 uppercase">{{ row.unit }}</td>
+                <td class="px-3 py-1.5 text-right font-bold text-presuOscuro">{{ row.qty | number:'1.3-3' }}</td>
+                <td class="px-3 py-1.5 text-right text-zinc-600">$ {{ row.price | number:'1.2-2' }}</td>
+                <td class="px-3 py-1.5 text-right font-black text-presuOscuro">$ {{ row.subtotal | number:'1.2-2' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mensaje si no hay fórmulas -->
+        <div *ngIf="materialesRows().length === 0 && manoObraRows().length === 0" class="flex flex-col items-center justify-center py-20 text-zinc-400">
+          <i class="ph ph-function text-5xl mb-3 text-zinc-300"></i>
+          <p class="font-bold text-sm">Este APU no tiene fórmulas de cálculo configuradas.</p>
+          <p class="text-xs mt-1">El costo se tomará del valor referencial del catálogo.</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="bg-zinc-50 border-t border-zinc-200 p-4 flex justify-between items-center">
+      <div class="text-xs text-zinc-500">
+        <i class="ph ph-info text-blue-500"></i>
+        Los precios son referenciales del catálogo ConstruCosto. El precio final se recalculará con precios actuales al insertar.
+      </div>
+      <div class="flex gap-3">
+        <button (click)="closeModal()" class="px-4 py-2 rounded-lg font-bold text-zinc-600 hover:bg-zinc-200 transition text-sm">
+          Cancelar
+        </button>
+        <button (click)="confirm()" [disabled]="isInserting()" class="px-6 py-2 rounded-lg font-black text-white bg-purple-600 hover:bg-purple-700 disabled:opacity-60 transition shadow-sm flex items-center gap-2 text-sm">
+          <i class="ph" [class.ph-check-circle]="!isInserting()" [class.ph-spinner]="isInserting()" [class.animate-spin]="isInserting()"></i>
+          {{ isInserting() ? 'Insertando...' : 'Insertar en Presupuesto' }}
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>

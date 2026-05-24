@@ -1,0 +1,90 @@
+<div id="modalFormatoLogo" class="fixed inset-0 bg-presuOscuro/70 backdrop-blur-xs flex items-center justify-center z-50 transition-all duration-300" [class.opacity-0]="!uiState.isLogoFormatModalOpen()" [class.pointer-events-none]="!uiState.isLogoFormatModalOpen()">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-xl p-6 mx-4 transform transition-all duration-300 border-t-4 border-presuOxido" [class.scale-95]="!uiState.isLogoFormatModalOpen()">
+            <div class="flex items-center justify-between border-b border-zinc-200 pb-3 mb-5">
+                <div class="flex items-center gap-2">
+                    <i class="ph ph-palette text-xl text-presuOxido"></i>
+                    <h3 class="text-base font-bold text-presuOscuro uppercase tracking-wide">Formato y Logo</h3>
+                </div>
+                <button (click)="backToConfig()" class="text-zinc-400 hover:text-presuOscuro flex items-center gap-1 text-xs font-bold uppercase transition">
+                    <i class="ph ph-arrow-left font-bold"></i> Volver
+                </button>
+            </div>
+
+            <div class="space-y-4 max-h-[440px] overflow-y-auto pr-1">
+                <div class="bg-zinc-50 border border-zinc-300 rounded-xl p-4 space-y-2 shadow-sm">
+                    <div>
+                        <label class="text-xs font-black text-presuOscuro uppercase tracking-wide block">Fuente tipográfica del presupuesto</label>
+                        <span class="text-[10px] text-zinc-400 block leading-tight">Elige el tipo de letra para los reportes generados. Esta selección no afectará al programa.</span>
+                    </div>
+                    <select [ngModel]="configService.fuenteConsolidadaPresupuesto()" (ngModelChange)="configService.fuenteConsolidadaPresupuesto.set($event)" class="w-full bg-white border-2 border-zinc-300 rounded-lg p-3 text-xs font-bold text-presuOscuro focus:outline-none cursor-pointer shadow-inner">
+                        <option value="Arial">Arial (Por defecto)</option>
+                        <option value="Roboto">Roboto</option>
+                        <option value="Inter">Inter</option>
+                        <option value="Montserrat">Montserrat</option>
+                        <option value="Helvetica">Helvetica</option>
+                        <option value="Times New Roman">Times New Roman</option>
+                    </select>
+                </div>
+
+                <div class="bg-zinc-50 border border-zinc-300 rounded-xl p-4 space-y-2 shadow-sm">
+                    <div>
+                        <label class="text-xs font-black text-presuOscuro uppercase tracking-wide block">Color de Filas (Títulos Principales)</label>
+                        <span class="text-[10px] text-zinc-400">Define el fondo de realce para los capítulos mayores (Estructura, Terminaciones).</span>
+                    </div>
+                    <div class="flex items-center gap-4 bg-white p-2.5 border border-zinc-300 rounded-lg shadow-inner">
+                        <div class="relative w-12 h-10 rounded border border-zinc-400 overflow-hidden cursor-pointer shadow flex-shrink-0">
+                            <input type="color" [ngModel]="configService.colorFilaTitConsolidado()" (ngModelChange)="configService.colorFilaTitConsolidado.set($event)" class="absolute inset-0 w-full h-full p-0 border-0 scale-125 cursor-pointer bg-transparent">
+                        </div>
+                        <div class="flex-1">
+                            <label class="text-[9px] font-bold text-zinc-400 block uppercase">Código de Color (HEX)</label>
+                            <input type="text" [ngModel]="configService.colorFilaTitConsolidado()" (ngModelChange)="configService.colorFilaTitConsolidado.set($event)" placeholder="#8C4F2B" maxlength="7" class="w-full bg-transparent font-mono font-bold text-sm text-presuOscuro focus:outline-none uppercase">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-zinc-50 border border-zinc-300 rounded-xl p-4 space-y-2 shadow-sm">
+                    <div>
+                        <label class="text-xs font-black text-presuOscuro uppercase tracking-wide block">Color de Filas (Subtemas / Partidas)</label>
+                        <span class="text-[10px] text-zinc-400">Define el fondo secundario para los subtítulos o secciones de desglose interno.</span>
+                    </div>
+                    <div class="flex items-center gap-4 bg-white p-2.5 border border-zinc-300 rounded-lg shadow-inner">
+                        <div class="relative w-12 h-10 rounded border border-zinc-400 overflow-hidden cursor-pointer shadow flex-shrink-0">
+                            <input type="color" [ngModel]="configService.colorFilaSubConsolidado()" (ngModelChange)="configService.colorFilaSubConsolidado.set($event)" class="absolute inset-0 w-full h-full p-0 border-0 scale-125 cursor-pointer bg-transparent">
+                        </div>
+                        <div class="flex-1">
+                            <label class="text-[9px] font-bold text-zinc-400 block uppercase">Código de Color (HEX)</label>
+                            <input type="text" [ngModel]="configService.colorFilaSubConsolidado()" (ngModelChange)="configService.colorFilaSubConsolidado.set($event)" placeholder="#A3633C" maxlength="7" class="w-full bg-transparent font-mono font-bold text-sm text-presuOscuro focus:outline-none uppercase">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-zinc-50 border border-zinc-300 rounded-xl p-4 space-y-3 shadow-sm">
+                    <div>
+                        <label class="text-xs font-black text-presuOscuro uppercase tracking-wide block">Logo del Presupuesto</label>
+                        <span class="text-[10px] text-zinc-400">Sube el logo corporativo para la personalización de los despieces y reportes.</span>
+                    </div>
+                    
+                    <div (click)="fileInput.click()" class="border-2 border-dashed border-zinc-300 hover:border-presuOxido bg-white rounded-xl p-5 flex flex-col items-center justify-center text-center cursor-pointer transition relative min-h-[130px] shadow-inner group/drop">
+                        <input type="file" #fileInput accept="image/*" (change)="processFile(fileInput.files)" class="hidden">
+                        
+                        <div *ngIf="!configService.logoConsolidadoBase64()" class="flex flex-col items-center">
+                            <div class="w-10 h-10 rounded-full bg-zinc-100 group-hover/drop:bg-amber-50 flex items-center justify-center mb-2 transition">
+                                <i class="ph ph-plus text-lg text-zinc-500 group-hover/drop:text-presuOxido font-bold"></i>
+                            </div>
+                            <p class="text-xs font-bold text-presuOscuro">Arrastra tu logo aquí o búscalo en la computadora</p>
+                            <p class="text-[10px] text-zinc-400 mt-0.5">Formatos soportados: PNG, JPG o SVG</p>
+                        </div>
+
+                        <div *ngIf="configService.logoConsolidadoBase64()" class="flex flex-col items-center w-full">
+                            <img [src]="configService.logoConsolidadoBase64()" alt="Vista previa del logo" class="h-16 w-auto object-contain max-w-[80%] rounded mb-1">
+                            <p class="text-[11px] font-bold text-emerald-700 flex items-center gap-1"><i class="ph ph-check-circle-bold"></i> Logo cargado con éxito</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-5 pt-3 border-t border-zinc-200 flex justify-end">
+                <button (click)="confirm()" class="bg-presuOxido text-white font-bold px-6 py-2 rounded-lg text-xs uppercase shadow shadow-md">Confirmar</button>
+            </div>
+        </div>
+    </div>

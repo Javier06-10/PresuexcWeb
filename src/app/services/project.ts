@@ -1,0 +1,599 @@
+import { Injectable, signal, inject } from '@angular/core';
+import { SupabaseService } from './supabase.service';
+
+export interface Project {
+  id: string;
+  organization_id: string;
+  code?: string;
+  name: string;
+  description?: string;
+  client_id?: string;
+  region_code?: string;
+  number_of_levels: number;
+  total_area_m2?: number;
+  construction_type?: string;
+  status: string;
+  created_at: string;
+}
+
+export interface Budget {
+  id: string;
+  organization_id: string;
+  project_id: string;
+  name: string;
+  currency: string;
+  subtotal: number;
+  overhead_rate?: number;
+  profit_rate?: number;
+  contingency_rate?: number;
+  itbis_rate?: number;
+  overhead_total?: number;
+  profit_total?: number;
+  contingency_total?: number;
+  itbis_total?: number;
+  grand_total: number;
+  status: string;
+}
+
+export interface BudgetLevel {
+  id: string;
+  budget_id: string;
+  level_number: number;
+  name: string;
+  sort_order: number;
+  subtotal: number;
+  
+  // Front-end only reference
+  chapters?: BudgetChapter[];
+}
+
+export interface BudgetChapter {
+  id: string;
+  budget_id: string;
+  level_id: string;
+  chapter_number: number;
+  name: string;
+  sort_order: number;
+  subtotal: number;
+  
+  // Front-end only reference
+  items?: BudgetItem[];
+}
+
+// Alineado con tabla budget_items real de Supabase
+export interface BudgetItem {
+  id: string;
+  budget_id: string;
+  chapter_id: string;
+  item_number?: string;
+  sort_order: number;
+  description: string;
+  unit?: string | null;        // FK → units(code), null si vacío
+  quantity: number;
+  unit_price: number;
+  total: number;               // DEFAULT round(qty*price,2) — la BD lo calcula en INSERT
+  observations?: string;
+  apu_template_id?: string;    // FK → apu_templates(id)
+  apu_parameters?: any;        // jsonb
+  apu_snapshot?: any;           // jsonb
+  subcontract_id?: string;     // FK → subcontracts(id)
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ProjectService {
+  supabaseService = inject(SupabaseService);
+
+  listadoProyectos = signal<Project[]>([]);
+  activeProject = signal<Project | null>(null);
+  activeBudget = signal<Budget | null>(null);
+  
+  // The nested structure for the active budget
+  activeBudgetLevels = signal<BudgetLevel[]>([]);
+
+  isSaving = signal<boolean>(false);
+  hasUnsavedChanges = signal<boolean>(false);
+
+  constructor() {}
+
+  // Load projects from Supabase
+  async loadProjects() {
+    const orgId = this.supabaseService.currentOrganizationId();
+    console.log('[PresuXcel] loadProjects - orgId:', orgId);
+    if (!orgId) {
+      console.warn('[PresuXcel] No organization ID detected; attempting to load all projects for debugging');
+    }
+    let query = this.supabaseService.client
+      .from('projects')
+      .select('*');
+    if (orgId) {
+      query = query.eq('organization_id', orgId);
+    }
+    const { data, error } = await query.order('created_at', { ascending: false });
+    if (!error && data) {
+      this.listadoProyectos.set(data);
+    } else {
+      console.error('Error loading projects:', error);
+    }
+  }
+
+  // Set active project and fetch its main budget
+  async setActiveProject(project: Project | null) {
+    this.activeProject.set(project);
+    if (!project) {
+      this.activeBudget.set(null);
+      this.activeBudgetLevels.set([]);
+      return;
+    }
+
+    const { data: budgets } = await this.supabaseService.client
+      .from('budgets')
+      .select('*')
+      .eq('project_id', project.id)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (budgets && budgets.length > 0) {
+      this.activeBudget.set(budgets[0]);
+      await this.loadBudgetStructure(budgets[0].id);
+    } else {
+      // Create default budget
+      await this.createDefaultBudget(project);
+    }
+  }
+
+  async createProject(projectData: Partial<Project>) {
+    const orgId = this.supabaseService.currentOrganizationId();
+    if (!orgId) return null;
+
+    const newProject = {
+      ...projectData,
+      organization_id: orgId,
+      status: 'active'
+    };
+
+    const { data, error } = await this.supabaseService.client
+      .from('projects')
+      .insert(newProject)
+      .select()
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    if (data) {
+      this.listadoProyectos.update(list => [data, ...list]);
+      return data;
+    }
+    return null;
+  }
+
+  private async createDefaultBudget(project: Project) {
+    const orgId = this.supabaseService.currentOrganizationId();
+    if (!orgId) return;
+
+    const { data: newBudget, error: errBudget } = await this.supabaseService.client
+      .from('budgets')
+      .insert({
+        organization_id: orgId,
+        project_id: project.id,
+        name: 'Presupuesto principal',
+        currency: 'DOP',
+        status: 'draft'
+      })
+      .select()
+      .single();
+
+    if (newBudget) {
+      this.activeBudget.set(newBudget);
+      // We no longer generate initial structure automatically here.
+      // It will be generated by generateCustomStructure via the Budget Init Modal.
+      await this.loadBudgetStructure(newBudget.id);
+    }
+  }
+
+  async generateCustomStructure(budgetId: string, levelsConfig: {name: string, order: number, chapters: string[]}[]) {
+    for (const levelConf of levelsConfig) {
+      const { data: newLevel } = await this.supabaseService.client
+        .from('budget_levels')
+        .insert({
+          budget_id: budgetId,
+          level_number: levelConf.order,
+          name: levelConf.name,
+          sort_order: levelConf.order
+        })
+        .select()
+        .single();
+        
+      if (newLevel && levelConf.chapters && levelConf.chapters.length > 0) {
+        // Iterate over selected chapters
+        for (let idx = 0; idx < levelConf.chapters.length; idx++) {
+          const capName = levelConf.chapters[idx];
+          
+          const { data: newChap } = await this.supabaseService.client
+            .from('budget_chapters')
+            .insert({
+              budget_id: budgetId,
+              level_id: newLevel.id,
+              chapter_number: idx + 1,
+              name: capName,
+              sort_order: idx + 1
+            })
+            .select()
+            .single();
+            
+          if (newChap) {
+            // Create 1 empty item per chapter
+            const { error } = await this.supabaseService.client.from('budget_items').insert([{
+              budget_id: budgetId,
+              chapter_id: newChap.id,
+              item_number: `${idx + 1}.01`,
+              description: '',
+              quantity: 0,
+              unit_price: 0,
+              sort_order: 1
+            }]);
+            if (error) console.error(`Error creando item para capitulo ${capName}:`, error);
+          }
+        }
+      }
+    }
+  }
+
+  async loadBudgetStructure(budgetId: string) {
+    try {
+      const { data: levels, error: errLvl } = await this.supabaseService.client
+        .from('budget_levels')
+        .select('*')
+        .eq('budget_id', budgetId)
+        .order('sort_order', { ascending: true });
+      const { data: chapters, error: errChap } = await this.supabaseService.client
+        .from('budget_chapters')
+        .select('*')
+        .eq('budget_id', budgetId)
+        .order('sort_order', { ascending: true });
+      const { data: items, error: errItems } = await this.supabaseService.client
+        .from('budget_items')
+        .select('*')
+        .eq('budget_id', budgetId)
+        .order('sort_order', { ascending: true });
+      if (errLvl || errChap || errItems) {
+        console.error('Errores cargando estructura:', { errLvl, errChap, errItems });
+      }
+      console.log(`[PresuXcel] Cargado: ${levels?.length || 0} niveles, ${chapters?.length || 0} capítulos, ${items?.length || 0} items`);
+      // Use empty arrays as fallback
+      const safeLevels = levels || [];
+      const safeChapters = chapters || [];
+      const safeItems = items || [];
+      // Build nested structure safely
+      const nestedLevels: BudgetLevel[] = safeLevels.map(lvl => {
+        const lvlChapters: BudgetChapter[] = safeChapters
+          .filter(c => c.level_id === lvl.id)
+          .map(chap => {
+            const chapItems: BudgetItem[] = safeItems.filter(i => i.chapter_id === chap.id);
+            return { ...chap, items: chapItems };
+          });
+        return { ...lvl, chapters: lvlChapters };
+      });
+      this.activeBudgetLevels.set(nestedLevels);
+      // Recalculate subtotales
+      this.updateTotal();
+      this.hasUnsavedChanges.set(false);
+    } catch (e) {
+      console.error('Excepción al cargar la estructura del presupuesto:', e);
+      this.activeBudgetLevels.set([]);
+      this.hasUnsavedChanges.set(false);
+    }
+  }
+
+  async addLevel(): Promise<BudgetLevel | undefined> {
+    const budget = this.activeBudget();
+    if (!budget) return undefined;
+    const levels = this.activeBudgetLevels();
+    const newLevel: BudgetLevel = {
+      id: crypto.randomUUID(),
+      budget_id: budget.id,
+      level_number: levels.length + 1,
+      name: `Nivel ${levels.length + 1}`,
+      sort_order: levels.length + 1,
+      subtotal: 0,
+      chapters: []
+    };
+    levels.push(newLevel);
+    this.refreshLevelsState();
+    
+    // Insert en BD
+    await this.supabaseService.client.from('budget_levels').insert([{
+      id: newLevel.id, budget_id: newLevel.budget_id, level_number: newLevel.level_number,
+      name: newLevel.name, sort_order: newLevel.sort_order, subtotal: newLevel.subtotal
+    }]);
+
+    return newLevel;
+  }
+
+  async addChapter(level: BudgetLevel) {
+    if (!level.chapters) level.chapters = [];
+    const newChap: BudgetChapter = {
+      id: crypto.randomUUID(),
+      budget_id: level.budget_id,
+      level_id: level.id,
+      chapter_number: level.chapters.length + 1,
+      name: `Capítulo ${level.chapters.length + 1}`,
+      sort_order: level.chapters.length + 1,
+      subtotal: 0,
+      items: []
+    };
+    level.chapters.push(newChap);
+    this.refreshLevelsState();
+    
+    // Insert en BD
+    await this.supabaseService.client.from('budget_chapters').insert([{
+      id: newChap.id, budget_id: newChap.budget_id, level_id: newChap.level_id,
+      chapter_number: newChap.chapter_number, name: newChap.name,
+      sort_order: newChap.sort_order, subtotal: newChap.subtotal
+    }]);
+  }
+
+  async addItem(chapter: BudgetChapter) {
+    if (!chapter.items) chapter.items = [];
+    const newItem: BudgetItem = {
+      id: crypto.randomUUID(),
+      budget_id: chapter.budget_id,
+      chapter_id: chapter.id,
+      item_number: `${chapter.chapter_number}.0${chapter.items.length + 1}`,
+      description: '',
+      quantity: 0,
+      unit_price: 0,
+      total: 0,
+      sort_order: chapter.items.length + 1
+    };
+    chapter.items.push(newItem);
+    this.refreshLevelsState();
+    
+    // Insert en BD — NO enviamos 'total' (la BD lo calcula via DEFAULT)
+    // NO enviamos 'unit' vacío (es FK a units.code)
+    const { error } = await this.supabaseService.client.from('budget_items').insert([{
+      id: newItem.id,
+      budget_id: newItem.budget_id,
+      chapter_id: newItem.chapter_id,
+      item_number: newItem.item_number,
+      description: newItem.description,
+      quantity: newItem.quantity,
+      unit_price: newItem.unit_price,
+      sort_order: newItem.sort_order
+    }]);
+    if (error) console.error('Error insertando item:', error);
+  }
+
+  async removeItem(chapter: BudgetChapter, index: number) {
+    if (confirm("¿Borrar esta fila de forma definitiva?")) {
+      const itemToDel = chapter.items![index];
+      chapter.items?.splice(index, 1);
+      this.updateTotal();
+      this.hasUnsavedChanges.set(true);
+      
+      // Delete en BD
+      await this.supabaseService.client.from('budget_items').delete().eq('id', itemToDel.id);
+    }
+  }
+
+  async removeChapter(level: BudgetLevel, index: number) {
+    if (confirm("¿Borrar este renglón y todas sus partidas de forma definitiva?")) {
+      const chapterToDel = level.chapters![index];
+      level.chapters?.splice(index, 1);
+      this.updateTotal();
+      this.hasUnsavedChanges.set(true);
+      
+      // Delete en BD
+      await this.supabaseService.client.from('budget_chapters').delete().eq('id', chapterToDel.id);
+    }
+  }
+
+  async removeLevel(index: number) {
+    if (confirm("¿Borrar este nivel y todo su contenido de forma definitiva?")) {
+      const levels = this.activeBudgetLevels();
+      const levelToDel = levels[index];
+      levels.splice(index, 1);
+      this.updateTotal();
+      this.hasUnsavedChanges.set(true);
+      
+      // Delete en BD
+      await this.supabaseService.client.from('budget_levels').delete().eq('id', levelToDel.id);
+    }
+  }
+
+
+  // UPDATE EN CALIENTE DE UN ITEM ESPECÍFICO
+  updateItemGranular(levelIdx: number, chapterIdx: number, itemIdx: number, item: BudgetItem) {
+    const levels = this.activeBudgetLevels();
+    const l = levels[levelIdx];
+    if(!l || !l.chapters) return;
+    const c = l.chapters[chapterIdx];
+    if(!c || !c.items) return;
+    
+    // Actualizar el item local y recalcular su total individual
+    item.total = (item.quantity || 0) * (item.unit_price || 0);
+    c.items[itemIdx] = item;
+    
+    // Recalcular subtotal del capítulo
+    let chapSubtotal = 0;
+    c.items.forEach(i => chapSubtotal += i.total);
+    c.subtotal = chapSubtotal;
+    
+    // Recalcular subtotal del nivel
+    let lvlSubtotal = 0;
+    l.chapters.forEach(ch => lvlSubtotal += (ch.subtotal || 0));
+    l.subtotal = lvlSubtotal;
+
+    // Recalcular Gran Total
+    let grandTotal = 0;
+    levels.forEach(lvl => grandTotal += (lvl.subtotal || 0));
+    
+    const currentBudget = this.activeBudget();
+    if (currentBudget) {
+      currentBudget.subtotal = grandTotal;
+      
+      const itbisRate = currentBudget.itbis_rate || 0;
+      const overheadRate = currentBudget.overhead_rate || 0;
+      const profitRate = currentBudget.profit_rate || 0;
+      const contingencyRate = currentBudget.contingency_rate || 0;
+
+      currentBudget.overhead_total = grandTotal * (overheadRate / 100);
+      currentBudget.profit_total = grandTotal * (profitRate / 100);
+      currentBudget.contingency_total = grandTotal * (contingencyRate / 100);
+      currentBudget.itbis_total = grandTotal * (itbisRate / 100);
+
+      currentBudget.grand_total = grandTotal + currentBudget.overhead_total + currentBudget.profit_total + currentBudget.contingency_total + currentBudget.itbis_total;
+
+      this.activeBudgetLevels.set(levels);
+      this.activeBudget.set(currentBudget);
+    }
+    
+    this.hasUnsavedChanges.set(true);
+    this.refreshLevelsState();
+  }
+
+  async saveBudgetManual() {
+    this.isSaving.set(true);
+    let errors: string[] = [];
+    try {
+      // 1. Guardar budget (totales y tasas)
+      const budget = this.activeBudget();
+      if (budget) {
+        const { error: errBudget } = await this.supabaseService.client.from('budgets').update({
+              subtotal: budget.subtotal, 
+              overhead_rate: budget.overhead_rate,
+              profit_rate: budget.profit_rate,
+              contingency_rate: budget.contingency_rate,
+              itbis_rate: budget.itbis_rate,
+              overhead_total: budget.overhead_total,
+              profit_total: budget.profit_total,
+              contingency_total: budget.contingency_total,
+              itbis_total: budget.itbis_total,
+              grand_total: budget.grand_total
+        }).eq('id', budget.id);
+        if (errBudget) errors.push('Budget: ' + errBudget.message);
+      }
+
+      // 2. Preparar payloads alineados con el schema real
+      const levels = this.activeBudgetLevels();
+      const levelsToUpdate: any[] = [];
+      const chaptersToUpdate: any[] = [];
+      const itemsToUpdate: any[] = [];
+
+      levels.forEach(lvl => {
+        levelsToUpdate.push({
+          id: lvl.id,
+          budget_id: lvl.budget_id,
+          level_number: lvl.level_number,
+          sort_order: lvl.sort_order,
+          name: lvl.name,
+          subtotal: lvl.subtotal
+        });
+        lvl.chapters?.forEach(chap => {
+          chaptersToUpdate.push({
+            id: chap.id,
+            budget_id: chap.budget_id,
+            level_id: chap.level_id,
+            chapter_number: chap.chapter_number,
+            name: chap.name,
+            sort_order: chap.sort_order,
+            subtotal: chap.subtotal
+          });
+          chap.items?.forEach(item => {
+            itemsToUpdate.push({
+              id: item.id,
+              budget_id: item.budget_id,
+              chapter_id: item.chapter_id,
+              item_number: item.item_number,
+              description: item.description || '',
+              quantity: item.quantity || 0,
+              unit: item.unit || null,
+              unit_price: item.unit_price || 0,
+              sort_order: item.sort_order,
+              observations: item.observations || null,
+              apu_template_id: item.apu_template_id || null,
+              apu_parameters: item.apu_parameters || null
+            });
+          });
+        });
+      });
+
+      // 3. Upsert a Supabase
+      if (levelsToUpdate.length > 0) {
+        const { error: errLvl } = await this.supabaseService.client.from('budget_levels').upsert(levelsToUpdate, { onConflict: 'id' });
+        if (errLvl) errors.push('Niveles: ' + errLvl.message);
+      }
+      if (chaptersToUpdate.length > 0) {
+        const { error: errChap } = await this.supabaseService.client.from('budget_chapters').upsert(chaptersToUpdate, { onConflict: 'id' });
+        if (errChap) errors.push('Capítulos: ' + errChap.message);
+      }
+      if (itemsToUpdate.length > 0) {
+        const { error: errItems } = await this.supabaseService.client.from('budget_items').upsert(itemsToUpdate, { onConflict: 'id' });
+        if (errItems) errors.push('Items: ' + errItems.message);
+      }
+
+      // 4. Feedback al usuario
+      if (errors.length > 0) {
+        alert('❌ ERRORES AL GUARDAR:\n' + errors.join('\n'));
+      }
+    } catch (err) {
+      alert("❌ Excepción guardando: " + String(err));
+    } finally {
+      if (errors.length === 0) {
+        this.hasUnsavedChanges.set(false);
+      }
+      this.isSaving.set(false);
+    }
+  }
+
+  // Recalculates everything for structural changes (add/delete)
+  updateTotal() {
+    const levels = this.activeBudgetLevels();
+    let grandTotal = 0;
+
+    levels.forEach(lvl => {
+      let lvlSubtotal = 0;
+      lvl.chapters?.forEach(chap => {
+        let chapSubtotal = 0;
+        chap.items?.forEach(item => {
+          item.total = (item.quantity || 0) * (item.unit_price || 0);
+          chapSubtotal += item.total;
+        });
+        chap.subtotal = chapSubtotal;
+        lvlSubtotal += chapSubtotal;
+      });
+      lvl.subtotal = lvlSubtotal;
+      grandTotal += lvlSubtotal;
+    });
+
+    const currentBudget = this.activeBudget();
+    if (currentBudget) {
+      currentBudget.subtotal = grandTotal;
+      
+      const itbisRate = currentBudget.itbis_rate || 0;
+      const overheadRate = currentBudget.overhead_rate || 0;
+      const profitRate = currentBudget.profit_rate || 0;
+      const contingencyRate = currentBudget.contingency_rate || 0;
+
+      currentBudget.overhead_total = grandTotal * (overheadRate / 100);
+      currentBudget.profit_total = grandTotal * (profitRate / 100);
+      currentBudget.contingency_total = grandTotal * (contingencyRate / 100);
+      currentBudget.itbis_total = grandTotal * (itbisRate / 100);
+
+      currentBudget.grand_total = grandTotal + currentBudget.overhead_total + currentBudget.profit_total + currentBudget.contingency_total + currentBudget.itbis_total;
+
+      this.activeBudget.set({...currentBudget});
+    }
+
+    this.refreshLevelsState();
+  }
+
+  private refreshLevelsState() {
+    // Triggers change detection
+    this.activeBudgetLevels.update(v => [...v]);
+  }
+
+}

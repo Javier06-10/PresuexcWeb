@@ -1,0 +1,191 @@
+<div *ngIf="uiState.isBudgetInitModalOpen()" class="fixed inset-0 bg-presuOscuro/70 backdrop-blur-xs flex items-center justify-center z-[60] transition-all duration-300">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl p-6 mx-4 transform transition-all duration-300 border-t-4 border-presuOxido max-h-[90vh] overflow-y-auto">
+        
+        <!-- STEP 1: TYPOLOGY -->
+        <ng-container *ngIf="step === 'typology'">
+            <div class="mb-4">
+                <h2 class="text-base font-bold text-presuOscuro uppercase tracking-wide">Inicialización de Proyecto</h2>
+                <p class="text-xs text-zinc-500 mt-1">Seleccione la tipología para estructurar el presupuesto</p>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 my-6">
+                <!-- Option 1: Empty -->
+                <div (click)="selectTypology('vacio')" 
+                     class="border rounded-lg p-3 cursor-pointer transition flex items-center group"
+                     [ngClass]="selectedTypology === 'vacio' ? 'border-presuOxido bg-orange-50' : 'border-zinc-300 hover:border-zinc-400 hover:bg-zinc-50'">
+                    <div class="w-4 h-4 rounded-full border mr-3 flex items-center justify-center flex-shrink-0" [ngClass]="selectedTypology === 'vacio' ? 'border-presuOxido' : 'border-zinc-300'">
+                        <div *ngIf="selectedTypology === 'vacio'" class="w-2 h-2 rounded-full bg-presuOxido"></div>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-sm font-bold text-presuOscuro">Presupuesto Vacío</span>
+                        <span class="text-[10px] text-zinc-500 leading-tight">Estructuración desde cero sin partidas predefinidas.</span>
+                    </div>
+                </div>
+
+                <!-- Option 2: Vivienda -->
+                <div (click)="selectTypology('vivienda')" 
+                     class="border rounded-lg p-3 cursor-pointer transition flex items-center group"
+                     [ngClass]="selectedTypology === 'vivienda' ? 'border-presuOxido bg-orange-50' : 'border-zinc-300 hover:border-zinc-400 hover:bg-zinc-50'">
+                    <div class="w-4 h-4 rounded-full border mr-3 flex items-center justify-center flex-shrink-0" [ngClass]="selectedTypology === 'vivienda' ? 'border-presuOxido' : 'border-zinc-300'">
+                        <div *ngIf="selectedTypology === 'vivienda'" class="w-2 h-2 rounded-full bg-presuOxido"></div>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-sm font-bold text-presuOscuro">Vivienda Unifamiliar</span>
+                        <span class="text-[10px] text-zinc-500 leading-tight">Plantilla estándar para casas.</span>
+                    </div>
+                </div>
+
+                <!-- Option 3: Edificio -->
+                <div (click)="selectTypology('edificio')" 
+                     class="border rounded-lg p-3 cursor-pointer transition flex items-center group"
+                     [ngClass]="selectedTypology === 'edificio' ? 'border-presuOxido bg-orange-50' : 'border-zinc-300 hover:border-zinc-400 hover:bg-zinc-50'">
+                    <div class="w-4 h-4 rounded-full border mr-3 flex items-center justify-center flex-shrink-0" [ngClass]="selectedTypology === 'edificio' ? 'border-presuOxido' : 'border-zinc-300'">
+                        <div *ngIf="selectedTypology === 'edificio'" class="w-2 h-2 rounded-full bg-presuOxido"></div>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-sm font-bold text-presuOscuro">Edificio de Apartamentos</span>
+                        <span class="text-[10px] text-zinc-500 leading-tight">Plantilla estándar para torres.</span>
+                    </div>
+                </div>
+
+                <!-- Option 4: Nave Industrial -->
+                <div (click)="selectTypology('nave')" 
+                     class="border rounded-lg p-3 cursor-pointer transition flex items-center group"
+                     [ngClass]="selectedTypology === 'nave' ? 'border-presuOxido bg-orange-50' : 'border-zinc-300 hover:border-zinc-400 hover:bg-zinc-50'">
+                    <div class="w-4 h-4 rounded-full border mr-3 flex items-center justify-center flex-shrink-0" [ngClass]="selectedTypology === 'nave' ? 'border-presuOxido' : 'border-zinc-300'">
+                        <div *ngIf="selectedTypology === 'nave'" class="w-2 h-2 rounded-full bg-presuOxido"></div>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-sm font-bold text-presuOscuro">Nave Industrial</span>
+                        <span class="text-[10px] text-zinc-500 leading-tight">Estructura metálica pesada.</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6 pt-4 border-t border-zinc-200 flex justify-end gap-3">
+                <button (click)="closeModal()" class="text-zinc-500 hover:text-zinc-800 px-4 py-2 rounded-lg text-xs font-bold uppercase transition">
+                    Cancelar
+                </button>
+                <button (click)="nextStep()" [disabled]="!selectedTypology" 
+                        class="bg-presuOxido text-white px-5 py-2 rounded-lg text-xs font-bold uppercase shadow-md hover:bg-amber-800 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                    Siguiente
+                </button>
+            </div>
+        </ng-container>
+
+        <!-- STEP 2: LEVELS CONFIG -->
+        <ng-container *ngIf="step === 'levels'">
+            <div class="mb-4 flex items-center gap-3">
+                <button (click)="previousStep()" class="text-zinc-400 hover:text-presuOxido transition">
+                    <i class="ph ph-arrow-left text-xl"></i>
+                </button>
+                <div>
+                    <h2 class="text-base font-bold text-presuOscuro uppercase tracking-wide">Configuración de Niveles</h2>
+                    <p class="text-xs text-zinc-500 mt-1">Añada y nombre los niveles para su presupuesto.</p>
+                </div>
+            </div>
+
+            <div class="my-6 space-y-3 max-h-64 overflow-y-auto pr-2">
+                <div *ngFor="let lvl of levels; let i = index" class="flex items-center gap-2">
+                    <div class="bg-zinc-100 text-zinc-500 font-bold px-3 py-2 rounded-lg text-xs">{{ lvl.order }}</div>
+                    <input type="text" [(ngModel)]="lvl.name" class="flex-1 bg-presuFondo border border-zinc-300 rounded-lg p-2 text-xs font-semibold focus:outline-none focus:border-presuOxido">
+                    <button *ngIf="levels.length > 1" (click)="removeLevel(i)" class="text-red-500 hover:bg-red-50 p-2 rounded-lg transition" title="Eliminar nivel">
+                        <i class="ph ph-trash"></i>
+                    </button>
+                </div>
+
+                <button (click)="addLevel()" class="w-full border-2 border-dashed border-zinc-300 text-zinc-500 hover:border-presuOxido hover:text-presuOxido font-bold text-xs py-3 rounded-lg transition flex justify-center items-center gap-2 mt-2">
+                    <i class="ph ph-plus"></i> Agregar Nivel
+                </button>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-zinc-200 flex justify-end gap-3">
+                <button (click)="closeModal()" class="text-zinc-500 hover:text-zinc-800 px-4 py-2 rounded-lg text-xs font-bold uppercase transition">
+                    Cancelar
+                </button>
+                <button (click)="nextStep()" 
+                        class="bg-presuOxido text-white px-5 py-2 rounded-lg text-xs font-bold uppercase shadow-md hover:bg-amber-800 transition flex items-center gap-2">
+                    Siguiente <i class="ph ph-arrow-right"></i>
+                </button>
+            </div>
+        </ng-container>
+
+        <!-- STEP 3: CHAPTERS CONFIG -->
+        <ng-container *ngIf="step === 'chapters'">
+            <div class="mb-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <button (click)="previousStep()" class="text-zinc-400 hover:text-presuOxido transition">
+                        <i class="ph ph-arrow-left text-xl"></i>
+                    </button>
+                    <div>
+                        <h2 class="text-base font-bold text-presuOscuro uppercase tracking-wide">Selección de Renglones</h2>
+                        <p class="text-xs text-zinc-500 mt-1">Seleccione las categorías a incluir de forma independiente por cada nivel.</p>
+                    </div>
+                </div>
+                <button (click)="toggleAllGlobally()" class="border-2 border-presuOscuro text-presuOscuro hover:bg-presuOscuro hover:text-white px-3 py-1 rounded text-[11px] font-black uppercase transition flex items-center gap-2 shadow-sm">
+                    <i class="ph" [class.ph-squares-four]="!hasAllSelectedGlobally()" [class.ph-check-square]="hasAllSelectedGlobally()"></i>
+                    {{ hasAllSelectedGlobally() ? 'Deseleccionar Todos' : 'Seleccionar Todos' }}
+                </button>
+            </div>
+
+            <div class="my-6 space-y-6">
+                <div *ngFor="let lvl of levels; let i = index" class="border border-zinc-200 rounded-lg overflow-hidden">
+                    <div class="bg-zinc-100 px-4 py-2 font-bold text-presuOscuro border-b border-zinc-200 text-sm flex justify-between items-center">
+                        <span>{{ lvl.name }}</span>
+                        <div class="flex items-center gap-3">
+                            <button (click)="toggleAllForLevel(i)" class="text-[10px] uppercase font-black border border-zinc-300 bg-white hover:bg-zinc-200 text-zinc-700 px-2 py-0.5 rounded transition flex items-center gap-1 shadow-sm">
+                                <i class="ph" [class.ph-squares-four]="!hasAllSelected(i)" [class.ph-check-square]="hasAllSelected(i)"></i>
+                                {{ hasAllSelected(i) ? 'Deseleccionar Todos' : 'Seleccionar Todos' }}
+                            </button>
+                            <span class="text-[10px] text-zinc-500 font-normal">{{ lvl.chapters.length }} renglones</span>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4">
+                        <!-- Standard Chapters -->
+                        <div class="flex flex-wrap gap-2">
+                            <button *ngFor="let cap of defaultChapters" 
+                                    (click)="toggleChapter(i, cap)"
+                                    class="px-3 py-1.5 rounded-full text-[11px] font-semibold transition border select-none"
+                                    [ngClass]="lvl.chapters.includes(cap) ? 'bg-presuOxido text-white border-presuOxido shadow-sm' : 'bg-white text-zinc-500 border-zinc-300 hover:border-presuOxido hover:text-presuOxido'">
+                                <i class="ph" [class.ph-check]="lvl.chapters.includes(cap)" [class.ph-plus]="!lvl.chapters.includes(cap)"></i> 
+                                {{ cap }}
+                            </button>
+                            
+                            <!-- Custom Chapters selected -->
+                            <ng-container *ngFor="let cap of lvl.chapters">
+                                <button *ngIf="!defaultChapters.includes(cap)"
+                                        (click)="toggleChapter(i, cap)"
+                                        class="px-3 py-1.5 rounded-full text-[11px] font-semibold transition border select-none bg-presuOscuro text-white border-presuOscuro shadow-sm">
+                                    <i class="ph ph-check"></i> {{ cap }}
+                                </button>
+                            </ng-container>
+                        </div>
+                        
+                        <!-- Add custom chapter input -->
+                        <div class="mt-4 pt-3 border-t border-zinc-100 flex gap-2 items-center max-w-xs">
+                            <input type="text" [(ngModel)]="lvl.newCustomChapter" placeholder="Añadir renglón personalizado..." (keyup.enter)="addCustomChapter(i)"
+                                   class="flex-1 bg-presuFondo border border-zinc-300 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-presuOxido uppercase">
+                            <button (click)="addCustomChapter(i)" [disabled]="!lvl.newCustomChapter.trim()"
+                                    class="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white w-7 h-7 rounded flex items-center justify-center transition shadow">
+                                <i class="ph ph-plus font-bold"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-zinc-200 flex justify-end gap-3">
+                <button (click)="closeModal()" class="text-zinc-500 hover:text-zinc-800 px-4 py-2 rounded-lg text-xs font-bold uppercase transition">
+                    Cancelar
+                </button>
+                <button (click)="generateBudget()" [disabled]="projectService.isSaving()" 
+                        class="bg-green-600 text-white px-5 py-2 rounded-lg text-xs font-bold uppercase shadow-md hover:bg-green-700 transition flex items-center gap-2">
+                    <i *ngIf="projectService.isSaving()" class="ph ph-spinner animate-spin"></i>
+                    <i *ngIf="!projectService.isSaving()" class="ph ph-check-circle"></i>
+                    Finalizar y Crear
+                </button>
+            </div>
+        </ng-container>
+    </div>
+</div>
