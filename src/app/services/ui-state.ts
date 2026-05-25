@@ -43,6 +43,9 @@ export class UiState {
   parametricTargetChapter = signal<any>(null);
   parametricTargetItem = signal<any>(null);
 
+  isResetPasswordModalOpen = signal(false);
+  isProfileModalOpen = signal(false);
+
   closeAllModals() {
     this.isConfigModalOpen.set(false);
     this.isMeasuresModalOpen.set(false);
@@ -67,5 +70,7 @@ export class UiState {
     this.activeParametricApu.set(null);
     this.parametricTargetChapter.set(null);
     this.parametricTargetItem.set(null);
+    this.isResetPasswordModalOpen.set(false);
+    this.isProfileModalOpen.set(false);
   }
 }

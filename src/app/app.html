@@ -1,4 +1,4 @@
-<ng-container *ngIf="!supabase.isInitialized()">
+<ng-container *ngIf="!supabase.isInitialized() || supabase.isFetchingOrganization()">
     <div class="flex items-center justify-center min-h-screen bg-presuFondo">
         <div class="flex flex-col items-center justify-center text-presuOxido">
             <i class="ph ph-spinner animate-spin text-5xl mb-4"></i>
@@ -7,7 +7,7 @@
     </div>
 </ng-container>
 
-<ng-container *ngIf="supabase.isInitialized()">
+<ng-container *ngIf="supabase.isInitialized() && !supabase.isFetchingOrganization()">
     <ng-container *ngIf="supabase.currentSession(); else loginBlock">
         <!-- Si tiene sesión pero NO tiene organización, mostrar onboarding -->
         <ng-container *ngIf="!supabase.currentOrganizationId()">
@@ -29,6 +29,7 @@
             
             <!-- Modales -->
             <app-config-modal></app-config-modal>
+            <app-profile-modal></app-profile-modal>
             <app-measures-modal></app-measures-modal>
             <app-steel-modal></app-steel-modal>
             <app-concrete-modal></app-concrete-modal>
@@ -47,6 +48,9 @@
             <app-parametric-apu-modal></app-parametric-apu-modal>
             <app-error-modal></app-error-modal>
         </ng-container>
+
+        <!-- El modal de recuperación debe ser accesible siempre que haya sesión -->
+        <app-reset-password-modal></app-reset-password-modal>
     </ng-container>
 </ng-container>
 

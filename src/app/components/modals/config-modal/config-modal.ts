@@ -23,6 +23,11 @@ export class ConfigModal {
     this.uiState.isLogoFormatModalOpen.set(true);
   }
 
+  openProfile() {
+    this.uiState.isProfileModalOpen.set(true);
+    this.closeModal();
+  }
+
   openMeasures() {
     this.uiState.isConfigModalOpen.set(false);
     this.uiState.isMeasuresModalOpen.set(true);

@@ -9,6 +9,13 @@
             </div>
 
             <div class="space-y-3">
+                <button (click)="openProfile()" class="w-full flex items-center justify-between bg-presuFondo hover:bg-zinc-200 p-3.5 rounded-lg text-xs font-bold text-presuOscuro transition border border-zinc-300 group text-left shadow-sm">
+                    <span class="flex items-center gap-2.5"><i class="ph ph-user-circle text-base text-presuOxido"></i> PERFIL DE USUARIO</span>
+                    <i class="ph ph-caret-right"></i>
+                </button>
+
+                <div class="border-t border-zinc-200 my-2"></div>
+
                 <button (click)="openLogoFormat()" class="w-full flex items-center justify-between bg-presuFondo hover:bg-zinc-200 p-3.5 rounded-lg text-xs font-bold text-presuOscuro transition border border-zinc-300 group text-left shadow-sm">
                     <span class="flex items-center gap-2.5"><i class="ph ph-palette text-base text-presuOxido"></i> FORMATO Y LOGO</span>
                     <i class="ph ph-caret-right"></i>

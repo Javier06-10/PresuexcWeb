@@ -1,218 +1,365 @@
-<section id="vista-presupuesto-detalle" class="fuente-dinamica flex-1 max-w-[1400px] w-full mx-auto p-4 md:p-6 bg-white shadow-2xl my-4 rounded-lg border border-zinc-300" [class.hidden]="uiState.activeView() !== 'budget'" [style.fontFamily]="configService.fuenteConsolidadaPresupuesto()">
+<div class="app-body" [style.fontFamily]="configService.fuenteConsolidadaPresupuesto()" [class.hidden]="uiState.activeView() !== 'budget'">
+  
+  <!-- SIDEBAR -->
+  <div class="sidebar" [class.collapsed]="!isSidebarOpen()">
+    <div style="padding: 10px; display: flex; justify-content: flex-end;">
+      <button (click)="toggleSidebar()" style="background: none; border: none; cursor: pointer; color: var(--gray-hint);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    
+    <div class="sb-section">Mis presupuestos</div>
+    <div class="sb-item" [class.active]="activeSidebarTab() === 'resumen'" (click)="selectResumen()">
+      <span class="ic"><i class="ph ph-list-dashes"></i></span>Resumen general
+    </div>
+    
+    <div class="sb-divider"></div>
+    <div class="sb-section">Análisis y cálculo</div>
+    
+    <ng-container *ngIf="projectService.activeBudget() as budget">
+      <ng-container *ngFor="let nivel of projectService.activeBudgetLevels(); let lvlIdx = index">
+        <!-- Nivel name as header if multiple levels, else skip -->
+        <div class="sb-section" *ngIf="projectService.activeBudgetLevels().length > 1">{{ nivel.name }}</div>
         
-        <div class="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6 border-b border-zinc-200 pb-4" *ngIf="projectService.activeProject() as proy">
-            <div class="flex items-center gap-4 w-full sm:w-auto">
-                <div class="relative group w-32 h-24 bg-zinc-50 border border-zinc-300 rounded-xl overflow-hidden flex items-center justify-center cursor-pointer shadow-inner" (click)="fileInput.click()" title="Haz clic para cambiar el logo">
-                    <img id="hoja-logo-img" [src]="configService.logoConsolidadoBase64() || 'assets/ICONO PresuXcel.png'" alt="Logo Presupuesto" class="w-full h-full object-contain p-1">
-                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition duration-200 flex flex-col items-center justify-center text-white text-[10px] font-bold text-center p-1 uppercase">
-                        <i class="ph ph-camera text-base mb-1"></i>
-                        Cambiar Imagen
-                    </div>
-                    <input type="file" #fileInput accept="image/*" (change)="cambiarLogoDirectoDesdeHoja(fileInput.files)" class="hidden">
+        <ng-container *ngFor="let cap of nivel.chapters; let capIdx = index">
+          <div class="sb-item" (click)="toggleChapter(cap.id)" style="justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:8px;font-weight:600;font-size:11px">
+              <span class="ic"><i class="ph" [class.ph-folder-open]="isChapterOpen(cap.id)" [class.ph-folder]="!isChapterOpen(cap.id)"></i></span>
+              {{ cap.chapter_number }} — {{ cap.name }}
+            </div>
+            <i class="ph ph-caret-down text-[10px]" [class.rotate-180]="isChapterOpen(cap.id)" style="transition:transform .2s;flex-shrink:0"></i>
+          </div>
+          
+          <div *ngIf="isChapterOpen(cap.id)">
+            <div *ngFor="let item of cap.items; let itemIdx = index" class="sb-sub-item" [class.active]="activeSidebarTab() === 'item' && selectedBudgetItem()?.id === item.id" (click)="selectItem(item, cap.id)">
+              <span class="sb-sub-dot"></span>
+              <span class="truncate" title="{{ item.description || 'Nueva Partida' }}">{{ item.item_number }} - {{ item.description || 'Nueva Partida' }}</span>
+            </div>
+          </div>
+        </ng-container>
+      </ng-container>
+    </ng-container>
+    
+    <div class="sb-divider"></div>
+    <div class="sb-section">Herramientas</div>
+    <div class="sb-item" (click)="volverAlPanel()"><span class="ic"><i class="ph ph-arrow-left"></i></span>Volver al panel</div>
+  </div>
+
+  <!-- WORKSPACE -->
+  <div class="workspace" [class.side-mode]="apuPosition() === 'lado' && activeSidebarTab() === 'item'">
+    
+    <!-- ============================================== -->
+    <!-- VISTA TABULAR: RESUMEN GENERAL                 -->
+    <!-- ============================================== -->
+    <div class="main-panel p-4 md:p-6 bg-white flex flex-col" *ngIf="activeSidebarTab() === 'resumen'">
+      <div class="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6 border-b border-zinc-200 pb-4" *ngIf="activeProject() as proy">
+          <div class="flex items-center gap-4 w-full sm:w-auto">
+              <div class="relative group w-32 h-24 bg-zinc-50 border border-zinc-300 rounded-xl overflow-hidden flex items-center justify-center cursor-pointer shadow-inner" (click)="fileInput.click()" title="Haz clic para cambiar el logo">
+                  <img id="hoja-logo-img" [src]="configService.logoConsolidadoBase64() || 'assets/ICONO PresuXcel.png'" alt="Logo Presupuesto" class="w-full h-full object-contain p-1">
+                  <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition duration-200 flex flex-col items-center justify-center text-white text-[10px] font-bold text-center p-1 uppercase">
+                      <i class="ph ph-camera text-base mb-1"></i>
+                      Cambiar
+                  </div>
+                  <input type="file" #fileInput accept="image/*" (change)="cambiarLogoDirectoDesdeHoja(fileInput.files)" class="hidden">
+              </div>
+              <div class="space-y-1 flex-1 min-w-[300px]">
+                  <div class="flex border border-zinc-400">
+                      <span class="w-20 font-bold uppercase text-zinc-500 bg-zinc-100 px-3 py-1 text-xs border-r border-zinc-400">Cliente</span>
+                      <span class="px-3 py-1 text-xs flex-1">{{ clientService.getClientName(proy.client_id) }}</span>
+                  </div>
+                  <div class="flex border border-zinc-400">
+                      <span class="w-20 font-bold uppercase text-zinc-500 bg-zinc-100 px-3 py-1 text-xs border-r border-zinc-400">Proyecto</span>
+                      <span class="px-3 py-1 text-xs flex-1 font-bold">{{ proy.name }}</span>
+                  </div>
+              </div>
+          </div>
+          <div class="text-right space-y-2 w-full sm:w-auto flex flex-col items-end">
+              <div class="flex items-center gap-2">
+                  <button (click)="saveBudget()" [disabled]="projectService.isSaving()" class="text-white text-[10px] px-4 py-1.5 rounded uppercase font-bold shadow transition flex items-center gap-1.5" [ngClass]="projectService.hasUnsavedChanges() ? 'bg-orange-500 hover:bg-orange-600 animate-pulse' : 'bg-green-600 hover:bg-green-700'">
+                      <i class="ph" [class.ph-floppy-disk]="!projectService.isSaving()" [class.ph-spinner]="projectService.isSaving()" [class.animate-spin]="projectService.isSaving()"></i> 
+                      {{ projectService.isSaving() ? 'Guardando...' : projectService.hasUnsavedChanges() ? '● Guardar' : '✓ Guardado' }}
+                  </button>
+                  <button (click)="imprimir()" class="bg-blue-600 text-white text-[10px] px-3 py-1 rounded uppercase font-bold hover:bg-blue-700 shadow flex items-center gap-1"><i class="ph ph-printer"></i> Imprimir</button>
+              </div>
+              <div class="text-[11px] font-bold text-presuOscuro">Fecha: <span class="bg-amber-50 px-2 border border-amber-200">{{ currentDate }}</span></div>
+          </div>
+      </div>
+
+      <div class="overflow-x-auto border border-zinc-800 shadow-sm flex-1">
+          <table class="w-full border-collapse text-[11px]">
+              <thead>
+                  <tr class="bg-[#002060] text-white uppercase tracking-wider">
+                      <th class="border border-zinc-400 p-1 w-12">no.</th>
+                      <th class="border border-zinc-400 p-1 text-left">DESCRIPCIÓN</th>
+                      <th class="border border-zinc-400 p-1 w-20">CANTIDAD</th>
+                      <th class="border border-zinc-400 p-1 w-16">UNIDAD</th>
+                      <th class="border border-zinc-400 p-1 w-24">PRECIO UNIT.</th>
+                      <th class="border border-zinc-400 p-1 w-28">TOTAL</th>
+                  </tr>
+              </thead>
+              <tbody class="font-bold text-presuOscuro">
+                  <ng-container *ngIf="projectService.activeBudget() as budget">
+                      <ng-container *ngFor="let nivel of projectService.activeBudgetLevels(); let lvlIdx = index">
+                          
+                          <tr class="font-black text-center text-white border border-zinc-400 group relative" [style.backgroundColor]="configService.colorFilaSubConsolidado()">
+                              <td colspan="4" class="border border-zinc-400 p-1 uppercase tracking-wide relative text-left pl-3">
+                                  {{ nivel.name }}
+                                  <button (click)="projectService.removeLevel(lvlIdx)" class="absolute left-1 top-1/2 -translate-y-1/2 bg-red-500 hover:bg-red-600 text-white w-5 h-5 rounded items-center justify-center transition shadow z-10 cursor-pointer text-[12px] opacity-0 group-hover:opacity-100 flex"><i class="ph ph-trash"></i></button>
+                              </td>
+                              <td class="border border-zinc-400 p-1 uppercase text-left">TOTAL $</td>
+                              <td class="border border-zinc-400 p-1 bg-white text-zinc-400 font-normal text-center relative">
+                                  <button (click)="uiState.activeLevelForChapterAdd.set(nivel); uiState.isAddChapterModalOpen.set(true)" class="bg-blue-500 hover:bg-blue-600 text-white w-[18px] h-[18px] rounded-full flex items-center justify-center cursor-pointer text-[10px] m-auto"><i class="ph ph-plus"></i></button>
+                              </td>
+                          </tr>
+                          
+                          <ng-container *ngFor="let cap of nivel.chapters; let capIdx = index">
+                              <tr class="text-white font-bold border border-zinc-400 group relative" [style.backgroundColor]="configService.colorFilaTitConsolidado()">
+                                  <td class="border border-zinc-400 p-1 text-center w-12">
+                                      <div class="flex items-center justify-center gap-1.5">
+                                          <button (click)="uiState.activeLevelForChapterAdd.set(nivel); uiState.isAddChapterModalOpen.set(true)" class="bg-blue-500 hover:bg-blue-600 text-white w-[18px] h-[18px] rounded-full flex flex-shrink-0 items-center justify-center cursor-pointer text-[10px] opacity-0 group-hover:opacity-100 transition"><i class="ph ph-plus"></i></button>
+                                          <input type="text" [(ngModel)]="cap.chapter_number" class="w-5 bg-transparent text-center focus:outline-none placeholder:text-white/50 text-[11px]">
+                                      </div>
+                                  </td>
+                                  <td colspan="5" class="border border-zinc-400 p-1 px-4 uppercase text-[10px] tracking-wide relative">
+                                      <input type="text" [(ngModel)]="cap.name" class="w-full bg-transparent focus:outline-none placeholder:text-white/50 uppercase pr-8">
+                                      <button (click)="projectService.removeChapter(nivel, capIdx)" class="absolute right-1 top-1/2 -translate-y-1/2 bg-red-500 text-white w-5 h-5 rounded flex items-center justify-center opacity-0 group-hover:opacity-100"><i class="ph ph-trash"></i></button>
+                                  </td>
+                              </tr>
+                              
+                              <tr *ngFor="let item of cap.items; let itemIdx = index" class="hover:bg-zinc-50 transition border border-zinc-300 bg-white group">
+                                  <td class="border border-zinc-400 p-1 text-center text-zinc-400 font-normal w-12">
+                                      <div class="flex items-center justify-center gap-1.5">
+                                          <button (click)="projectService.addItem(cap)" class="bg-blue-500 hover:bg-blue-600 text-white w-[18px] h-[18px] rounded-full flex items-center justify-center cursor-pointer text-[10px] opacity-0 group-hover:opacity-100"><i class="ph ph-plus"></i></button>
+                                          <input type="text" [(ngModel)]="item.item_number" (ngModelChange)="projectService.updateItemGranular(lvlIdx, capIdx, itemIdx, item)" class="w-5 bg-transparent text-center focus:outline-none text-zinc-600 font-bold text-[11px]">
+                                      </div>
+                                  </td>
+                                  <td class="border border-zinc-400 p-1 outline-none text-presuOscuro font-medium">
+                                      <input type="text" [(ngModel)]="item.description" 
+                                             (click)="openItemOptions(cap, item)"
+                                             [readonly]="!item.description" 
+                                             [ngStyle]="{'cursor': !item.description ? 'pointer' : 'text'}"
+                                             placeholder="Clic aquí para partida o APU..."
+                                             (ngModelChange)="projectService.updateItemGranular(lvlIdx, capIdx, itemIdx, item)" 
+                                             class="w-full bg-transparent focus:outline-none placeholder:text-zinc-400">
+                                  </td>
+                                  <td class="border border-zinc-400 p-1 outline-none text-center font-bold text-presuOscuro">
+                                      <input type="number" [(ngModel)]="item.quantity" (ngModelChange)="projectService.updateItemGranular(lvlIdx, capIdx, itemIdx, item)" class="w-full bg-transparent text-center focus:outline-none">
+                                  </td>
+                                  <td class="border border-zinc-400 p-1 outline-none text-center uppercase font-bold text-zinc-500">
+                                      <input type="text" [(ngModel)]="item.unit" (ngModelChange)="projectService.updateItemGranular(lvlIdx, capIdx, itemIdx, item)" class="w-full bg-transparent text-center focus:outline-none uppercase">
+                                  </td>
+                                  <td class="border border-zinc-400 p-1 outline-none text-right px-2 font-semibold text-presuOscuro">
+                                      $ {{ item.unit_price | number:'1.2-2' }}
+                                  </td>
+                                  <td class="border border-zinc-400 p-1 outline-none text-right px-2 font-black text-presuOscuro bg-zinc-50">
+                                      $ {{ item.total | number:'1.2-2' }}
+                                      <button (click)="projectService.removeItem(cap, itemIdx)" class="absolute right-1 top-1/2 -translate-y-1/2 bg-red-500 text-white w-5 h-5 rounded flex items-center justify-center opacity-0 group-hover:opacity-100"><i class="ph ph-trash"></i></button>
+                                  </td>
+                              </tr>
+                          </ng-container>
+
+                          <tr class="font-black text-white border border-zinc-400" [style.backgroundColor]="configService.colorFilaSubConsolidado()">
+                              <td colspan="5" class="border border-zinc-400 p-1 text-right pr-4 uppercase tracking-wide">SUB-TOTAL</td>
+                              <td class="border border-zinc-400 p-1 text-right px-2 font-black">$ {{ nivel.subtotal | number:'1.2-2' }}</td>
+                          </tr>
+                          
+                          <tr class="h-2 bg-presuFondo"><td colspan="6" class="border-none p-0 h-2"></td></tr>
+                      </ng-container>
+                      
+                      <tr>
+                          <td colspan="6" class="p-2 text-center">
+                              <button (click)="addNewLevelAndOpenChapters()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded uppercase font-bold shadow text-xs inline-flex items-center gap-1">
+                                  <i class="ph ph-plus-circle text-sm"></i> Añadir Nivel
+                              </button>
+                          </td>
+                      </tr>
+
+                      <tr class="font-bold text-presuOscuro border border-zinc-400 text-sm bg-zinc-100">
+                          <td colspan="5" class="border border-zinc-400 p-2 text-right pr-4 uppercase">SUB-TOTAL COSTOS DIRECTOS</td>
+                          <td class="border border-zinc-400 p-2 text-right px-2 font-black">$ {{ budget.subtotal | number:'1.2-2' }}</td>
+                      </tr>
+                      
+                      <tr class="font-black text-white border border-zinc-400 text-sm" [style.backgroundColor]="configService.colorFilaSubConsolidado()">
+                          <td colspan="5" class="border border-zinc-400 p-2 text-right pr-4 uppercase">GRAN TOTAL GENERAL</td>
+                          <td class="border border-zinc-400 p-2 text-right px-2 font-black text-amber-300">$ {{ budget.grand_total | number:'1.2-2' }}</td>
+                      </tr>
+                  </ng-container>
+              </tbody>
+          </table>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- VISTA ANÁLISIS Y CÁLCULO (Paramétrico)         -->
+    <!-- ============================================== -->
+    <div class="main-panel" *ngIf="activeSidebarTab() === 'item'">
+      
+    <!-- PARTIDA DETALLE -->
+    <ng-container *ngIf="activeSidebarTab() === 'item' && selectedBudgetItem() as item">
+      <ng-container *ngIf="viewingApuDetails(); else apuSelector">
+        <div class="page-header">
+          <div style="display:flex;flex-direction:column;gap:5px;flex:1;min-width:0">
+            <div class="page-title">
+              <button (click)="viewingApuDetails.set(false)" style="background: none; border: none; cursor: pointer; color: var(--gray-hint); margin-right: 8px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8B4513" stroke-width="2"><path d="M2 20h20M6 20V10M12 20V4M18 20v-8"/></svg>
+              {{ item.description }}
+            </div>
+            <div style="display:flex;align-items:center;gap:7px;max-width:520px">
+              <label style="font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">Nombre en presupuesto</label>
+              <input type="text"
+                [ngModel]="item.description"
+                (ngModelChange)="syncItemName($event)"
+                style="flex:1;border:1px solid var(--gray-border);border-radius:5px;padding:4px 9px;font-size:12px;font-weight:500;color:var(--gray-text);background:var(--field-bg);height:28px;transition:border-color .15s,background .15s"
+                onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+                onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"
+              />
+            </div>
+          </div>
+          <div class="header-actions">
+            <button class="btn-save" (click)="saveActiveItem()">
+              <i class="ph ph-floppy-disk text-sm"></i> Guardar
+            </button>
+
+            <!-- APU BTN + mini posición integrados -->
+            <div class="apu-btn-group" [class.off-state]="!showApuPanel()">
+              <button class="btn-apu-main" [class.off]="!showApuPanel()" (click)="toggleApuPanel()">
+                <i class="ph ph-list-numbers text-[13px]"></i> APU
+              </button>
+              <div class="apu-pos-mini" [class.off]="!showApuPanel()">
+                <button class="pos-mini-btn" [class.active]="apuPosition() === 'abajo'" (click)="setApuPosition('abajo')" title="APU abajo">
+                  <svg width="14" height="11" viewBox="0 0 18 14" fill="none">
+                    <rect x="0" y="0" width="18" height="8" rx="1.5" fill="rgba(255,255,255,.9)"/>
+                    <rect x="0" y="10" width="18" height="4" rx="1" fill="rgba(255,255,255,.5)"/>
+                  </svg>
+                </button>
+                <button class="pos-mini-btn" [class.active]="apuPosition() === 'lado'" (click)="setApuPosition('lado')" title="APU al lado">
+                  <svg width="14" height="11" viewBox="0 0 18 14" fill="none">
+                    <rect x="0" y="0" width="11" height="14" rx="1.5" fill="rgba(255,255,255,.9)"/>
+                    <rect x="13" y="0" width="5" height="14" rx="1" fill="rgba(255,255,255,.5)"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONTENT -->
+        <!-- Si tiene template paramétrico, generamos su form dinámico -->
+        <ng-container *ngIf="selectedApuTemplate() as apu; else noTemplate">
+          
+          <ng-container *ngIf="apu.name.toLowerCase().includes('capa vegetal') || apu.code === '01.01'; else genericApu">
+            <app-apu-capa-vegetal [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-capa-vegetal>
+          </ng-container>
+
+          <ng-template #genericApu>
+          <div class="row2">
+            <!-- Formulario de Parámetros -->
+            <div class="card" style="margin-bottom:0">
+              <div class="card-title">
+                <i class="ph ph-rulers text-[13px]"></i>
+                Dimensiones y Parámetros
+              </div>
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <div *ngFor="let param of parameters()" class="f">
+                  <label>{{ param.label }} ({{ param.unit }})</label>
+                  
+                  <select *ngIf="param.ref_table && getDropdownOptions(param.key).length > 0"
+                    [value]="getParamValue(param.key, param.default)"
+                    (change)="updateParam(param.key, $any($event.target).value)">
+                    <option value="">-- Seleccionar --</option>
+                    <option *ngFor="let opt of getDropdownOptions(param.key)" [value]="opt[param.ref_value_field || 'id']">
+                      {{ opt[param.ref_label_field || 'label'] || opt.n_num || opt.length_m || opt.id }}
+                    </option>
+                  </select>
+
+                  <input *ngIf="!param.ref_table || getDropdownOptions(param.key).length === 0"
+                    type="number" step="any"
+                    [value]="getParamValue(param.key, param.default)"
+                    (input)="updateParam(param.key, $any($event.target).value)"
+                  />
                 </div>
-                
-                <div class="space-y-1 flex-1 min-w-[300px]">
-                    <div class="flex border border-zinc-400">
-                        <span class="w-20 font-bold uppercase text-zinc-500 bg-zinc-100 px-3 py-1 text-xs border-r border-zinc-400">Cliente</span>
-                        <span id="hoja-cliente" class="px-3 py-1 text-xs flex-1 outline-none">{{ clientService.getClientName(proy.client_id) }}</span>
-                    </div>
-                    <div class="flex border border-zinc-400">
-                        <span class="w-20 font-bold uppercase text-zinc-500 bg-zinc-100 px-3 py-1 text-xs border-r border-zinc-400">Proyecto</span>
-                        <span id="hoja-proyecto" class="px-3 py-1 text-xs flex-1 outline-none font-bold">{{ proy.name }}</span>
-                    </div>
-                    <div class="flex border border-zinc-400">
-                        <span class="w-20 font-bold uppercase text-zinc-500 bg-zinc-100 px-3 py-1 text-xs border-r border-zinc-400">Cotización</span>
-                        <span id="hoja-cotizacion" class="px-3 py-1 text-xs flex-1 outline-none">{{ proy.code || '---' }}</span>
-                    </div>
-                </div>
+              </div>
             </div>
 
-            <div class="text-right space-y-2 w-full sm:w-auto flex flex-col items-end">
-                <div class="flex items-center gap-2">
-                    <button (click)="saveBudget()" [disabled]="projectService.isSaving()" class="text-white text-[10px] px-4 py-1.5 rounded uppercase font-bold shadow transition flex items-center gap-1.5" [ngClass]="projectService.hasUnsavedChanges() ? 'bg-orange-500 hover:bg-orange-600 animate-pulse' : 'bg-green-600 hover:bg-green-700'">
-                        <i class="ph" [class.ph-floppy-disk]="!projectService.isSaving()" [class.ph-spinner]="projectService.isSaving()" [class.animate-spin]="projectService.isSaving()"></i> 
-                        {{ projectService.isSaving() ? 'Guardando...' : projectService.hasUnsavedChanges() ? '● Guardar Cambios' : '✓ Guardado' }}
-                    </button>
-                    <button (click)="imprimir()" class="bg-blue-600 text-white text-[10px] px-3 py-1 rounded uppercase font-bold hover:bg-blue-700 shadow transition flex items-center gap-1"><i class="ph ph-printer"></i> Imprimir</button>
-                    <button (click)="volverAlPanel()" class="bg-zinc-800 text-white text-[10px] px-3 py-1 rounded uppercase font-bold hover:bg-zinc-700 shadow transition flex items-center gap-1"><i class="ph ph-arrow-left"></i> Volver al Panel</button>
-                </div>
-                <div class="text-[11px] font-bold text-presuOscuro">Fecha: <span class="bg-amber-50 px-2 py-0.5 border border-amber-200">{{ currentDate }}</span></div>
-                
-                <div class="text-[11px] font-bold text-blue-800 italic">Cotización válida por: <span>{{ proy.quote_validity_days || 15 }}</span> días</div>
+            <!-- Métricas -->
+            <div class="card bg-[var(--brand-light)] border-[var(--brand)] border-opacity-30 flex flex-col justify-center" style="margin-bottom:0">
+               <div class="card-title"><i class="ph ph-calculator"></i> Totales Calculados</div>
+               
+               <div class="flex justify-between items-end mb-2">
+                 <div class="m-lbl font-bold uppercase text-[10px] text-zinc-500">Cantidad Total ({{ apu.unit }})</div>
+                 <div class="m-val font-black text-2xl text-[var(--brand)]">{{ calculatedQuantity() | number:'1.2-2' }}</div>
+               </div>
+               
+               <div class="flex justify-between items-end mb-2">
+                 <div class="m-lbl font-bold uppercase text-[10px] text-zinc-500">Costo Unitario (CU)</div>
+                 <div class="m-val font-bold text-lg text-zinc-800">$ {{ totalUnitarioApu() | number:'1.2-2' }}</div>
+               </div>
+               
+               <div class="flex justify-between items-end pt-2 border-t border-[var(--brand)] border-opacity-20 mt-2">
+                 <div class="m-lbl font-bold uppercase text-[11px] text-[var(--brand-dark)]">COSTO TOTAL PARTIDA</div>
+                 <div class="m-val font-black text-3xl text-[var(--brand-dark)]">$ {{ totalApuItem() | number:'1.2-2' }}</div>
+               </div>
             </div>
+          </div>
+          </ng-template>
+          
+        </ng-container>
+
+        <ng-template #noTemplate>
+           <div class="bg-amber-50 border border-amber-200 p-6 rounded-lg flex flex-col items-center text-amber-700">
+             <i class="ph ph-warning-circle text-3xl mb-2"></i>
+             <p class="font-bold">Esta partida no tiene una plantilla APU asociada.</p>
+             <p class="text-sm opacity-80">Por favor, asigne un APU desde la base de precios en el "Resumen General".</p>
+           </div>
+        </ng-template>
+      </ng-container> <!-- ends viewingApuDetails -->
+
+      <ng-template #apuSelector>
+        <div class="apu-selector">
+          <div class="apu-sel-header">
+            <div class="apu-sel-title">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8B4513" stroke-width="2"><path d="M2 20h20M6 20V10M12 20V4M18 20v-8"/></svg>
+              {{ item.description }}
+            </div>
+            <div class="apu-sel-sub">Selecciona un APU existente o crea uno nuevo</div>
+          </div>
+
+          <div class="apu-cards-grid">
+            <div class="apu-card-new" (click)="uiState.isCatalogPickerOpen.set(true)">
+              <div class="nc-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </div>
+              <div class="nc-label">+ Nuevo APU</div>
+            </div>
+
+            <!-- Si ya tiene un APU activo -->
+            <div class="apu-card-existing" *ngIf="selectedApuTemplate() as apu" (click)="viewingApuDetails.set(true)">
+              <div>
+                <div class="apu-card-ex-badge">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  ACTIVO
+                </div>
+                <div class="apu-card-ex-name">{{ apu.name }}</div>
+                <div class="apu-card-ex-meta">Catálogo principal</div>
+              </div>
+              <svg class="apu-card-ex-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+          </div>
         </div>
-        <div class="overflow-x-auto border border-zinc-800">
-            <table class="w-full border-collapse text-[11px]">
-                <thead>
-                    <tr class="bg-[#002060] text-white uppercase tracking-wider">
-                        <th class="border border-zinc-400 p-1 w-12">no.</th>
-                        <th class="border border-zinc-400 p-1 text-left">DESCRIPCIÓN</th>
-                        <th class="border border-zinc-400 p-1 w-20">CANTIDAD</th>
-                        <th class="border border-zinc-400 p-1 w-20">UNIDAD</th>
-                        <th class="border border-zinc-400 p-1 w-28">PRECIO UNIT.</th>
-                        <th class="border border-zinc-400 p-1 w-32">TOTAL</th>
-                        <th class="border border-zinc-400 p-1 w-40">OBSERVACIONES</th>
-                    </tr>
-                </thead>
-                <tbody class="font-bold text-presuOscuro">
-                    <ng-container *ngIf="projectService.activeBudget() as budget">
-                        <ng-container *ngFor="let nivel of projectService.activeBudgetLevels(); let lvlIdx = index">
-                            
-                            <!-- Header de Nivel -->
-                            <tr class="font-black text-center text-white border border-zinc-400 group relative" [style.backgroundColor]="configService.colorFilaSubConsolidado()">
-                                <td colspan="5" class="border border-zinc-400 p-1 uppercase tracking-wide relative">
-                                    {{ nivel.name }}
-                                    <button (click)="projectService.removeLevel(lvlIdx)" class="absolute left-1 top-1/2 -translate-y-1/2 bg-red-500 hover:bg-red-600 text-white w-5 h-5 rounded items-center justify-center transition shadow z-10 cursor-pointer text-[12px] opacity-0 group-hover:opacity-100 flex" title="Eliminar Nivel"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button>
-                                </td>
-                                <td class="border border-zinc-400 p-1 uppercase text-left">TOTAL $</td>
-                                <td class="border border-zinc-400 p-1 bg-white text-zinc-400 font-normal text-center relative">
-                                    <button (click)="uiState.activeLevelForChapterAdd.set(nivel); uiState.isAddChapterModalOpen.set(true)" class="bg-blue-500 hover:bg-blue-600 text-white w-[18px] h-[18px] rounded-full flex flex-shrink-0 items-center justify-center shadow cursor-pointer text-[10px] m-auto opacity-0 group-hover:opacity-100 transition"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
-                                </td>
-                            </tr>
-                            
-                            <!-- Capítulos del nivel -->
-                            <ng-container *ngFor="let cap of nivel.chapters; let capIdx = index">
-                                <!-- Capítulo Titulo Principal -->
-                                <tr class="text-white font-bold border border-zinc-400 group relative" [style.backgroundColor]="configService.colorFilaTitConsolidado()">
-                                    <td class="border border-zinc-400 p-1 text-center w-12">
-                                        <div class="flex items-center justify-center gap-1.5">
-                                            <button (click)="uiState.activeLevelForChapterAdd.set(nivel); uiState.isAddChapterModalOpen.set(true)" class="bg-blue-500 hover:bg-blue-600 text-white w-[18px] h-[18px] rounded-full flex flex-shrink-0 items-center justify-center shadow cursor-pointer text-[10px] opacity-0 group-hover:opacity-100 transition" title="Añadir Renglón"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
-                                            <input type="text" [(ngModel)]="cap.chapter_number" class="w-5 bg-transparent text-center focus:outline-none placeholder:text-white/50 text-[11px]">
-                                        </div>
-                                    </td>
-                                    <td colspan="6" class="border border-zinc-400 p-1 px-4 uppercase text-[10px] tracking-wide relative">
-                                        <input type="text" [(ngModel)]="cap.name" class="w-full bg-transparent focus:outline-none placeholder:text-white/50 uppercase pr-8">
-                                        <button (click)="projectService.removeChapter(nivel, capIdx)" class="absolute right-1 top-1/2 -translate-y-1/2 bg-red-500 hover:bg-red-600 text-white w-5 h-5 rounded items-center justify-center transition shadow z-10 cursor-pointer text-[12px] opacity-0 group-hover:opacity-100 flex" title="Eliminar Renglón"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button>
-                                    </td>
-                                </tr>
-                                
-                                <!-- Partidas del Capítulo -->
-                                <tr *ngFor="let item of cap.items; let itemIdx = index" class="hover:bg-zinc-50 transition border border-zinc-300 bg-white group">
-                                    <td class="border border-zinc-400 p-1 text-center text-zinc-400 font-normal w-12">
-                                        <div class="flex items-center justify-center gap-1.5">
-                                            <button (click)="projectService.addItem(cap)" class="bg-blue-500 hover:bg-blue-600 text-white w-[18px] h-[18px] rounded-full flex flex-shrink-0 items-center justify-center transition shadow cursor-pointer text-[10px] opacity-0 group-hover:opacity-100" title="Añadir partida en blanco"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
-                                            <input type="text" [(ngModel)]="item.item_number" (ngModelChange)="projectService.updateItemGranular(lvlIdx, capIdx, itemIdx, item)" class="w-5 bg-transparent text-center focus:outline-none placeholder:text-zinc-300 text-zinc-600 font-bold text-[11px]">
-                                        </div>
-                                    </td>
-                                    <td class="border border-zinc-400 p-1 outline-none text-presuOscuro font-medium">
-                                        <input type="text" [(ngModel)]="item.description" 
-                                               (click)="openItemOptions(cap, item)"
-                                               [readonly]="!item.description" 
-                                               [ngStyle]="{'cursor': !item.description ? 'pointer' : 'text'}"
-                                               placeholder="Clic aquí para partida o APU..."
-                                               (ngModelChange)="projectService.updateItemGranular(lvlIdx, capIdx, itemIdx, item)" 
-                                               class="w-full bg-transparent focus:outline-none placeholder:text-zinc-400">
-                                    </td>
-                                    <td class="border border-zinc-400 p-1 outline-none text-center font-bold text-presuOscuro">
-                                        <input type="number" [(ngModel)]="item.quantity" (ngModelChange)="projectService.updateItemGranular(lvlIdx, capIdx, itemIdx, item)" class="w-full bg-transparent text-center focus:outline-none placeholder:text-zinc-300">
-                                    </td>
-                                    <td class="border border-zinc-400 p-1 outline-none text-center uppercase font-bold text-zinc-500">
-                                        <input type="text" [(ngModel)]="item.unit" (ngModelChange)="projectService.updateItemGranular(lvlIdx, capIdx, itemIdx, item)" class="w-full bg-transparent text-center focus:outline-none placeholder:text-zinc-300 uppercase">
-                                    </td>
-                                    <td class="border border-zinc-400 p-1 outline-none text-right px-2 font-semibold text-presuOscuro">
-                                        <div class="flex items-center justify-between">
-                                            <span class="text-zinc-400">$</span>
-                                            <input type="number" [(ngModel)]="item.unit_price" (ngModelChange)="projectService.updateItemGranular(lvlIdx, capIdx, itemIdx, item)" class="w-full bg-transparent text-right focus:outline-none placeholder:text-zinc-300 ml-1">
-                                        </div>
-                                    </td>
-                                    <td class="border border-zinc-400 p-1 outline-none text-right px-2 font-black text-presuOscuro bg-zinc-50">
-                                        $ {{ item.total | number:'1.2-2' }}
-                                    </td>
-                                    <td class="border border-zinc-400 p-1 outline-none italic text-zinc-400 font-medium relative">
-                                        <input type="text" [(ngModel)]="item.observations" (ngModelChange)="projectService.updateItemGranular(lvlIdx, capIdx, itemIdx, item)" class="w-full bg-transparent focus:outline-none placeholder:text-zinc-300">
-                                        <button (click)="projectService.removeItem(cap, itemIdx)" class="btn-flotante absolute right-1 top-1/2 -translate-y-1/2 bg-red-500 hover:bg-red-600 text-white w-5 h-5 rounded items-center justify-center transition shadow z-10 cursor-pointer text-[12px] opacity-0 group-hover:opacity-100 flex" title="Eliminar Partida"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></button>
-                                    </td>
-                                </tr>
-                            </ng-container>
+      </ng-template>
+    </ng-container> <!-- ends activeSidebarTab item -->
 
-                            <!-- Subtotal del Nivel -->
-                            <tr class="font-black text-white border border-zinc-400" [style.backgroundColor]="configService.colorFilaSubConsolidado()">
-                                <td colspan="5" class="border border-zinc-400 p-1 text-right pr-4 uppercase tracking-wide">SUB-TOTAL</td>
-                                <td class="border border-zinc-400 p-1 text-right px-2 font-black">$ {{ nivel.subtotal | number:'1.2-2' }}</td>
-                                <td class="border border-zinc-400 p-1 bg-white"></td>
-                            </tr>
-                            
-                            <!-- Espaciador -->
-                            <tr class="h-2 bg-presuFondo">
-                                <td colspan="7" class="border-none p-0 h-2"></td>
-                            </tr>
 
-                        </ng-container>
-                        
-                        <!-- Botón para añadir nuevo nivel (si está vacío o se quiere otro) -->
-                        <tr>
-                            <td colspan="7" class="p-2 text-center">
-                                <button (click)="addNewLevelAndOpenChapters()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded uppercase font-bold shadow transition text-xs inline-flex items-center gap-1">
-                                    <i class="ph ph-plus-circle text-sm"></i> Añadir Nivel
-                                </button>
-                            </td>
-                        </tr>
+      </div>
+    </div> <!-- /main-panel item -->
 
-                        <!-- Subtotal de Costos Directos -->
-                        <tr class="font-bold text-presuOscuro border border-zinc-400 text-sm bg-zinc-100">
-                            <td colspan="5" class="border border-zinc-400 p-2 text-right pr-4 uppercase tracking-wide">SUB-TOTAL COSTOS DIRECTOS</td>
-                            <td class="border border-zinc-400 p-2 text-right px-2 font-black">$ {{ budget.subtotal | number:'1.2-2' }}</td>
-                            <td class="border border-zinc-400 p-2 bg-white"></td>
-                        </tr>
+  </div> <!-- /workspace -->
 
-                        <!-- Overhead / Gastos Generales -->
-                        <tr class="font-medium text-presuOscuro border border-zinc-400 text-sm bg-white hover:bg-zinc-50 transition">
-                            <td colspan="4" class="border border-zinc-400 p-1 text-right pr-4 tracking-wide">Gastos Generales e Indirectos</td>
-                            <td class="border border-zinc-400 p-1 text-center w-24">
-                                <div class="flex items-center justify-center">
-                                    <input type="number" [(ngModel)]="budget.overhead_rate" (change)="projectService.updateTotal()" class="w-12 text-center border-b border-dashed border-zinc-400 bg-transparent focus:outline-none focus:border-presuOxido">%
-                                </div>
-                            </td>
-                            <td class="border border-zinc-400 p-1 text-right px-2 text-zinc-600">$ {{ budget.overhead_total | number:'1.2-2' }}</td>
-                            <td class="border border-zinc-400 p-1 bg-white"></td>
-                        </tr>
-
-                        <!-- Contingency / Imprevistos -->
-                        <tr class="font-medium text-presuOscuro border border-zinc-400 text-sm bg-white hover:bg-zinc-50 transition">
-                            <td colspan="4" class="border border-zinc-400 p-1 text-right pr-4 tracking-wide">Imprevistos</td>
-                            <td class="border border-zinc-400 p-1 text-center w-24">
-                                <div class="flex items-center justify-center">
-                                    <input type="number" [(ngModel)]="budget.contingency_rate" (change)="projectService.updateTotal()" class="w-12 text-center border-b border-dashed border-zinc-400 bg-transparent focus:outline-none focus:border-presuOxido">%
-                                </div>
-                            </td>
-                            <td class="border border-zinc-400 p-1 text-right px-2 text-zinc-600">$ {{ budget.contingency_total | number:'1.2-2' }}</td>
-                            <td class="border border-zinc-400 p-1 bg-white"></td>
-                        </tr>
-
-                        <!-- Profit / Beneficios -->
-                        <tr class="font-medium text-presuOscuro border border-zinc-400 text-sm bg-white hover:bg-zinc-50 transition">
-                            <td colspan="4" class="border border-zinc-400 p-1 text-right pr-4 tracking-wide">Beneficios / Utilidad</td>
-                            <td class="border border-zinc-400 p-1 text-center w-24">
-                                <div class="flex items-center justify-center">
-                                    <input type="number" [(ngModel)]="budget.profit_rate" (change)="projectService.updateTotal()" class="w-12 text-center border-b border-dashed border-zinc-400 bg-transparent focus:outline-none focus:border-presuOxido">%
-                                </div>
-                            </td>
-                            <td class="border border-zinc-400 p-1 text-right px-2 text-zinc-600">$ {{ budget.profit_total | number:'1.2-2' }}</td>
-                            <td class="border border-zinc-400 p-1 bg-white"></td>
-                        </tr>
-
-                        <!-- ITBIS -->
-                        <tr class="font-medium text-presuOscuro border border-zinc-400 text-sm bg-white hover:bg-zinc-50 transition">
-                            <td colspan="4" class="border border-zinc-400 p-1 text-right pr-4 tracking-wide">ITBIS (Impuestos)</td>
-                            <td class="border border-zinc-400 p-1 text-center w-24">
-                                <div class="flex items-center justify-center">
-                                    <input type="number" [(ngModel)]="budget.itbis_rate" (change)="projectService.updateTotal()" class="w-12 text-center border-b border-dashed border-zinc-400 bg-transparent focus:outline-none focus:border-presuOxido">%
-                                </div>
-                            </td>
-                            <td class="border border-zinc-400 p-1 text-right px-2 text-zinc-600">$ {{ budget.itbis_total | number:'1.2-2' }}</td>
-                            <td class="border border-zinc-400 p-1 bg-white"></td>
-                        </tr>
-                        
-                        <!-- Total Final -->
-                        <tr class="font-black text-white border border-zinc-400 text-sm" [style.backgroundColor]="configService.colorFilaSubConsolidado()">
-                            <td colspan="5" class="border border-zinc-400 p-2 text-right pr-4 uppercase tracking-wide">GRAN TOTAL GENERAL</td>
-                            <td class="border border-zinc-400 p-2 text-right px-2 font-black text-amber-300">$ {{ budget.grand_total | number:'1.2-2' }}</td>
-                            <td class="border border-zinc-400 p-2 bg-white text-zinc-400 font-normal text-center relative text-[10px]">
-                                <button (click)="projectService.updateTotal()" class="bg-presuOxido hover:bg-amber-800 text-white w-full h-full p-1 rounded shadow cursor-pointer m-auto uppercase">Recalcular</button>
-                            </td>
-                        </tr>
-                    </ng-container>
-                </tbody>
-            </table>
-        </div>
-    </section>

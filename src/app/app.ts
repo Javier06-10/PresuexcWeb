@@ -5,6 +5,8 @@ import { Header } from './components/header/header';
 import { ProjectList } from './components/project-list/project-list';
 import { BudgetView } from './components/budget-view/budget-view';
 import { ConfigModal } from './components/modals/config-modal/config-modal';
+import { ProfileModal } from './components/modals/profile-modal/profile-modal';
+import { ResetPasswordModal } from './components/modals/reset-password-modal/reset-password-modal';
 import { FullerModal } from './components/modals/fuller-modal/fuller-modal';
 import { EmpiricoModal } from './components/modals/empirico-modal/empirico-modal';
 import { MeasuresModal } from './components/modals/measures-modal/measures-modal';
@@ -38,6 +40,8 @@ import { ProjectService } from './services/project';
     BudgetView,
     CatalogViewComponent,
     ConfigModal,
+    ProfileModal,
+    ResetPasswordModal,
     MeasuresModal,
     SteelModal,
     FullerModal,

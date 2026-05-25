@@ -1,0 +1,99 @@
+<div class="apu-capa-vegetal">
+  <div class="card">
+    <div class="card-title"><i class="ph ph-shapes"></i> Tramos de Capa Vegetal</div>
+    <div class="space-y-2">
+      <div *ngFor="let tramo of tramos(); let i = index" class="flex gap-2 items-end">
+        <div class="flex-1">
+          <label>Descripción</label>
+          <input
+            type="text"
+            [(ngModel)]="tramo.descripcion"
+            (ngModelChange)="updateTramo(i, 'descripcion', $event)"
+            class="w-full"
+          />
+        </div>
+        <div class="w-24">
+          <label>Largo (m)</label>
+          <input
+            type="number"
+            step="any"
+            [(ngModel)]="tramo.largo"
+            (ngModelChange)="updateTramo(i, 'largo', $event)"
+            class="w-full"
+          />
+        </div>
+        <div class="w-24">
+          <label>Ancho (m)</label>
+          <input
+            type="number"
+            step="any"
+            [(ngModel)]="tramo.ancho"
+            (ngModelChange)="updateTramo(i, 'ancho', $event)"
+            class="w-full"
+          />
+        </div>
+        <button (click)="removeTramo(i)" class="px-2 py-1 bg-red-500 text-white rounded">
+          <i class="ph ph-trash"></i>
+        </button>
+      </div>
+      <button (click)="addTramo()" class="px-3 py-1.5 bg-blue-500 text-white rounded text-sm">
+        <i class="ph ph-plus"></i> Añadir Tramo
+      </button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><i class="ph ph-gear"></i> Parámetros</div>
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+      <div>
+        <label>Profundidad (m)</label>
+        <input
+          type="number"
+          step="0.01"
+          [(ngModel)]="profundidad"
+          (ngModelChange)="profundidad.set($event)"
+        />
+      </div>
+      <div>
+        <label>Esponjamiento</label>
+        <input
+          type="number"
+          step="0.01"
+          [(ngModel)]="esponjamiento"
+          (ngModelChange)="esponjamiento.set($event)"
+        />
+      </div>
+      <div>
+        <label>Desperdicio (%)</label>
+        <input
+          type="number"
+          step="0.1"
+          [(ngModel)]="desperdicio"
+          (ngModelChange)="desperdicio.set($event)"
+        />
+      </div>
+    </div>
+  </div>
+
+  <div class="card bg-blue-50">
+    <div class="card-title"><i class="ph ph-calculator"></i> Cálculos</div>
+    <div class="grid grid-cols-2 gap-3 text-sm">
+      <div>
+        <span class="text-gray-600">Área Total:</span>
+        <div class="text-lg font-bold">{{ areaTotal() | number: '1.2-2' }} m²</div>
+      </div>
+      <div>
+        <span class="text-gray-600">Volumen en Banco:</span>
+        <div class="text-lg font-bold">{{ volumenBanco() | number: '1.2-2' }} m³</div>
+      </div>
+      <div>
+        <span class="text-gray-600">Volumen Esponjado:</span>
+        <div class="text-lg font-bold">{{ volumenEsponjado() | number: '1.2-2' }} m³</div>
+      </div>
+      <div>
+        <span class="text-gray-600">Volumen Presupuestado:</span>
+        <div class="text-lg font-bold">{{ volumenPresupuestado() | number: '1.2-2' }} m³</div>
+      </div>
+    </div>
+  </div>
+</div>
