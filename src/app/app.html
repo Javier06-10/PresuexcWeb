@@ -1,59 +1,55 @@
 <ng-container *ngIf="!supabase.isInitialized() || supabase.isFetchingOrganization()">
-    <div class="flex items-center justify-center min-h-screen bg-presuFondo">
-        <div class="flex flex-col items-center justify-center text-presuOxido">
-            <i class="ph ph-spinner animate-spin text-5xl mb-4"></i>
-            <p class="font-bold tracking-wide">Cargando aplicación...</p>
-        </div>
+  <div class="flex items-center justify-center min-h-screen bg-presuFondo">
+    <div class="flex flex-col items-center justify-center text-presuOxido">
+      <i class="ph ph-spinner animate-spin text-5xl mb-4"></i>
+      <p class="font-bold tracking-wide">Cargando aplicación...</p>
     </div>
+  </div>
 </ng-container>
 
 <ng-container *ngIf="supabase.isInitialized() && !supabase.isFetchingOrganization()">
-    <ng-container *ngIf="supabase.currentSession(); else loginBlock">
-        <!-- Si tiene sesión pero NO tiene organización, mostrar onboarding -->
-        <ng-container *ngIf="!supabase.currentOrganizationId()">
-            <app-onboarding></app-onboarding>
-        </ng-container>
-
-        <!-- Si tiene sesión Y organización, mostrar la app normal -->
-        <ng-container *ngIf="supabase.currentOrganizationId()">
-            <app-header></app-header>
-            
-            <ng-container *ngIf="uiState.activeView() !== 'catalogs'">
-                <app-project-list></app-project-list>
-                <app-budget-view></app-budget-view>
-            </ng-container>
-
-            <ng-container *ngIf="uiState.activeView() === 'catalogs'">
-                <app-catalog-view></app-catalog-view>
-            </ng-container>
-            
-            <!-- Modales -->
-            <app-config-modal></app-config-modal>
-            <app-profile-modal></app-profile-modal>
-            <app-measures-modal></app-measures-modal>
-            <app-steel-modal></app-steel-modal>
-            <app-concrete-modal></app-concrete-modal>
-            <app-fuller-modal></app-fuller-modal>
-            <app-empirico-modal></app-empirico-modal>
-            <app-logo-format-modal></app-logo-format-modal>
-            <app-prices-modal></app-prices-modal>
-            <app-new-bar-modal></app-new-bar-modal>
-            <app-new-project-modal></app-new-project-modal>
-            <app-new-client-modal></app-new-client-modal>
-            <app-budget-init-modal></app-budget-init-modal>
-            <app-add-chapter-modal></app-add-chapter-modal>
-            <app-item-options-modal></app-item-options-modal>
-            <app-catalog-picker-modal></app-catalog-picker-modal>
-            <app-apu-editor-modal></app-apu-editor-modal>
-            <app-parametric-apu-modal></app-parametric-apu-modal>
-            <app-error-modal></app-error-modal>
-        </ng-container>
-
-        <!-- El modal de recuperación debe ser accesible siempre que haya sesión -->
-        <app-reset-password-modal></app-reset-password-modal>
+  <ng-container *ngIf="supabase.currentSession(); else loginBlock">
+    <!-- Si tiene sesión pero NO tiene organización, mostrar onboarding -->
+    <ng-container *ngIf="!supabase.currentOrganizationId()">
+      <app-onboarding></app-onboarding>
     </ng-container>
+
+    <!-- Si tiene sesión Y organización, mostrar la app normal -->
+    <ng-container *ngIf="supabase.currentOrganizationId()">
+      <app-header></app-header>
+
+      <ng-container *ngIf="uiState.activeView() !== 'catalogs'">
+        <app-project-list></app-project-list>
+        <app-budget-view></app-budget-view>
+      </ng-container>
+
+      <ng-container *ngIf="uiState.activeView() === 'catalogs'">
+        <app-catalog-view></app-catalog-view>
+      </ng-container>
+
+      <!-- Modales -->
+      <app-config-modal></app-config-modal>
+      <app-measures-modal></app-measures-modal>
+      <app-steel-modal></app-steel-modal>
+      <app-concrete-modal></app-concrete-modal>
+      <app-fuller-modal></app-fuller-modal>
+      <app-empirico-modal></app-empirico-modal>
+      <app-logo-format-modal></app-logo-format-modal>
+      <app-prices-modal></app-prices-modal>
+      <app-new-bar-modal></app-new-bar-modal>
+      <app-new-project-modal></app-new-project-modal>
+      <app-new-client-modal></app-new-client-modal>
+      <app-budget-init-modal></app-budget-init-modal>
+      <app-add-chapter-modal></app-add-chapter-modal>
+      <app-item-options-modal></app-item-options-modal>
+      <app-catalog-picker-modal></app-catalog-picker-modal>
+      <app-apu-editor-modal></app-apu-editor-modal>
+      <app-parametric-apu-modal></app-parametric-apu-modal>
+      <app-error-modal></app-error-modal>
+    </ng-container>
+  </ng-container>
 </ng-container>
 
 <ng-template #loginBlock>
-    <app-login></app-login>
+  <app-login></app-login>
 </ng-template>
