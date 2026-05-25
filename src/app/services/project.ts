@@ -13,6 +13,7 @@ export interface Project {
   total_area_m2?: number;
   construction_type?: string;
   status: string;
+  quote_validity_days?: number;
   created_at: string;
 }
 
@@ -33,6 +34,13 @@ export interface Budget {
   itbis_total?: number;
   grand_total: number;
   status: string;
+  // Gastos indirectos breakdown (rates as percentages)
+  codia_rate?: number;  // 0.2%
+  dir_tec_rate?: number;  // 10%
+  ayudantes_rate?: number;  // 1%
+  codia_total?: number;
+  dir_tec_total?: number;
+  ayudantes_total?: number;
 }
 
 export interface BudgetLevel {
@@ -168,6 +176,23 @@ export class ProjectService {
       return data;
     }
     return null;
+  }
+
+  async deleteProject(projectId: string) {
+    const { error } = await this.supabaseService.client
+      .from('projects')
+      .delete()
+      .eq('id', projectId);
+
+    if (error) {
+      console.error('Error deleting project:', error);
+      alert('Error al eliminar el proyecto: ' + error.message);
+      return false;
+    }
+
+    // Update the local list
+    this.listadoProyectos.update(list => list.filter(p => p.id !== projectId));
+    return true;
   }
 
   private async createDefaultBudget(project: Project) {
@@ -463,7 +488,7 @@ export class ProjectService {
       const budget = this.activeBudget();
       if (budget) {
         const { error: errBudget } = await this.supabaseService.client.from('budgets').update({
-              subtotal: budget.subtotal, 
+              subtotal: budget.subtotal,
               overhead_rate: budget.overhead_rate,
               profit_rate: budget.profit_rate,
               contingency_rate: budget.contingency_rate,
@@ -472,7 +497,13 @@ export class ProjectService {
               profit_total: budget.profit_total,
               contingency_total: budget.contingency_total,
               itbis_total: budget.itbis_total,
-              grand_total: budget.grand_total
+              grand_total: budget.grand_total,
+              codia_rate: budget.codia_rate,
+              dir_tec_rate: budget.dir_tec_rate,
+              ayudantes_rate: budget.ayudantes_rate,
+              codia_total: budget.codia_total,
+              dir_tec_total: budget.dir_tec_total,
+              ayudantes_total: budget.ayudantes_total
         }).eq('id', budget.id);
         if (errBudget) errors.push('Budget: ' + errBudget.message);
       }
@@ -572,16 +603,30 @@ export class ProjectService {
     const currentBudget = this.activeBudget();
     if (currentBudget) {
       currentBudget.subtotal = grandTotal;
-      
+
+      // Gastos Indirectos breakdown
+      const codiaRate = currentBudget.codia_rate ?? 0.2;
+      const dirTecRate = currentBudget.dir_tec_rate ?? 10;
+      const ayudantesRate = currentBudget.ayudantes_rate ?? 1;
+
+      currentBudget.codia_total = grandTotal * (codiaRate / 100);
+      currentBudget.dir_tec_total = grandTotal * (dirTecRate / 100);
+      currentBudget.ayudantes_total = grandTotal * (ayudantesRate / 100);
+      currentBudget.overhead_total = currentBudget.codia_total + currentBudget.dir_tec_total + currentBudget.ayudantes_total;
+
       const itbisRate = currentBudget.itbis_rate || 0;
-      const overheadRate = currentBudget.overhead_rate || 0;
       const profitRate = currentBudget.profit_rate || 0;
       const contingencyRate = currentBudget.contingency_rate || 0;
 
-      currentBudget.overhead_total = grandTotal * (overheadRate / 100);
+      // Subtotal + profit + contingency (before ITBIS and gastos indirectos)
+      const subtotalWithMarkups = grandTotal + (grandTotal * (profitRate / 100)) + (grandTotal * (contingencyRate / 100));
+
+      // ITBIS applies to subtotal + profit + contingency + Dir.Tec (from gastos indirectos only)
+      const itbisBase = subtotalWithMarkups + currentBudget.dir_tec_total;
+      currentBudget.itbis_total = itbisBase * (itbisRate / 100);
+
       currentBudget.profit_total = grandTotal * (profitRate / 100);
       currentBudget.contingency_total = grandTotal * (contingencyRate / 100);
-      currentBudget.itbis_total = grandTotal * (itbisRate / 100);
 
       currentBudget.grand_total = grandTotal + currentBudget.overhead_total + currentBudget.profit_total + currentBudget.contingency_total + currentBudget.itbis_total;
 

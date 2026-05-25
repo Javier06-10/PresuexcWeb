@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UiState } from '../../../services/ui-state';
+import { ConfigService } from '../../../services/config';
 
 @Component({
   selector: 'app-config-modal',
@@ -10,8 +11,10 @@ import { UiState } from '../../../services/ui-state';
 })
 export class ConfigModal {
   uiState = inject(UiState);
+  configService = inject(ConfigService);
 
   closeModal() {
+    this.configService.saveOrgSettings();
     this.uiState.isConfigModalOpen.set(false);
   }
 

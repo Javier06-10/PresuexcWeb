@@ -38,7 +38,7 @@
                 </div>
                 <div class="text-[11px] font-bold text-presuOscuro">Fecha: <span class="bg-amber-50 px-2 py-0.5 border border-amber-200">{{ currentDate }}</span></div>
                 
-                <div class="text-[11px] font-bold text-blue-800 italic">Cotización válida por: <span>15</span> días</div>
+                <div class="text-[11px] font-bold text-blue-800 italic">Cotización válida por: <span>{{ proy.quote_validity_days || 15 }}</span> días</div>
             </div>
         </div>
         <div class="overflow-x-auto border border-zinc-800">

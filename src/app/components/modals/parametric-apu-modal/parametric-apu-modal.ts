@@ -16,20 +16,22 @@ export class ParametricApuModal {
   supabase = inject(SupabaseService);
 
   isInserting = signal(false);
+  paramDropdownOptions = signal<Record<string, any[]>>({});
 
   // Valores actuales de los parámetros (se inicializan con los defaults del APU)
-  paramValues = signal<Record<string, number>>({});
+  paramValues = signal<Record<string, number | string>>({});
 
   constructor() {
     // Cuando cambia el APU activo, reinicializar los parámetros con sus defaults
     effect(() => {
       const apu = this.uiState.activeParametricApu();
       if (apu?.parameters) {
-        const defaults: Record<string, number> = {};
+        const defaults: Record<string, number | string> = {};
         for (const p of apu.parameters) {
           defaults[p.key] = p.default ?? 0;
         }
         this.paramValues.set(defaults);
+        this.loadParamDropdowns(apu.parameters);
       }
     });
   }
@@ -38,14 +40,41 @@ export class ParametricApuModal {
   get apu() { return this.uiState.activeParametricApu(); }
 
   // Computed: el APU activo con parámetros
-  parameters = computed<{key: string, label: string, default: number, unit: string}[]>(() => {
+  parameters = computed<{key: string, label: string, default: number, unit: string, ref_table?: string, ref_label_field?: string, ref_value_field?: string}[]>(() => {
     return this.apu?.parameters || [];
   });
+
+  async loadParamDropdowns(params: any[]) {
+    const options: Record<string, any[]> = {};
+
+    for (const param of params) {
+      if (param.ref_table) {
+        try {
+          const { data, error } = await this.supabase.client
+            .from(param.ref_table)
+            .select('*')
+            .order('sort_order', { ascending: true });
+
+          if (!error && data) {
+            options[param.key] = data;
+          }
+        } catch (err) {
+          console.error(`Error loading options for ${param.key}:`, err);
+        }
+      }
+    }
+
+    this.paramDropdownOptions.set(options);
+  }
 
   // Evaluador seguro de fórmulas con los parámetros actuales
   private evalFormula(formula: string | number, extraVars: Record<string, number> = {}): number {
     if (typeof formula === 'number') return formula;
-    const allVars = { ...this.paramValues(), ...extraVars };
+    const numericParams: Record<string, number> = {};
+    for (const [k, v] of Object.entries(this.paramValues())) {
+      numericParams[k] = typeof v === 'number' ? v : 0;
+    }
+    const allVars = { ...numericParams, ...extraVars };
     const varNames = Object.keys(allVars);
     const varValues = Object.values(allVars);
     try {
@@ -90,10 +119,10 @@ export class ParametricApuModal {
         qty = this.evalFormula(m.qty_formula, derived);
       } else if (m.qty_por_m3 !== undefined) {
         // Para estructuras, vol_m3 viene de los parámetros de dimensión
-        const ancho = params['ancho_m'] ?? 0;
-        const alto = params['alto_m'] ?? params['espesor_m'] ?? 0;
-        const largo = params['largo_m'] ?? 1;
-        const cant = params['cantidad'] ?? 1;
+        const ancho = (params['ancho_m'] as number) ?? 0;
+        const alto = ((params['alto_m'] as number) ?? (params['espesor_m'] as number)) ?? 0;
+        const largo = (params['largo_m'] as number) ?? 1;
+        const cant = (params['cantidad'] as number) ?? 1;
         const vol = ancho * alto * largo * cant;
         qty = m.qty_por_m3 * vol;
       } else if (m.qty !== undefined) {
@@ -118,10 +147,10 @@ export class ParametricApuModal {
       if (m.qty_formula) {
         qty = this.evalFormula(m.qty_formula, derived);
       } else if (m.qty_por_m3 !== undefined) {
-        const ancho = params['ancho_m'] ?? 0;
-        const alto = params['alto_m'] ?? params['espesor_m'] ?? 0;
-        const largo = params['largo_m'] ?? 1;
-        const cant = params['cantidad'] ?? 1;
+        const ancho = (params['ancho_m'] as number) ?? 0;
+        const alto = ((params['alto_m'] as number) ?? (params['espesor_m'] as number)) ?? 0;
+        const largo = (params['largo_m'] as number) ?? 1;
+        const cant = (params['cantidad'] as number) ?? 1;
         const vol = ancho * alto * largo * cant;
         qty = m.qty_por_m3 * vol;
       } else if (m.qty !== undefined) {
@@ -147,14 +176,14 @@ export class ParametricApuModal {
     const params = this.paramValues();
     // Para APUs de área, la unidad base es M2
     if (apu.unit?.toUpperCase().includes('M2') || apu.unit?.toUpperCase() === 'M2') {
-      const area = params['area_m2'] ?? (params['ancho_m'] ?? 0) * (params['largo_m'] ?? 0);
+      const area = (params['area_m2'] as number ?? (((params['ancho_m'] as number ?? 0) * (params['largo_m'] as number ?? 0))));
       return `${area.toFixed(2)} M2`;
     }
     if (apu.unit?.toUpperCase().includes('M3') || apu.unit?.toUpperCase() === 'M3') {
-      const ancho = params['ancho_m'] ?? 0;
-      const alto = params['alto_m'] ?? params['espesor_m'] ?? 0;
-      const largo = params['largo_m'] ?? 1;
-      const cant = params['cantidad'] ?? 1;
+      const ancho = params['ancho_m'] as number ?? 0;
+      const alto = (params['alto_m'] as number ?? params['espesor_m'] as number ?? 0);
+      const largo = params['largo_m'] as number ?? 1;
+      const cant = params['cantidad'] as number ?? 1;
       return `${(ancho * alto * largo * cant).toFixed(4)} M3`;
     }
     return apu.unit || 'UND';
@@ -165,14 +194,28 @@ export class ParametricApuModal {
     this.paramValues.update(v => ({ ...v }));
   }
 
-  getParamValue(key: string, fallback: number): number {
+  getParamValue(key: string, fallback: number | string): number | string {
     const v = this.paramValues()[key];
     return v !== undefined ? v : fallback;
   }
 
   updateParam(key: string, value: string) {
     const num = parseFloat(value);
-    this.paramValues.update(v => ({ ...v, [key]: isNaN(num) ? 0 : num }));
+    this.paramValues.update(v => ({ ...v, [key]: isNaN(num) ? value : num }));
+  }
+
+  getDropdownOptions(paramKey: string): any[] {
+    return this.paramDropdownOptions()[paramKey] || [];
+  }
+
+  getDropdownLabel(paramKey: string, value: string | number): string {
+    const options = this.getDropdownOptions(paramKey);
+    const param = this.parameters().find(p => p.key === paramKey);
+    const labelField = param?.ref_label_field || 'label';
+    const valueField = param?.ref_value_field || 'id';
+
+    const option = options.find(o => o[valueField] === value || o.id === value);
+    return option ? option[labelField] : String(value);
   }
 
   closeModal() {

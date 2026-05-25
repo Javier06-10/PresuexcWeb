@@ -33,4 +33,11 @@ export class ProjectList {
       this.uiState.isBudgetInitModalOpen.set(true);
     }
   }
+
+  async deleteProject(event: Event, project: any) {
+    event.stopPropagation();
+    if (confirm(`¿Estás seguro de que deseas eliminar el proyecto "${project.name}" de forma permanente?`)) {
+      await this.projectService.deleteProject(project.id);
+    }
+  }
 }

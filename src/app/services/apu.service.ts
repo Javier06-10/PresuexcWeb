@@ -203,4 +203,40 @@ export class ApuService {
           console.error("Error updating APU total:", err);
       }
   }
+
+  async updateApu(id: string, name: string, unit: string) {
+    try {
+      const { error } = await this.supabase.client
+        .from('apu_templates')
+        .update({ name, unit })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      this.apus.update(curr => curr.map(a => a.id === id ? { ...a, name, unit } : a));
+      return true;
+    } catch (err: any) {
+      console.error('Error updating APU:', err);
+      alert('Error updating APU: ' + (err.message || JSON.stringify(err)));
+      return false;
+    }
+  }
+
+  async deleteApu(id: string) {
+    try {
+      const { error } = await this.supabase.client
+        .from('apu_templates')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      this.apus.update(curr => curr.filter(a => a.id !== id));
+      return true;
+    } catch (err: any) {
+      console.error('Error deleting APU:', err);
+      alert('Error deleting APU: ' + (err.message || JSON.stringify(err)));
+      return false;
+    }
+  }
 }

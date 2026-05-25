@@ -55,6 +55,7 @@ export class CatalogService {
   materials = signal<CatalogMaterial[]>([]);
   labor = signal<CatalogLabor[]>([]);
   equipment = signal<CatalogEquipment[]>([]);
+  units = signal<{code: string}[]>([]);
 
   isLoading = signal<boolean>(false);
 
@@ -70,13 +71,12 @@ export class CatalogService {
         ? `organization_id.is.null,organization_id.eq.${orgId}`
         : `organization_id.is.null`;
       
-      const [matRes, labRes, eqRes] = await Promise.all([
+      const [matRes, labRes, eqRes, unitsRes] = await Promise.all([
         this.supabaseService.client
           .from('materials')
           .select('*')
           .or(orgQuery)
-          .order('description', { ascending: true })
-          .limit(500),
+          .order('description', { ascending: true }),
           
         this.supabaseService.client
           .from('labor_activities')
@@ -88,12 +88,18 @@ export class CatalogService {
           .from('equipment')
           .select('*')
           .or(orgQuery)
-          .order('description', { ascending: true })
+          .order('description', { ascending: true }),
+
+        this.supabaseService.client
+          .from('units')
+          .select('code')
+          .order('code', { ascending: true })
       ]);
 
       const matIds = matRes.data ? matRes.data.map(m => m.id) : [];
       const labIds = labRes.data ? labRes.data.map(l => l.id) : [];
       const eqIds = eqRes.data ? eqRes.data.map(e => e.id) : [];
+      if (unitsRes.data) this.units.set(unitsRes.data as {code: string}[]);
 
       const today = new Date().toISOString().slice(0,10);
 
@@ -159,5 +165,134 @@ export class CatalogService {
     } finally {
       this.isLoading.set(false);
     }
+  }
+
+  async createMaterial(description: string, unit: string, price: number) {
+    const orgId = this.supabaseService.currentOrganizationId();
+    if (!orgId) return null;
+    
+    const newItem = {
+      organization_id: orgId,
+      description,
+      unit
+    };
+
+    const { data, error } = await this.supabaseService.client
+      .from('materials')
+      .insert([newItem])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating material:', error);
+      alert('Error creating material: ' + error.message);
+      return null;
+    }
+    
+    // We add price_without_itbis to match our UI
+    const mapped = { ...data, price_without_itbis: price, price_with_itbis: price * 1.18 };
+    this.materials.update(list => [...list, mapped as any]);
+    return mapped;
+  }
+
+  async createLabor(description: string, unit: string, price: number) {
+    const orgId = this.supabaseService.currentOrganizationId();
+    if (!orgId) return null;
+    
+    const newItem = {
+      organization_id: orgId,
+      description,
+      unit
+    };
+
+    const { data, error } = await this.supabaseService.client
+      .from('labor_activities')
+      .insert([newItem])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating labor:', error);
+      alert('Error creating labor: ' + error.message);
+      return null;
+    }
+    
+    // Since unit_price is calculated, we mock it locally
+    const mapped = { ...data, unit_price: price };
+    this.labor.update(list => [...list, mapped as any]);
+    return mapped;
+  }
+
+  async createEquipment(description: string, unit: string, price: number) {
+    const orgId = this.supabaseService.currentOrganizationId();
+    if (!orgId) return null;
+    
+    const newItem = {
+      organization_id: orgId,
+      description,
+      unit
+    };
+
+    const { data, error } = await this.supabaseService.client
+      .from('equipment')
+      .insert([newItem])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating equipment:', error);
+      alert('Error creating equipment: ' + error.message);
+      return null;
+    }
+    
+    const mapped = { ...data, total_without_itbis: price };
+    this.equipment.update(list => [...list, mapped as any]);
+    return mapped;
+  }
+
+  async updateItem(type: 'materials' | 'labor_activities' | 'equipment', id: string, description: string, unit: string) {
+    const { error } = await this.supabaseService.client
+      .from(type)
+      .update({ description, unit })
+      .eq('id', id);
+
+    if (error) {
+      console.error(`Error updating ${type}:`, error);
+      alert(`Error updating item: ${error.message}`);
+      return false;
+    }
+
+    // Actualizamos localmente
+    if (type === 'materials') {
+      this.materials.update(list => list.map(m => m.id === id ? { ...m, description, unit } : m));
+    } else if (type === 'labor_activities') {
+      this.labor.update(list => list.map(l => l.id === id ? { ...l, description, unit } : l));
+    } else if (type === 'equipment') {
+      this.equipment.update(list => list.map(e => e.id === id ? { ...e, description, unit } : e));
+    }
+    return true;
+  }
+
+  async deleteItem(type: 'materials' | 'labor_activities' | 'equipment', id: string) {
+    const { error } = await this.supabaseService.client
+      .from(type)
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error(`Error deleting ${type}:`, error);
+      alert(`Error deleting item: ${error.message}`);
+      return false;
+    }
+
+    // Removemos localmente
+    if (type === 'materials') {
+      this.materials.update(list => list.filter(m => m.id !== id));
+    } else if (type === 'labor_activities') {
+      this.labor.update(list => list.filter(l => l.id !== id));
+    } else if (type === 'equipment') {
+      this.equipment.update(list => list.filter(e => e.id !== id));
+    }
+    return true;
   }
 }

@@ -1,4 +1,4 @@
-<main class="flex-1 max-w-7xl w-full mx-auto p-6 md:p-8" [class.hidden]="uiState.activeView() !== 'projects'">
+<main class="flex-1 max-w-7xl w-full mx-auto p-6 md:p-8 overflow-y-auto h-[calc(100vh-113px)]" [class.hidden]="uiState.activeView() !== 'projects'">
         <div class="flex items-center justify-between mb-6 border-b border-zinc-300 pb-2">
             <h2 class="text-base font-bold text-presuOscuro uppercase tracking-wide flex items-center gap-2">
                 <i class="ph ph-folder text-xl text-presuOxido"></i> Mis Presupuestos
@@ -16,8 +16,12 @@
             </div>
 
             <!-- Loop para cada proyecto en el estado -->
-            <div *ngFor="let proy of projectService.listadoProyectos()" (click)="openBudget(proy)" class="bg-white border border-zinc-300 rounded-xl p-5 shadow-sm min-h-[190px] flex flex-col justify-between hover:border-presuOxido transition cursor-pointer">
-                <div>
+            <div *ngFor="let proy of projectService.listadoProyectos()" (click)="openBudget(proy)" class="bg-white border border-zinc-300 rounded-xl p-5 shadow-sm min-h-[190px] flex flex-col justify-between hover:border-presuOxido transition cursor-pointer relative group">
+                <button (click)="deleteProject($event, proy)" class="absolute top-4 right-4 text-zinc-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition duration-200 p-1.5 rounded-md hover:bg-red-50 z-10" title="Eliminar Proyecto">
+                    <i class="ph ph-trash text-lg"></i>
+                </button>
+                
+                <div class="pr-8">
                     <div class="flex items-center justify-between">
                         <span class="bg-amber-100 text-amber-800 text-[10px] font-black uppercase px-2 py-0.5 rounded border border-amber-200 tracking-wider">PROY #{{ proy.code || '---' }}</span>
                         <span class="text-[9px] bg-zinc-100 text-zinc-500 font-bold px-1.5 py-0.5 rounded border border-zinc-200"><i class="ph ph-calendar text-presuOxido"></i> {{ proy.created_at | date:'dd/MM/yyyy' }}</span>

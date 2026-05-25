@@ -27,7 +27,22 @@
               {{ param.label }}
               <span class="text-zinc-400 font-normal lowercase">({{ param.unit }})</span>
             </label>
+
+            <!-- Si tiene ref_table, renderizar dropdown -->
+            <select
+              *ngIf="param.ref_table && getDropdownOptions(param.key).length > 0"
+              [value]="getParamValue(param.key, param.default)"
+              (change)="updateParam(param.key, $any($event.target).value)"
+              class="w-full bg-white border border-zinc-300 rounded-lg px-3 py-2 text-sm font-bold text-presuOscuro focus:outline-none focus:border-presuOxido focus:ring-1 focus:ring-presuOxido transition shadow-sm">
+              <option value="">-- Seleccionar --</option>
+              <option *ngFor="let opt of getDropdownOptions(param.key)" [value]="opt[param.ref_value_field || 'id']">
+                {{ opt[param.ref_label_field || 'label'] || opt.n_num || opt.length_m || opt.id }}
+              </option>
+            </select>
+
+            <!-- Si no tiene ref_table, renderizar input number -->
             <input
+              *ngIf="!param.ref_table || getDropdownOptions(param.key).length === 0"
               type="number"
               [value]="getParamValue(param.key, param.default)"
               (input)="updateParam(param.key, $any($event.target).value)"

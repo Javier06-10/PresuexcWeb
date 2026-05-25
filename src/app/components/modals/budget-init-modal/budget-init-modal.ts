@@ -1,8 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UiState } from '../../../services/ui-state';
 import { ProjectService } from '../../../services/project';
+import { SupabaseService } from '../../../services/supabase.service';
 
 @Component({
   selector: 'app-budget-init-modal',
@@ -12,24 +13,54 @@ import { ProjectService } from '../../../services/project';
 export class BudgetInitModal {
   uiState = inject(UiState);
   projectService = inject(ProjectService);
+  supabase = inject(SupabaseService);
 
   // States: 'typology', 'levels', or 'chapters'
   step = 'typology';
-  
+
   selectedTypology = '';
 
-  // Default chapters available for selection
-  defaultChapters = [
-    'Preliminares', 'Movimiento de Tierras', 'Cimentación', 'Estructura', 
-    'Hormigón Armado', 'Mampostería', 'Terminación de Superficies', 
-    'Pisos y Revestimientos', 'Instalaciones Sanitarias', 'Instalaciones Eléctricas', 
+  // Load budget categories from database
+  budgetCategories = signal<string[]>([
+    'Preliminares', 'Movimiento de Tierras', 'Cimentación', 'Estructura',
+    'Hormigón Armado', 'Mampostería', 'Terminación de Superficies',
+    'Pisos y Revestimientos', 'Instalaciones Sanitarias', 'Instalaciones Eléctricas',
     'Pintura', 'Puertas y Ventanas', 'Herrería y Metales', 'Techos y Aluzinc', 'Exteriores'
-  ];
+  ]);
+
+  get defaultChapters() {
+    return this.budgetCategories();
+  }
 
   // Configured levels with their selected chapters
   levels: {name: string, order: number, chapters: string[], newCustomChapter: string}[] = [
     { name: 'Primer Nivel', order: 1, chapters: ['Preliminares'], newCustomChapter: '' }
   ];
+
+  constructor() {
+    this.loadBudgetCategories();
+  }
+
+  async loadBudgetCategories() {
+    try {
+      const orgId = this.supabase.currentOrganizationId();
+      const orgQuery = orgId
+        ? `organization_id.is.null,organization_id.eq.${orgId}`
+        : `organization_id.is.null`;
+
+      const { data, error } = await this.supabase.client
+        .from('budget_categories')
+        .select('name')
+        .or(orgQuery)
+        .order('sort_order', { ascending: true });
+
+      if (!error && data && data.length > 0) {
+        this.budgetCategories.set(data.map(d => d.name));
+      }
+    } catch (err) {
+      console.error("Error loading budget categories", err);
+    }
+  }
 
   selectTypology(type: string) {
     this.selectedTypology = type;

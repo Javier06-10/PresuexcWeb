@@ -6,12 +6,15 @@
             <p class="text-xs text-zinc-500 mt-1">Seleccione cómo desea ingresar este insumo</p>
         </div>
         
-        <div class="flex flex-col gap-3" *ngIf="!isCreatingApuMode">
+        <div class="flex flex-col gap-3" *ngIf="!isCreatingApuMode && !isSelectingTemplateMode">
             <button (click)="openCatalog()" class="w-full border border-zinc-300 text-zinc-600 font-bold text-sm py-3 rounded-lg hover:bg-zinc-50 hover:border-presuOxido transition shadow-sm">
                 Elegir de Base de Datos
             </button>
             <button (click)="openApuEditor()" class="w-full bg-presuOxido text-white font-bold text-sm py-3 rounded-lg hover:bg-amber-800 transition shadow-md">
                 Crear APU Nuevo
+            </button>
+            <button (click)="openTemplateSelector()" class="w-full bg-presuOscuro text-white font-bold text-sm py-3 rounded-lg hover:bg-zinc-800 transition shadow-md flex justify-center items-center gap-2">
+                <i class="ph ph-copy"></i> Plantillas Predefinidas
             </button>
         </div>
 
@@ -33,6 +36,51 @@
             </div>
             <button (click)="confirmCreateApu()" [disabled]="!newApuName.trim()" class="w-full bg-presuOxido text-white font-bold text-sm py-3 mt-2 rounded-lg hover:bg-amber-800 transition shadow-md flex justify-center items-center gap-2 disabled:opacity-50">
                 <i class="ph ph-check font-bold"></i> Crear y Editar APU
+            </button>
+        </div>
+
+        <div class="flex flex-col gap-3" *ngIf="isSelectingTemplateMode">
+            <div class="text-left">
+                <label class="text-xs font-bold text-zinc-500 uppercase">Categoría</label>
+                <div class="relative mt-1">
+                    <select [(ngModel)]="selectedCategoryId" (change)="onCategoryChange()" class="w-full bg-white border border-zinc-300 rounded px-3 py-2 text-sm focus:border-presuOxido focus:ring-1 focus:ring-presuOxido outline-none font-bold text-presuOscuro appearance-none cursor-pointer">
+                        <option value="" disabled>Seleccione Categoría...</option>
+                        <option *ngFor="let cat of templateCategories" [value]="cat.id">{{ cat.name }}</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-zinc-500">
+                        <i class="ph ph-caret-down"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-left" *ngIf="selectedCategoryId">
+                <label class="text-xs font-bold text-zinc-500 uppercase">Elemento</label>
+                <div class="relative mt-1">
+                    <select [(ngModel)]="selectedGroupId" (change)="onGroupChange()" class="w-full bg-white border border-zinc-300 rounded px-3 py-2 text-sm focus:border-presuOxido focus:ring-1 focus:ring-presuOxido outline-none font-bold text-presuOscuro appearance-none cursor-pointer">
+                        <option value="" disabled>Seleccione Elemento...</option>
+                        <option *ngFor="let group of availableGroups" [value]="group.id">{{ group.name }}</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-zinc-500">
+                        <i class="ph ph-caret-down"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-left" *ngIf="selectedGroupId && availableTemplates.length > 0">
+                <label class="text-xs font-bold text-zinc-500 uppercase">Tipo Específico</label>
+                <div class="relative mt-1">
+                    <select [(ngModel)]="selectedTemplateId" class="w-full bg-white border border-zinc-300 rounded px-3 py-2 text-sm focus:border-presuOxido focus:ring-1 focus:ring-presuOxido outline-none font-bold text-presuOscuro appearance-none cursor-pointer">
+                        <option value="" disabled>Seleccione Tipo...</option>
+                        <option *ngFor="let tpl of availableTemplates" [value]="tpl.id">{{ tpl.name }}</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-zinc-500">
+                        <i class="ph ph-caret-down"></i>
+                    </div>
+                </div>
+            </div>
+
+            <button (click)="confirmUseTemplate()" [disabled]="!selectedTemplateId" class="w-full bg-presuOscuro text-white font-bold text-sm py-3 mt-2 rounded-lg hover:bg-zinc-800 transition shadow-md flex justify-center items-center gap-2 disabled:opacity-50">
+                <i class="ph ph-check font-bold"></i> Usar Plantilla
             </button>
         </div>
         

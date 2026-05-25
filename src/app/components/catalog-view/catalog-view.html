@@ -12,10 +12,25 @@
                 </h2>
             </div>
             
-            <!-- Buscador -->
-            <div class="relative w-64">
-                <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"></i>
-                <input type="text" [(ngModel)]="searchTerm" placeholder="Buscar insumo..." class="w-full bg-zinc-800 border border-zinc-700 text-white text-sm rounded-full pl-9 pr-4 py-1.5 focus:outline-none focus:border-presuOxido transition placeholder:text-zinc-500">
+            <!-- Controles -->
+            <div class="flex items-center gap-4">
+                <!-- Filtro de Categoría de APU (solo cuando activeTab === 'apus') -->
+                <select *ngIf="activeTab === 'apus'" [(ngModel)]="selectedApuCategory" class="bg-zinc-800 border border-zinc-700 text-white text-sm rounded-full px-3 py-1.5 focus:outline-none focus:border-presuOxido transition">
+                  <option value="">Todas las categorías</option>
+                  <option *ngFor="let cat of apuCategories()" [value]="cat.id">{{ cat.name }}</option>
+                </select>
+
+                <!-- Filtro Global / Mi Org -->
+                <div class="flex bg-zinc-800 rounded-full p-1 border border-zinc-700">
+                    <button (click)="viewMode = 'global'" [class.bg-presuOxido]="viewMode === 'global'" [class.text-white]="viewMode === 'global'" class="px-3 py-1 text-xs font-bold rounded-full text-zinc-400 transition">Globales</button>
+                    <button (click)="viewMode = 'my_org'" [class.bg-presuOxido]="viewMode === 'my_org'" [class.text-white]="viewMode === 'my_org'" class="px-3 py-1 text-xs font-bold rounded-full text-zinc-400 transition">Mi Organización</button>
+                </div>
+
+                <!-- Buscador -->
+                <div class="relative w-64">
+                    <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"></i>
+                    <input type="text" [(ngModel)]="searchTerm" placeholder="Buscar insumo..." class="w-full bg-zinc-800 border border-zinc-700 text-white text-sm rounded-full pl-9 pr-4 py-1.5 focus:outline-none focus:border-presuOxido transition placeholder:text-zinc-500">
+                </div>
             </div>
         </div>
 
@@ -33,6 +48,18 @@
             </div>
         </div>
 
+        <!-- Indicador de vista actual -->
+        <div class="bg-zinc-100 px-6 py-2 border-b border-zinc-200 flex items-center justify-between">
+            <div class="flex items-center gap-2 text-xs font-bold text-zinc-500 uppercase tracking-wider">
+                <i class="ph ph-info text-presuOxido text-sm"></i> Mostrando: 
+                <span class="text-presuOscuro">{{ activeTab === 'materials' ? 'Materiales' : activeTab === 'labor' ? 'Mano de Obra' : activeTab === 'equipment' ? 'Equipos' : 'Plantillas de APUs' }}</span>
+                <i class="ph ph-caret-right text-zinc-300"></i>
+                <span [class.text-blue-600]="viewMode === 'global'" [class.text-presuOxido]="viewMode === 'my_org'">
+                    {{ viewMode === 'global' ? 'Catálogo Global' : 'Mi Organización' }}
+                </span>
+            </div>
+        </div>
+
         <!-- Tabla -->
         <div class="flex-1 overflow-auto p-4">
             
@@ -46,44 +73,141 @@
                     <tr>
                         <th class="px-4 py-3 w-32">Código</th>
                         <th class="px-4 py-3">Descripción</th>
-                        <th class="px-4 py-3 w-24 text-center">Unidad</th>
+                        <th class="px-4 py-3 w-40 text-center">Unidad</th>
                         <th class="px-4 py-3 w-32 text-right">Precio</th>
                         <th class="px-4 py-3 w-12"></th>
                     </tr>
                 </thead>
                 <tbody>
+                    <!-- Formulario genérico para crear items en la vista Mi Org (para materiales, labor, equipment) -->
+                    <ng-container *ngIf="viewMode === 'my_org' && activeTab !== 'apus'">
+                        <tr *ngIf="isCreatingItem()" class="bg-amber-50 border-b border-amber-200">
+                            <td class="px-4 py-2">
+                                <span class="text-xs text-amber-600 font-bold bg-white px-2 py-1 rounded shadow-sm">NUEVO</span>
+                            </td>
+                            <td class="px-4 py-2">
+                                <input type="text" [(ngModel)]="newItemName" placeholder="Descripción del insumo" class="w-full bg-white border border-amber-300 rounded px-2 py-1 text-sm focus:border-presuOxido focus:ring-1 focus:ring-presuOxido outline-none font-bold">
+                            </td>
+                            <td class="px-4 py-2">
+                                <select [(ngModel)]="newItemUnit" class="w-full text-center bg-white border border-amber-300 rounded px-2 py-1 text-sm focus:border-presuOxido focus:ring-1 focus:ring-presuOxido outline-none uppercase font-bold text-zinc-600">
+                                    <option value="" disabled selected>UNIDAD</option>
+                                    <option *ngFor="let u of catalogService.units()" [value]="u.code">{{ u.code }}</option>
+                                </select>
+                            </td>
+                            <td class="px-4 py-2 text-right flex items-center justify-end">
+                                <span class="mr-1 text-zinc-500 font-bold">$</span>
+                                <input type="number" [(ngModel)]="newItemPrice" placeholder="0.00" class="w-24 text-right bg-white border border-amber-300 rounded px-2 py-1 text-sm focus:border-presuOxido focus:ring-1 focus:ring-presuOxido outline-none font-bold">
+                            </td>
+                            <td class="px-4 py-2 text-center">
+                                <div class="flex gap-1 justify-center">
+                                    <button (click)="createItem()" class="bg-presuOxido hover:bg-amber-800 text-white w-7 h-7 rounded shadow flex items-center justify-center transition">
+                                        <i class="ph ph-check font-bold"></i>
+                                    </button>
+                                    <button (click)="isCreatingItem.set(false)" class="bg-zinc-200 hover:bg-zinc-300 text-zinc-600 w-7 h-7 rounded shadow flex items-center justify-center transition">
+                                        <i class="ph ph-x font-bold"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-zinc-50 border-b border-zinc-100 transition cursor-pointer" (click)="isCreatingItem.set(true)" *ngIf="!isCreatingItem()">
+                            <td colspan="5" class="px-4 py-3 text-center text-presuOxido font-black border-dashed border-2 border-zinc-200 rounded-lg m-2">
+                                <i class="ph ph-plus-circle"></i> AGREGAR A MI ORGANIZACIÓN
+                            </td>
+                        </tr>
+                    </ng-container>
+
                     <ng-container *ngIf="activeTab === 'materials'">
-                        <tr *ngFor="let item of filteredMaterials()" class="border-b border-zinc-100 hover:bg-amber-50 transition group">
+                        <tr *ngFor="let item of filteredMaterials()" class="border-b border-zinc-100 transition group" [class.bg-blue-50]="editingItemId() === item.id" [class.hover:bg-amber-50]="editingItemId() !== item.id">
                             <td class="px-4 py-2 font-mono text-xs text-zinc-500">{{ item.code || 'N/A' }}</td>
-                            <td class="px-4 py-2 font-bold text-presuOscuro">{{ item.description }}</td>
-                            <td class="px-4 py-2 text-center text-xs font-bold text-zinc-500 uppercase">{{ item.unit }}</td>
+                            
+                            <td class="px-4 py-2 font-bold text-presuOscuro">
+                                <ng-container *ngIf="editingItemId() !== item.id">{{ item.description }}</ng-container>
+                                <input *ngIf="editingItemId() === item.id" type="text" [(ngModel)]="editItemName" class="w-full bg-white border border-blue-300 rounded px-2 py-1 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none">
+                            </td>
+                            
+                            <td class="px-4 py-2 text-center text-xs font-bold text-zinc-500 uppercase">
+                                <ng-container *ngIf="editingItemId() !== item.id">{{ item.unit }}</ng-container>
+                                <select *ngIf="editingItemId() === item.id" [(ngModel)]="editItemUnit" class="w-full text-center bg-white border border-blue-300 rounded px-2 py-1 text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none uppercase">
+                                    <option *ngFor="let u of catalogService.units()" [value]="u.code">{{ u.code }}</option>
+                                </select>
+                            </td>
+                            
                             <td class="px-4 py-2 text-right font-black text-presuOscuro">$ {{ item.price_without_itbis || 0 | number:'1.2-2' }}</td>
+                            
                             <td class="px-4 py-2 text-center">
                                 <span *ngIf="!item.organization_id" class="text-[9px] bg-blue-100 text-blue-800 px-1 rounded font-bold uppercase" title="Global DB">G</span>
+                                <div *ngIf="item.organization_id && viewMode === 'my_org' && editingItemId() !== item.id" class="opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
+                                    <button (click)="startEdit(item)" class="text-blue-500 hover:text-blue-700 transition" title="Editar"><i class="ph ph-pencil-simple"></i></button>
+                                    <button (click)="deleteItem(item)" class="text-red-500 hover:text-red-700 transition" title="Eliminar"><i class="ph ph-trash"></i></button>
+                                </div>
+                                <div *ngIf="editingItemId() === item.id" class="flex items-center justify-center gap-1">
+                                    <button (click)="saveEdit(item)" class="text-green-600 hover:text-green-800 transition" title="Guardar"><i class="ph ph-check-circle text-lg"></i></button>
+                                    <button (click)="cancelEdit()" class="text-zinc-400 hover:text-zinc-600 transition" title="Cancelar"><i class="ph ph-x-circle text-lg"></i></button>
+                                </div>
                             </td>
                         </tr>
                     </ng-container>
                     
                     <ng-container *ngIf="activeTab === 'labor'">
-                        <tr *ngFor="let item of filteredLabor()" class="border-b border-zinc-100 hover:bg-amber-50 transition group">
+                        <tr *ngFor="let item of filteredLabor()" class="border-b border-zinc-100 transition group" [class.bg-blue-50]="editingItemId() === item.id" [class.hover:bg-amber-50]="editingItemId() !== item.id">
                             <td class="px-4 py-2 font-mono text-xs text-zinc-500">{{ item.code || 'N/A' }}</td>
-                            <td class="px-4 py-2 font-bold text-presuOscuro">{{ item.description }}</td>
-                            <td class="px-4 py-2 text-center text-xs font-bold text-zinc-500 uppercase">{{ item.unit }}</td>
+                            
+                            <td class="px-4 py-2 font-bold text-presuOscuro">
+                                <ng-container *ngIf="editingItemId() !== item.id">{{ item.description }}</ng-container>
+                                <input *ngIf="editingItemId() === item.id" type="text" [(ngModel)]="editItemName" class="w-full bg-white border border-blue-300 rounded px-2 py-1 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none">
+                            </td>
+                            
+                            <td class="px-4 py-2 text-center text-xs font-bold text-zinc-500 uppercase">
+                                <ng-container *ngIf="editingItemId() !== item.id">{{ item.unit }}</ng-container>
+                                <select *ngIf="editingItemId() === item.id" [(ngModel)]="editItemUnit" class="w-full text-center bg-white border border-blue-300 rounded px-2 py-1 text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none uppercase">
+                                    <option *ngFor="let u of catalogService.units()" [value]="u.code">{{ u.code }}</option>
+                                </select>
+                            </td>
+                            
                             <td class="px-4 py-2 text-right font-black text-presuOscuro">$ {{ item.unit_price || 0 | number:'1.2-2' }}</td>
+                            
                             <td class="px-4 py-2 text-center">
                                 <span *ngIf="!item.organization_id" class="text-[9px] bg-blue-100 text-blue-800 px-1 rounded font-bold uppercase" title="Global DB">G</span>
+                                <div *ngIf="item.organization_id && viewMode === 'my_org' && editingItemId() !== item.id" class="opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
+                                    <button (click)="startEdit(item)" class="text-blue-500 hover:text-blue-700 transition" title="Editar"><i class="ph ph-pencil-simple"></i></button>
+                                    <button (click)="deleteItem(item)" class="text-red-500 hover:text-red-700 transition" title="Eliminar"><i class="ph ph-trash"></i></button>
+                                </div>
+                                <div *ngIf="editingItemId() === item.id" class="flex items-center justify-center gap-1">
+                                    <button (click)="saveEdit(item)" class="text-green-600 hover:text-green-800 transition" title="Guardar"><i class="ph ph-check-circle text-lg"></i></button>
+                                    <button (click)="cancelEdit()" class="text-zinc-400 hover:text-zinc-600 transition" title="Cancelar"><i class="ph ph-x-circle text-lg"></i></button>
+                                </div>
                             </td>
                         </tr>
                     </ng-container>
 
                     <ng-container *ngIf="activeTab === 'equipment'">
-                        <tr *ngFor="let item of filteredEquipment()" class="border-b border-zinc-100 hover:bg-amber-50 transition group">
+                        <tr *ngFor="let item of filteredEquipment()" class="border-b border-zinc-100 transition group" [class.bg-blue-50]="editingItemId() === item.id" [class.hover:bg-amber-50]="editingItemId() !== item.id">
                             <td class="px-4 py-2 font-mono text-xs text-zinc-500">{{ item.code || 'N/A' }}</td>
-                            <td class="px-4 py-2 font-bold text-presuOscuro">{{ item.description }}</td>
-                            <td class="px-4 py-2 text-center text-xs font-bold text-zinc-500 uppercase">{{ item.unit }}</td>
+                            
+                            <td class="px-4 py-2 font-bold text-presuOscuro">
+                                <ng-container *ngIf="editingItemId() !== item.id">{{ item.description }}</ng-container>
+                                <input *ngIf="editingItemId() === item.id" type="text" [(ngModel)]="editItemName" class="w-full bg-white border border-blue-300 rounded px-2 py-1 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none">
+                            </td>
+                            
+                            <td class="px-4 py-2 text-center text-xs font-bold text-zinc-500 uppercase">
+                                <ng-container *ngIf="editingItemId() !== item.id">{{ item.unit }}</ng-container>
+                                <select *ngIf="editingItemId() === item.id" [(ngModel)]="editItemUnit" class="w-full text-center bg-white border border-blue-300 rounded px-2 py-1 text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none uppercase">
+                                    <option *ngFor="let u of catalogService.units()" [value]="u.code">{{ u.code }}</option>
+                                </select>
+                            </td>
+                            
                             <td class="px-4 py-2 text-right font-black text-presuOscuro">$ {{ item.total_without_itbis || 0 | number:'1.2-2' }}</td>
+                            
                             <td class="px-4 py-2 text-center">
                                 <span *ngIf="!item.organization_id" class="text-[9px] bg-blue-100 text-blue-800 px-1 rounded font-bold uppercase" title="Global DB">G</span>
+                                <div *ngIf="item.organization_id && viewMode === 'my_org' && editingItemId() !== item.id" class="opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
+                                    <button (click)="startEdit(item)" class="text-blue-500 hover:text-blue-700 transition" title="Editar"><i class="ph ph-pencil-simple"></i></button>
+                                    <button (click)="deleteItem(item)" class="text-red-500 hover:text-red-700 transition" title="Eliminar"><i class="ph ph-trash"></i></button>
+                                </div>
+                                <div *ngIf="editingItemId() === item.id" class="flex items-center justify-center gap-1">
+                                    <button (click)="saveEdit(item)" class="text-green-600 hover:text-green-800 transition" title="Guardar"><i class="ph ph-check-circle text-lg"></i></button>
+                                    <button (click)="cancelEdit()" class="text-zinc-400 hover:text-zinc-600 transition" title="Cancelar"><i class="ph ph-x-circle text-lg"></i></button>
+                                </div>
                             </td>
                         </tr>
                     </ng-container>
@@ -97,7 +221,10 @@
                                 <input type="text" [(ngModel)]="newApuName" placeholder="Nombre del APU (Ej: Muro de Bloques de 6)" class="w-full bg-white border border-purple-300 rounded px-2 py-1 text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none font-bold">
                             </td>
                             <td class="px-4 py-2">
-                                <input type="text" [(ngModel)]="newApuUnit" placeholder="M2" class="w-full text-center bg-white border border-purple-300 rounded px-2 py-1 text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none uppercase font-bold">
+                                <select [(ngModel)]="newApuUnit" class="w-full text-center bg-white border border-purple-300 rounded px-2 py-1 text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none uppercase font-bold text-zinc-600">
+                                    <option value="" disabled selected>UNIDAD</option>
+                                    <option *ngFor="let u of catalogService.units()" [value]="u.code">{{ u.code }}</option>
+                                </select>
                             </td>
                             <td class="px-4 py-2 text-right">
                                 <span class="text-zinc-400 text-xs italic">Cálculo dinámico</span>
@@ -119,15 +246,38 @@
                             </td>
                         </tr>
 
-                        <tr *ngFor="let item of filteredApus()" class="border-b border-zinc-100 hover:bg-purple-50 transition group cursor-pointer" (click)="openApuEditor(item.id)">
-                            <td class="px-4 py-2 font-mono text-xs text-zinc-500">{{ item.code || 'N/A' }}</td>
-                            <td class="px-4 py-2 font-bold text-presuOscuro flex items-center gap-2">
-                                <i class="ph ph-cube text-purple-500"></i> {{ item.name }}
+                        <tr *ngFor="let item of filteredApus()" class="border-b border-zinc-100 transition group" [class.bg-blue-50]="editingItemId() === item.id" [class.hover:bg-purple-50]="editingItemId() !== item.id">
+                            <td class="px-4 py-2 font-mono text-xs text-zinc-500" (click)="editingItemId() !== item.id && openApuEditor(item.id)">{{ item.code || 'N/A' }}</td>
+                            
+                            <td class="px-4 py-2 font-bold text-presuOscuro">
+                                <ng-container *ngIf="editingItemId() !== item.id">
+                                    <div class="flex items-center gap-2 cursor-pointer" (click)="openApuEditor(item.id)">
+                                        <i class="ph ph-cube text-purple-500"></i> {{ item.name }}
+                                    </div>
+                                </ng-container>
+                                <input *ngIf="editingItemId() === item.id" type="text" [(ngModel)]="editItemName" class="w-full bg-white border border-blue-300 rounded px-2 py-1 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none">
                             </td>
-                            <td class="px-4 py-2 text-center text-xs font-bold text-zinc-500 uppercase">{{ item.unit }}</td>
-                            <td class="px-4 py-2 text-right font-black text-presuOscuro">$ {{ item.total_unit | number:'1.2-2' }}</td>
-                            <td class="px-4 py-2 text-center text-purple-500 font-bold opacity-0 group-hover:opacity-100 transition">
-                                Editar <i class="ph ph-arrow-right"></i>
+                            
+                            <td class="px-4 py-2 text-center text-xs font-bold text-zinc-500 uppercase">
+                                <ng-container *ngIf="editingItemId() !== item.id">{{ item.unit }}</ng-container>
+                                <select *ngIf="editingItemId() === item.id" [(ngModel)]="editItemUnit" class="w-full text-center bg-white border border-blue-300 rounded px-2 py-1 text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none uppercase">
+                                    <option *ngFor="let u of catalogService.units()" [value]="u.code">{{ u.code }}</option>
+                                </select>
+                            </td>
+                            
+                            <td class="px-4 py-2 text-right font-black text-presuOscuro" (click)="editingItemId() !== item.id && openApuEditor(item.id)">$ {{ item.total_unit | number:'1.2-2' }}</td>
+                            
+                            <td class="px-4 py-2 text-center">
+                                <span *ngIf="!item.organization_id" class="text-[9px] bg-blue-100 text-blue-800 px-1 rounded font-bold uppercase" title="Global DB">G</span>
+                                <div *ngIf="item.organization_id && viewMode === 'my_org' && editingItemId() !== item.id" class="opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
+                                    <button (click)="startEdit(item)" class="text-blue-500 hover:text-blue-700 transition" title="Editar"><i class="ph ph-pencil-simple"></i></button>
+                                    <button (click)="deleteItem(item)" class="text-red-500 hover:text-red-700 transition" title="Eliminar"><i class="ph ph-trash"></i></button>
+                                    <button (click)="openApuEditor(item.id)" class="text-purple-500 hover:text-purple-700 transition font-bold text-xs" title="Ir al detalle">Detalle <i class="ph ph-arrow-right"></i></button>
+                                </div>
+                                <div *ngIf="editingItemId() === item.id" class="flex items-center justify-center gap-1">
+                                    <button (click)="saveEdit(item)" class="text-green-600 hover:text-green-800 transition" title="Guardar"><i class="ph ph-check-circle text-lg"></i></button>
+                                    <button (click)="cancelEdit()" class="text-zinc-400 hover:text-zinc-600 transition" title="Cancelar"><i class="ph ph-x-circle text-lg"></i></button>
+                                </div>
                             </td>
                         </tr>
                     </ng-container>

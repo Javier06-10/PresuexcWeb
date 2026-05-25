@@ -48,6 +48,7 @@ export class ConfigService {
 
   constructor() {
     this.loadSteelConfig();
+    this.loadOrgSettings();
   }
 
   async loadSteelConfig() {
@@ -109,7 +110,7 @@ export class ConfigService {
          delete toSave.peso_lb;
          return toSave;
       });
-      
+
       const lengthsToUpsert = this.longitudesBarras().map((l, i) => {
          const obj: any = { length_m: l.m, sort_order: i };
          if (l.id) obj.id = l.id;
@@ -130,11 +131,11 @@ export class ConfigService {
 
       const promises: PromiseLike<any>[] = [];
       if (barsToUpsert.length > 0) promises.push(this.supabase.client.from('steel_bars').upsert(barsToUpsert, { onConflict: 'id' }));
-      
+
       if (lengthsToUpsert.length > 0) promises.push(this.supabase.client.from('steel_bar_lengths').upsert(lengthsToUpsert, { onConflict: 'id' }));
-      
+
       // Delete removed lengths
-      const lengthsQuery = orgId 
+      const lengthsQuery = orgId
         ? `organization_id.is.null,organization_id.eq.${orgId}`
         : `organization_id.is.null`;
       const existingLengths = await this.supabase.client.from('steel_bar_lengths').select('id').or(lengthsQuery);
@@ -152,6 +153,57 @@ export class ConfigService {
       await this.loadSteelConfig();
     } catch (err) {
       console.error("Error saving steel config", err);
+    }
+  }
+
+  async loadOrgSettings() {
+    try {
+      const orgId = this.supabase.currentOrganizationId();
+      if (!orgId) return;
+
+      const { data, error } = await this.supabase.client
+        .from('org_settings')
+        .select('*')
+        .eq('organization_id', orgId)
+        .single();
+
+      if (!error && data) {
+        if (data.color_tit_consolidado) this.colorFilaTitConsolidado.set(data.color_tit_consolidado);
+        if (data.color_sub_consolidado) this.colorFilaSubConsolidado.set(data.color_sub_consolidado);
+        if (data.logo_base64) this.logoConsolidadoBase64.set(data.logo_base64);
+        if (data.font_name) this.fuenteConsolidadaPresupuesto.set(data.font_name);
+        if (data.moneda) this.monedaGlobal.set(data.moneda);
+        if (data.formato_acero) this.formatoActualGlobal.set(data.formato_acero);
+        if (data.metodo_hormigon) this.metodoCalculoHormigon.set(data.metodo_hormigon);
+      }
+    } catch (err) {
+      console.debug("No org_settings found or error loading", err);
+    }
+  }
+
+  async saveOrgSettings() {
+    try {
+      const orgId = this.supabase.currentOrganizationId();
+      if (!orgId) return;
+
+      const settings = {
+        organization_id: orgId,
+        color_tit_consolidado: this.colorFilaTitConsolidado(),
+        color_sub_consolidado: this.colorFilaSubConsolidado(),
+        logo_base64: this.logoConsolidadoBase64(),
+        font_name: this.fuenteConsolidadaPresupuesto(),
+        moneda: this.monedaGlobal(),
+        formato_acero: this.formatoActualGlobal(),
+        metodo_hormigon: this.metodoCalculoHormigon()
+      };
+
+      const { error } = await this.supabase.client
+        .from('org_settings')
+        .upsert(settings, { onConflict: 'organization_id' });
+
+      if (error) throw error;
+    } catch (err) {
+      console.error("Error saving org settings", err);
     }
   }
 }
