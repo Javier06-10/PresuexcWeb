@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 
-export type ViewType = 'projects' | 'budget' | 'catalogs';
+export type ViewType = 'projects' | 'budget' | 'catalogs' | 'prices';
 
 @Injectable({
   providedIn: 'root'

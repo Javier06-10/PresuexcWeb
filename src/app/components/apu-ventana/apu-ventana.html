@@ -1,0 +1,109 @@
+<div style="display:flex;flex-direction:column;gap:10px">
+
+  <!-- LISTADO DE VENTANAS -->
+  <div class="card">
+    <div class="card-title">
+      <i class="ph ph-frame-corners" style="font-size:13px;color:var(--brand)"></i>
+      Listado de Ventanas
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead>
+        <tr style="background:var(--gray-3)">
+          <th style="padding:6px 8px;text-align:left;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--gray-border)">Descripción</th>
+          <th style="padding:6px 8px;text-align:left;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:140px">Material/Tipo</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:80px">Ancho (m)</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:80px">Alto (m)</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:55px">Cant.</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:75px">Área (m²)</th>
+          <th style="width:36px;border-bottom:1px solid var(--gray-border)"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of items(); let i = index" style="border-bottom:1px solid var(--gray-3)">
+          <td style="padding:5px 8px">
+            <input type="text" [ngModel]="item.descripcion" (ngModelChange)="updateItem(i,'descripcion',$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 8px;font-size:12px;background:var(--field-bg);width:100%"
+              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'" />
+          </td>
+          <td style="padding:5px 4px">
+            <select [ngModel]="item.tipo" (ngModelChange)="updateItem(i,'tipo',$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:11px;background:var(--field-bg);width:100%">
+              <option>Aluminio + vidrio 6mm</option>
+              <option>Aluminio + vidrio laminado</option>
+              <option>PVC + vidrio 4mm</option>
+              <option>Hierro + vidrio</option>
+              <option>Madera + vidrio</option>
+              <option>Vidrio fijo templado</option>
+              <option>Celosía / louver</option>
+            </select>
+          </td>
+          <td style="padding:5px 4px"><input type="number" step="0.01" [ngModel]="item.ancho" (ngModelChange)="updateItem(i,'ancho',+$event)"
+            style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+            onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+            onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
+          <td style="padding:5px 4px"><input type="number" step="0.01" [ngModel]="item.alto" (ngModelChange)="updateItem(i,'alto',+$event)"
+            style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+            onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+            onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
+          <td style="padding:5px 4px"><input type="number" step="1" min="1" [ngModel]="item.cant" (ngModelChange)="updateItem(i,'cant',+$event)"
+            style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+            onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+            onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
+          <td style="padding:5px 8px;text-align:center;font-weight:700;font-size:13px;color:var(--brand)">
+            {{ (item.ancho||0)*(item.alto||0)*(item.cant||1) | number:'1.2-2' }}
+          </td>
+          <td style="padding:5px 4px;text-align:center">
+            <button *ngIf="items().length > 1" (click)="removeItem(i)"
+              style="background:var(--red);color:#fff;border:none;border-radius:4px;padding:4px 7px;cursor:pointer;font-size:12px;line-height:1;display:flex;align-items:center">
+              <i class="ph ph-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr style="background:var(--brand-light)">
+          <td colspan="4" style="padding:7px 8px;font-size:11px;font-weight:700;color:var(--brand);text-transform:uppercase;text-align:right">Total</td>
+          <td style="padding:7px 8px;text-align:center;font-size:15px;font-weight:800;color:var(--brand)">{{ totalUnidades() }} uds</td>
+          <td style="padding:7px 8px;text-align:center;font-size:15px;font-weight:800;color:var(--brand)">{{ totalArea() | number:'1.2-2' }} m²</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+    <button (click)="addItem()" style="margin-top:10px;background:var(--gray-3);color:var(--gray-muted);border:1px dashed var(--gray-border);border-radius:6px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px">
+      <i class="ph ph-plus"></i> Añadir Ventana
+    </button>
+  </div>
+
+  <!-- OPCIONES -->
+  <div class="card">
+    <div class="card-title"><i class="ph ph-sliders" style="font-size:13px;color:var(--brand)"></i> Elementos Incluidos</div>
+    <div style="display:flex;gap:24px;font-size:13px">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" [ngModel]="conPersiana()" (ngModelChange)="conPersiana.set($event)"
+          style="width:16px;height:16px;accent-color:var(--brand)" />
+        Persiana / celosía
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" [ngModel]="conMosquitero()" (ngModelChange)="conMosquitero.set($event)"
+          style="width:16px;height:16px;accent-color:var(--brand)" />
+        Mosquitero
+      </label>
+    </div>
+  </div>
+
+  <!-- MÉTRICAS -->
+  <div class="metrics-row">
+    <div class="metric">
+      <div class="m-lbl">Unidades</div>
+      <div class="m-val">{{ totalUnidades() }}</div>
+      <div class="m-unit">uds</div>
+    </div>
+    <div class="metric" style="grid-column:span 3;border-color:var(--brand);background:var(--brand-light)">
+      <div class="m-lbl" style="color:var(--brand-dark)">Área Total de Vidriería</div>
+      <div class="m-val" style="font-size:36px;color:var(--brand-dark)">{{ totalArea() | number:'1.2-2' }}</div>
+      <div class="m-unit" style="color:var(--brand)">m²</div>
+    </div>
+  </div>
+
+</div>

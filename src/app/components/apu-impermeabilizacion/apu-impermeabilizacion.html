@@ -1,0 +1,141 @@
+<div style="display:flex;flex-direction:column;gap:10px">
+
+  <!-- GEOMETRÍA -->
+  <div class="card">
+    <div class="card-title">
+      <i class="ph ph-drop-half" style="font-size:13px;color:var(--brand)"></i>
+      Superficies a Impermeabilizar
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead>
+        <tr style="background:var(--gray-3)">
+          <th style="padding:6px 8px;text-align:left;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--gray-border)">Descripción</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:110px">Largo (m)</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:110px">Ancho (m)</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:60px">Cant.</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:95px">Área (m²)</th>
+          <th style="width:36px;border-bottom:1px solid var(--gray-border)"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let tramo of tramos(); let i = index" style="border-bottom:1px solid var(--gray-3)">
+          <td style="padding:5px 8px">
+            <input type="text" [ngModel]="tramo.descripcion" (ngModelChange)="updateTramo(i,'descripcion',$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 8px;font-size:12px;background:var(--field-bg);width:100%"
+              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'" />
+          </td>
+          <td style="padding:5px 4px"><input type="number" step="any" [ngModel]="tramo.largo" (ngModelChange)="updateTramo(i,'largo',+$event)"
+            style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+            onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+            onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
+          <td style="padding:5px 4px"><input type="number" step="any" [ngModel]="tramo.ancho" (ngModelChange)="updateTramo(i,'ancho',+$event)"
+            style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+            onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+            onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
+          <td style="padding:5px 4px"><input type="number" step="1" min="1" [ngModel]="tramo.cant" (ngModelChange)="updateTramo(i,'cant',+$event)"
+            style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+            onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+            onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
+          <td style="padding:5px 8px;text-align:center;font-weight:700;font-size:13px;color:var(--brand)">
+            {{ (tramo.largo||0)*(tramo.ancho||0)*(tramo.cant||1) | number:'1.2-2' }}
+          </td>
+          <td style="padding:5px 4px;text-align:center">
+            <button *ngIf="tramos().length > 1" (click)="removeTramo(i)"
+              style="background:var(--red);color:#fff;border:none;border-radius:4px;padding:4px 7px;cursor:pointer;font-size:12px;line-height:1;display:flex;align-items:center">
+              <i class="ph ph-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr style="background:var(--gray-3)">
+          <td colspan="4" style="padding:7px 8px;font-size:11px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;text-align:right">Área Horizontal</td>
+          <td style="padding:7px 8px;text-align:center;font-size:13px;font-weight:800;color:var(--gray-text)">{{ areaHorizontal() | number:'1.2-2' }}</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+    <button (click)="addTramo()" style="margin-top:10px;background:var(--gray-3);color:var(--gray-muted);border:1px dashed var(--gray-border);border-radius:6px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px">
+      <i class="ph ph-plus"></i> Añadir Superficie
+    </button>
+  </div>
+
+  <!-- PARÁMETROS -->
+  <div class="row2">
+    <div class="card" style="margin-bottom:0">
+      <div class="card-title"><i class="ph ph-sliders" style="font-size:13px;color:var(--brand)"></i> Parámetros del Sistema</div>
+      <div class="f" style="margin-bottom:8px">
+        <label>Tipo de Membrana / Sistema</label>
+        <select [ngModel]="tipoMembrana()" (ngModelChange)="tipoMembrana.set($event)">
+          <option>Membrana asfáltica 3mm</option>
+          <option>Membrana asfáltica 4mm</option>
+          <option>Membrana líquida acrílica</option>
+          <option>Pintura impermeabilizante (2 manos)</option>
+          <option>Lámina HDPE 1mm</option>
+          <option>Cristalizante (cementicio)</option>
+          <option>Epóxico bicomponente</option>
+        </select>
+      </div>
+      <div class="row3">
+        <div class="f">
+          <label>Capas / manos</label>
+          <input type="number" step="1" min="1" [ngModel]="capas()" (ngModelChange)="capas.set(+$event)" />
+        </div>
+        <div class="f">
+          <label>Rodapié (m)</label>
+          <input type="number" step="0.05" [ngModel]="alturaRodapie()" (ngModelChange)="alturaRodapie.set(+$event)" />
+        </div>
+        <div class="f">
+          <label>Desperdicio (%)</label>
+          <input type="number" step="1" [ngModel]="desperdicio()" (ngModelChange)="desperdicio.set(+$event)" />
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:0">
+      <div class="card-title"><i class="ph ph-calculator" style="font-size:13px;color:var(--brand)"></i> Cómputo</div>
+      <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:var(--gray-muted)">Área horizontal:</span>
+          <span style="font-weight:700;color:var(--gray-text)">{{ areaHorizontal() | number:'1.2-2' }} m²</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:var(--gray-muted)">Rodapié ({{ alturaRodapie() }}m):</span>
+          <span style="font-weight:700;color:var(--gray-text)">+{{ areaRodapie() | number:'1.2-2' }} m²</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:var(--gray-muted)">Área neta total:</span>
+          <span style="font-weight:700;color:var(--gray-text)">{{ areaNeta() | number:'1.2-2' }} m²</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:var(--gray-muted)">× {{ capas() }} capa(s):</span>
+          <span style="font-weight:700;color:var(--gray-text)">{{ (areaNeta() * (capas()||1)) | number:'1.2-2' }} m²</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;border-top:1px solid var(--gray-border);padding-top:6px">
+          <span style="color:var(--brand);font-weight:700">Área presupuestada:</span>
+          <span style="font-weight:800;color:var(--brand);font-size:14px">{{ areaPresupuestada() | number:'1.2-2' }} m²</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MÉTRICAS -->
+  <div class="metrics-row">
+    <div class="metric">
+      <div class="m-lbl">Área Horiz.</div>
+      <div class="m-val">{{ areaHorizontal() | number:'1.2-2' }}</div>
+      <div class="m-unit">m²</div>
+    </div>
+    <div class="metric">
+      <div class="m-lbl">+ Rodapié</div>
+      <div class="m-val">{{ areaNeta() | number:'1.2-2' }}</div>
+      <div class="m-unit">m²</div>
+    </div>
+    <div class="metric" style="grid-column:span 2;border-color:var(--brand);background:var(--brand-light)">
+      <div class="m-lbl" style="color:var(--brand-dark)">Área Presupuestada</div>
+      <div class="m-val" style="font-size:28px;color:var(--brand-dark)">{{ areaPresupuestada() | number:'1.2-2' }}</div>
+      <div class="m-unit" style="color:var(--brand)">m²</div>
+    </div>
+  </div>
+
+</div>

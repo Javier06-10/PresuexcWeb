@@ -77,7 +77,9 @@
                                     <td class="px-4 py-2 text-center">
                                         <input type="number" [(ngModel)]="item.quantity" (change)="updateItemQuantity(item)" class="w-20 text-center border border-zinc-300 rounded px-2 py-1 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition">
                                     </td>
-                                    <td class="px-4 py-2 text-right font-medium text-zinc-600">$ {{ item.unit_price | number:'1.2-2' }}</td>
+                                    <td class="px-4 py-2 text-right">
+                                        <input type="number" [(ngModel)]="item.unit_price" (change)="updateItemPrice(item)" class="w-24 text-right border border-zinc-300 rounded px-2 py-1 text-sm focus:border-presuOxido focus:ring-1 focus:ring-presuOxido outline-none transition">
+                                    </td>
                                     <td class="px-4 py-2 text-right font-black text-presuOscuro">$ {{ (item.quantity * (item.unit_price || 0)) | number:'1.2-2' }}</td>
                                     <td class="px-4 py-2 text-center">
                                         <button (click)="removeItem(item.id)" class="text-zinc-400 hover:text-red-500 transition opacity-0 group-hover:opacity-100">
@@ -119,7 +121,9 @@
                                     <td class="px-4 py-2 text-center">
                                         <input type="number" [(ngModel)]="item.quantity" (change)="updateItemQuantity(item)" class="w-20 text-center border border-zinc-300 rounded px-2 py-1 text-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition" title="Cantidad o Rendimiento">
                                     </td>
-                                    <td class="px-4 py-2 text-right font-medium text-zinc-600">$ {{ item.unit_price | number:'1.2-2' }}</td>
+                                    <td class="px-4 py-2 text-right">
+                                        <input type="number" [(ngModel)]="item.unit_price" (change)="updateItemPrice(item)" class="w-24 text-right border border-zinc-300 rounded px-2 py-1 text-sm focus:border-presuOxido focus:ring-1 focus:ring-presuOxido outline-none transition">
+                                    </td>
                                     <td class="px-4 py-2 text-right font-black text-presuOscuro">$ {{ (item.quantity * (item.unit_price || 0)) | number:'1.2-2' }}</td>
                                     <td class="px-4 py-2 text-center">
                                         <button (click)="removeItem(item.id)" class="text-zinc-400 hover:text-red-500 transition opacity-0 group-hover:opacity-100">
@@ -161,7 +165,9 @@
                                     <td class="px-4 py-2 text-center">
                                         <input type="number" [(ngModel)]="item.quantity" (change)="updateItemQuantity(item)" class="w-20 text-center border border-zinc-300 rounded px-2 py-1 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition">
                                     </td>
-                                    <td class="px-4 py-2 text-right font-medium text-zinc-600">$ {{ item.unit_price | number:'1.2-2' }}</td>
+                                    <td class="px-4 py-2 text-right">
+                                        <input type="number" [(ngModel)]="item.unit_price" (change)="updateItemPrice(item)" class="w-24 text-right border border-zinc-300 rounded px-2 py-1 text-sm focus:border-presuOxido focus:ring-1 focus:ring-presuOxido outline-none transition">
+                                    </td>
                                     <td class="px-4 py-2 text-right font-black text-presuOscuro">$ {{ (item.quantity * (item.unit_price || 0)) | number:'1.2-2' }}</td>
                                     <td class="px-4 py-2 text-center">
                                         <button (click)="removeItem(item.id)" class="text-zinc-400 hover:text-red-500 transition opacity-0 group-hover:opacity-100">

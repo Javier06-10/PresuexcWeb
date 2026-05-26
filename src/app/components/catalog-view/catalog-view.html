@@ -1,656 +1,227 @@
-<div class="p-6 h-[calc(100vh-64px)] overflow-auto bg-presuFondo">
-  <div
-    class="max-w-6xl mx-auto bg-white rounded-xl shadow-sm border border-zinc-200 overflow-hidden flex flex-col min-h-[500px]"
-  >
-    <!-- Header del Catalogo -->
-    <div class="bg-presuOscuro text-white p-4 flex items-center justify-between">
-      <div class="flex items-center gap-4">
-        <button
-          (click)="uiState.activeView.set('projects')"
-          class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-700 transition text-zinc-300 hover:text-white"
-        >
-          <i class="ph ph-arrow-left text-lg"></i>
-        </button>
-        <h2 class="text-lg font-black tracking-tight flex items-center gap-2">
-          <i class="ph ph-database text-presuOxido"></i> Base de Precios
-        </h2>
-      </div>
+<div style="height:calc(100vh - 50px);background:#F2F2F2;overflow-y:auto;padding:24px 28px">
 
-      <!-- Controles -->
-      <div class="flex items-center gap-4">
-        <!-- Filtro de Categoría de APU (solo cuando activeTab === 'apus') -->
-        <select
-          *ngIf="activeTab === 'apus'"
-          [(ngModel)]="selectedApuCategory"
-          class="bg-zinc-800 border border-zinc-700 text-white text-sm rounded-full px-3 py-1.5 focus:outline-none focus:border-presuOxido transition"
-        >
-          <option value="">Todas las categorías</option>
-          <option *ngFor="let cat of apuCategories()" [value]="cat.id">{{ cat.name }}</option>
-        </select>
-
-        <!-- Filtro Global / Mi Org -->
-        <div class="flex bg-zinc-800 rounded-full p-1 border border-zinc-700">
-          <button
-            (click)="viewMode = 'global'"
-            [class.bg-presuOxido]="viewMode === 'global'"
-            [class.text-white]="viewMode === 'global'"
-            class="px-3 py-1 text-xs font-bold rounded-full text-zinc-400 transition"
-          >
-            Globales
-          </button>
-          <button
-            (click)="viewMode = 'my_org'"
-            [class.bg-presuOxido]="viewMode === 'my_org'"
-            [class.text-white]="viewMode === 'my_org'"
-            class="px-3 py-1 text-xs font-bold rounded-full text-zinc-400 transition"
-          >
-            Mi Organización
-          </button>
-        </div>
-
-        <!-- Buscador -->
-        <div class="relative w-64">
-          <i
-            class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"
-          ></i>
-          <input
-            type="text"
-            [(ngModel)]="searchTerm"
-            placeholder="Buscar insumo..."
-            class="w-full bg-zinc-800 border border-zinc-700 text-white text-sm rounded-full pl-9 pr-4 py-1.5 focus:outline-none focus:border-presuOxido transition placeholder:text-zinc-500"
-          />
-        </div>
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <button (click)="uiState.activeView.set('projects')"
+              style="background:none;border:none;cursor:pointer;color:#909090;font-size:18px;display:flex;align-items:center;padding:4px;border-radius:6px"
+              title="Volver">
+        <i class="ph ph-arrow-left"></i>
+      </button>
+      <div>
+        <h2 style="font-size:16px;font-weight:800;color:#3A3838;margin:0">Catálogo APU</h2>
+        <p style="font-size:11px;color:#909090;margin:0">Análisis de Precios Unitarios</p>
       </div>
     </div>
 
-    <!-- Pestañas -->
-    <div class="flex border-b border-zinc-200 bg-zinc-50 relative">
-      <button
-        (click)="activeTab = 'materials'"
-        [class.border-presuOxido]="activeTab === 'materials'"
-        [class.text-presuOxido]="activeTab === 'materials'"
-        class="px-6 py-3 font-bold text-sm border-b-2 border-transparent text-zinc-500 hover:text-zinc-800 transition"
-      >
-        Materiales
-      </button>
-      <button
-        (click)="activeTab = 'labor'"
-        [class.border-presuOxido]="activeTab === 'labor'"
-        [class.text-presuOxido]="activeTab === 'labor'"
-        class="px-6 py-3 font-bold text-sm border-b-2 border-transparent text-zinc-500 hover:text-zinc-800 transition"
-      >
-        Mano de Obra
-      </button>
-      <button
-        (click)="activeTab = 'equipment'"
-        [class.border-presuOxido]="activeTab === 'equipment'"
-        [class.text-presuOxido]="activeTab === 'equipment'"
-        class="px-6 py-3 font-bold text-sm border-b-2 border-transparent text-zinc-500 hover:text-zinc-800 transition"
-      >
-        Equipos
-      </button>
-
-      <div class="absolute right-0 h-full flex items-center pr-4">
-        <div class="w-px h-6 bg-zinc-300 mx-2"></div>
-        <button
-          (click)="activeTab = 'apus'"
-          [class.border-purple-500]="activeTab === 'apus'"
-          [class.text-purple-600]="activeTab === 'apus'"
-          class="px-6 py-3 font-black text-sm border-b-2 border-transparent text-zinc-500 hover:text-purple-600 transition flex items-center gap-2"
-        >
-          <i class="ph ph-cube"></i> APUs
-        </button>
-      </div>
-    </div>
-
-    <!-- Indicador de vista actual -->
-    <div class="bg-zinc-100 px-6 py-2 border-b border-zinc-200 flex items-center justify-between">
-      <div class="flex items-center gap-2 text-xs font-bold text-zinc-500 uppercase tracking-wider">
-        <i class="ph ph-info text-presuOxido text-sm"></i> Mostrando:
-        <span class="text-presuOscuro">{{
-          activeTab === 'materials'
-            ? 'Materiales'
-            : activeTab === 'labor'
-              ? 'Mano de Obra'
-              : activeTab === 'equipment'
-                ? 'Equipos'
-                : 'Plantillas de APUs'
-        }}</span>
-        <i class="ph ph-caret-right text-zinc-300"></i>
-        <span
-          [class.text-blue-600]="viewMode === 'global'"
-          [class.text-presuOxido]="viewMode === 'my_org'"
-        >
-          {{ viewMode === 'global' ? 'Catálogo Global' : 'Mi Organización' }}
-        </span>
-      </div>
-    </div>
-
-    <!-- Tabla -->
-    <div class="flex-1 overflow-auto p-4">
-      <div
-        *ngIf="catalogService.isLoading()"
-        class="flex flex-col items-center justify-center h-40 text-zinc-400"
-      >
-        <i class="ph ph-spinner animate-spin text-3xl mb-2 text-presuOxido"></i>
-        <p class="font-bold text-sm">Cargando base de datos...</p>
-      </div>
-
-      <table *ngIf="!catalogService.isLoading()" class="w-full text-sm text-left">
-        <thead
-          class="text-xs uppercase bg-zinc-100 text-zinc-600 font-black border-b border-zinc-300"
-        >
-          <tr>
-            <th class="px-4 py-3 w-32">Código</th>
-            <th class="px-4 py-3">Descripción</th>
-            <th class="px-4 py-3 w-40 text-center">Unidad</th>
-            <th class="px-4 py-3 w-32 text-right">Precio</th>
-            <th class="px-4 py-3 w-12"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Formulario genérico para crear items en la vista Mi Org (para materiales, labor, equipment) -->
-          <ng-container *ngIf="viewMode === 'my_org' && activeTab !== 'apus'">
-            <tr *ngIf="isCreatingItem()" class="bg-amber-50 border-b border-amber-200">
-              <td class="px-4 py-2">
-                <span class="text-xs text-amber-600 font-bold bg-white px-2 py-1 rounded shadow-sm"
-                  >NUEVO</span
-                >
-              </td>
-              <td class="px-4 py-2">
-                <input
-                  type="text"
-                  [(ngModel)]="newItemName"
-                  placeholder="Descripción del insumo"
-                  class="w-full bg-white border border-amber-300 rounded px-2 py-1 text-sm focus:border-presuOxido focus:ring-1 focus:ring-presuOxido outline-none font-bold"
-                />
-              </td>
-              <td class="px-4 py-2">
-                <select
-                  [(ngModel)]="newItemUnit"
-                  class="w-full text-center bg-white border border-amber-300 rounded px-2 py-1 text-sm focus:border-presuOxido focus:ring-1 focus:ring-presuOxido outline-none uppercase font-bold text-zinc-600"
-                >
-                  <option value="" disabled selected>UNIDAD</option>
-                  <option *ngFor="let u of catalogService.units()" [value]="u.code">
-                    {{ u.code }}
-                  </option>
-                </select>
-              </td>
-              <td class="px-4 py-2 text-right flex items-center justify-end">
-                <span class="mr-1 text-zinc-500 font-bold">$</span>
-                <input
-                  type="number"
-                  [(ngModel)]="newItemPrice"
-                  placeholder="0.00"
-                  class="w-24 text-right bg-white border border-amber-300 rounded px-2 py-1 text-sm focus:border-presuOxido focus:ring-1 focus:ring-presuOxido outline-none font-bold"
-                />
-              </td>
-              <td class="px-4 py-2 text-center">
-                <div class="flex gap-1 justify-center">
-                  <button
-                    (click)="createItem()"
-                    class="bg-presuOxido hover:bg-amber-800 text-white w-7 h-7 rounded shadow flex items-center justify-center transition"
-                  >
-                    <i class="ph ph-check font-bold"></i>
-                  </button>
-                  <button
-                    (click)="isCreatingItem.set(false)"
-                    class="bg-zinc-200 hover:bg-zinc-300 text-zinc-600 w-7 h-7 rounded shadow flex items-center justify-center transition"
-                  >
-                    <i class="ph ph-x font-bold"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
-            <tr
-              class="hover:bg-zinc-50 border-b border-zinc-100 transition cursor-pointer"
-              (click)="isCreatingItem.set(true)"
-              *ngIf="!isCreatingItem()"
-            >
-              <td
-                colspan="5"
-                class="px-4 py-3 text-center text-presuOxido font-black border-dashed border-2 border-zinc-200 rounded-lg m-2"
-              >
-                <i class="ph ph-plus-circle"></i> AGREGAR A MI ORGANIZACIÓN
-              </td>
-            </tr>
-          </ng-container>
-
-          <ng-container *ngIf="activeTab === 'materials'">
-            <tr
-              *ngFor="let item of filteredMaterials()"
-              class="border-b border-zinc-100 transition group"
-              [class.bg-blue-50]="editingItemId() === item.id"
-              [class.hover:bg-amber-50]="editingItemId() !== item.id"
-            >
-              <td class="px-4 py-2 font-mono text-xs text-zinc-500">{{ item.code || 'N/A' }}</td>
-
-              <td class="px-4 py-2 font-bold text-presuOscuro">
-                <ng-container *ngIf="editingItemId() !== item.id">{{
-                  item.description
-                }}</ng-container>
-                <input
-                  *ngIf="editingItemId() === item.id"
-                  type="text"
-                  [(ngModel)]="editItemName"
-                  class="w-full bg-white border border-blue-300 rounded px-2 py-1 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
-                />
-              </td>
-
-              <td class="px-4 py-2 text-center text-xs font-bold text-zinc-500 uppercase">
-                <ng-container *ngIf="editingItemId() !== item.id">{{ item.unit }}</ng-container>
-                <select
-                  *ngIf="editingItemId() === item.id"
-                  [(ngModel)]="editItemUnit"
-                  class="w-full text-center bg-white border border-blue-300 rounded px-2 py-1 text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none uppercase"
-                >
-                  <option *ngFor="let u of catalogService.units()" [value]="u.code">
-                    {{ u.code }}
-                  </option>
-                </select>
-              </td>
-
-              <td class="px-4 py-2 text-right font-black text-presuOscuro">
-                $ {{ item.price_without_itbis || 0 | number: '1.2-2' }}
-              </td>
-
-              <td class="px-4 py-2 text-center">
-                <span
-                  *ngIf="!item.organization_id"
-                  class="text-[9px] bg-blue-100 text-blue-800 px-1 rounded font-bold uppercase"
-                  title="Global DB"
-                  >G</span
-                >
-                <div
-                  *ngIf="
-                    item.organization_id && viewMode === 'my_org' && editingItemId() !== item.id
-                  "
-                  class="opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2"
-                >
-                  <button
-                    (click)="startEdit(item)"
-                    class="text-blue-500 hover:text-blue-700 transition"
-                    title="Editar"
-                  >
-                    <i class="ph ph-pencil-simple"></i>
-                  </button>
-                  <button
-                    (click)="deleteItem(item)"
-                    class="text-red-500 hover:text-red-700 transition"
-                    title="Eliminar"
-                  >
-                    <i class="ph ph-trash"></i>
-                  </button>
-                </div>
-                <div
-                  *ngIf="editingItemId() === item.id"
-                  class="flex items-center justify-center gap-1"
-                >
-                  <button
-                    (click)="saveEdit(item)"
-                    class="text-green-600 hover:text-green-800 transition"
-                    title="Guardar"
-                  >
-                    <i class="ph ph-check-circle text-lg"></i>
-                  </button>
-                  <button
-                    (click)="cancelEdit()"
-                    class="text-zinc-400 hover:text-zinc-600 transition"
-                    title="Cancelar"
-                  >
-                    <i class="ph ph-x-circle text-lg"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </ng-container>
-
-          <ng-container *ngIf="activeTab === 'labor'">
-            <tr
-              *ngFor="let item of filteredLabor()"
-              class="border-b border-zinc-100 transition group"
-              [class.bg-blue-50]="editingItemId() === item.id"
-              [class.hover:bg-amber-50]="editingItemId() !== item.id"
-            >
-              <td class="px-4 py-2 font-mono text-xs text-zinc-500">{{ item.code || 'N/A' }}</td>
-
-              <td class="px-4 py-2 font-bold text-presuOscuro">
-                <ng-container *ngIf="editingItemId() !== item.id">{{
-                  item.description
-                }}</ng-container>
-                <input
-                  *ngIf="editingItemId() === item.id"
-                  type="text"
-                  [(ngModel)]="editItemName"
-                  class="w-full bg-white border border-blue-300 rounded px-2 py-1 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
-                />
-              </td>
-
-              <td class="px-4 py-2 text-center text-xs font-bold text-zinc-500 uppercase">
-                <ng-container *ngIf="editingItemId() !== item.id">{{ item.unit }}</ng-container>
-                <select
-                  *ngIf="editingItemId() === item.id"
-                  [(ngModel)]="editItemUnit"
-                  class="w-full text-center bg-white border border-blue-300 rounded px-2 py-1 text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none uppercase"
-                >
-                  <option *ngFor="let u of catalogService.units()" [value]="u.code">
-                    {{ u.code }}
-                  </option>
-                </select>
-              </td>
-
-              <td class="px-4 py-2 text-right font-black text-presuOscuro">
-                $ {{ item.unit_price || 0 | number: '1.2-2' }}
-              </td>
-
-              <td class="px-4 py-2 text-center">
-                <span
-                  *ngIf="!item.organization_id"
-                  class="text-[9px] bg-blue-100 text-blue-800 px-1 rounded font-bold uppercase"
-                  title="Global DB"
-                  >G</span
-                >
-                <div
-                  *ngIf="
-                    item.organization_id && viewMode === 'my_org' && editingItemId() !== item.id
-                  "
-                  class="opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2"
-                >
-                  <button
-                    (click)="startEdit(item)"
-                    class="text-blue-500 hover:text-blue-700 transition"
-                    title="Editar"
-                  >
-                    <i class="ph ph-pencil-simple"></i>
-                  </button>
-                  <button
-                    (click)="deleteItem(item)"
-                    class="text-red-500 hover:text-red-700 transition"
-                    title="Eliminar"
-                  >
-                    <i class="ph ph-trash"></i>
-                  </button>
-                </div>
-                <div
-                  *ngIf="editingItemId() === item.id"
-                  class="flex items-center justify-center gap-1"
-                >
-                  <button
-                    (click)="saveEdit(item)"
-                    class="text-green-600 hover:text-green-800 transition"
-                    title="Guardar"
-                  >
-                    <i class="ph ph-check-circle text-lg"></i>
-                  </button>
-                  <button
-                    (click)="cancelEdit()"
-                    class="text-zinc-400 hover:text-zinc-600 transition"
-                    title="Cancelar"
-                  >
-                    <i class="ph ph-x-circle text-lg"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </ng-container>
-
-          <ng-container *ngIf="activeTab === 'equipment'">
-            <tr
-              *ngFor="let item of filteredEquipment()"
-              class="border-b border-zinc-100 transition group"
-              [class.bg-blue-50]="editingItemId() === item.id"
-              [class.hover:bg-amber-50]="editingItemId() !== item.id"
-            >
-              <td class="px-4 py-2 font-mono text-xs text-zinc-500">{{ item.code || 'N/A' }}</td>
-
-              <td class="px-4 py-2 font-bold text-presuOscuro">
-                <ng-container *ngIf="editingItemId() !== item.id">{{
-                  item.description
-                }}</ng-container>
-                <input
-                  *ngIf="editingItemId() === item.id"
-                  type="text"
-                  [(ngModel)]="editItemName"
-                  class="w-full bg-white border border-blue-300 rounded px-2 py-1 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
-                />
-              </td>
-
-              <td class="px-4 py-2 text-center text-xs font-bold text-zinc-500 uppercase">
-                <ng-container *ngIf="editingItemId() !== item.id">{{ item.unit }}</ng-container>
-                <select
-                  *ngIf="editingItemId() === item.id"
-                  [(ngModel)]="editItemUnit"
-                  class="w-full text-center bg-white border border-blue-300 rounded px-2 py-1 text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none uppercase"
-                >
-                  <option *ngFor="let u of catalogService.units()" [value]="u.code">
-                    {{ u.code }}
-                  </option>
-                </select>
-              </td>
-
-              <td class="px-4 py-2 text-right font-black text-presuOscuro">
-                $ {{ item.total_without_itbis || 0 | number: '1.2-2' }}
-              </td>
-
-              <td class="px-4 py-2 text-center">
-                <span
-                  *ngIf="!item.organization_id"
-                  class="text-[9px] bg-blue-100 text-blue-800 px-1 rounded font-bold uppercase"
-                  title="Global DB"
-                  >G</span
-                >
-                <div
-                  *ngIf="
-                    item.organization_id && viewMode === 'my_org' && editingItemId() !== item.id
-                  "
-                  class="opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2"
-                >
-                  <button
-                    (click)="startEdit(item)"
-                    class="text-blue-500 hover:text-blue-700 transition"
-                    title="Editar"
-                  >
-                    <i class="ph ph-pencil-simple"></i>
-                  </button>
-                  <button
-                    (click)="deleteItem(item)"
-                    class="text-red-500 hover:text-red-700 transition"
-                    title="Eliminar"
-                  >
-                    <i class="ph ph-trash"></i>
-                  </button>
-                </div>
-                <div
-                  *ngIf="editingItemId() === item.id"
-                  class="flex items-center justify-center gap-1"
-                >
-                  <button
-                    (click)="saveEdit(item)"
-                    class="text-green-600 hover:text-green-800 transition"
-                    title="Guardar"
-                  >
-                    <i class="ph ph-check-circle text-lg"></i>
-                  </button>
-                  <button
-                    (click)="cancelEdit()"
-                    class="text-zinc-400 hover:text-zinc-600 transition"
-                    title="Cancelar"
-                  >
-                    <i class="ph ph-x-circle text-lg"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </ng-container>
-          <ng-container *ngIf="activeTab === 'apus'">
-            <!-- Formulario de creación de APU en línea -->
-            <tr *ngIf="isCreatingApu()" class="bg-purple-50 border-b border-purple-200">
-              <td class="px-4 py-2">
-                <span class="text-xs text-purple-400 font-bold bg-white px-2 py-1 rounded shadow-sm"
-                  >NUEVO</span
-                >
-              </td>
-              <td class="px-4 py-2">
-                <input
-                  type="text"
-                  [(ngModel)]="newApuName"
-                  placeholder="Nombre del APU (Ej: Muro de Bloques de 6)"
-                  class="w-full bg-white border border-purple-300 rounded px-2 py-1 text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none font-bold"
-                />
-              </td>
-              <td class="px-4 py-2">
-                <select
-                  [(ngModel)]="newApuUnit"
-                  class="w-full text-center bg-white border border-purple-300 rounded px-2 py-1 text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none uppercase font-bold text-zinc-600"
-                >
-                  <option value="" disabled selected>UNIDAD</option>
-                  <option *ngFor="let u of catalogService.units()" [value]="u.code">
-                    {{ u.code }}
-                  </option>
-                </select>
-              </td>
-              <td class="px-4 py-2 text-right">
-                <span class="text-zinc-400 text-xs italic">Cálculo dinámico</span>
-              </td>
-              <td class="px-4 py-2 text-center flex gap-1 justify-center">
-                <button
-                  (click)="createApu()"
-                  class="bg-purple-600 hover:bg-purple-700 text-white w-7 h-7 rounded shadow flex items-center justify-center transition"
-                >
-                  <i class="ph ph-check font-bold"></i>
-                </button>
-                <button
-                  (click)="isCreatingApu.set(false)"
-                  class="bg-zinc-200 hover:bg-zinc-300 text-zinc-600 w-7 h-7 rounded shadow flex items-center justify-center transition"
-                >
-                  <i class="ph ph-x font-bold"></i>
-                </button>
-              </td>
-            </tr>
-
-            <!-- Botón flotante al final de la lista -->
-            <tr
-              class="hover:bg-zinc-50 border-b border-zinc-100 transition cursor-pointer"
-              (click)="isCreatingApu.set(true)"
-              *ngIf="!isCreatingApu()"
-            >
-              <td
-                colspan="5"
-                class="px-4 py-3 text-center text-purple-600 font-black border-dashed border-2 border-zinc-200 rounded-lg m-2"
-              >
-                <i class="ph ph-plus-circle"></i> CREAR NUEVA PLANTILLA DE APU
-              </td>
-            </tr>
-
-            <tr
-              *ngFor="let item of filteredApus()"
-              class="border-b border-zinc-100 transition group"
-              [class.bg-blue-50]="editingItemId() === item.id"
-              [class.hover:bg-purple-50]="editingItemId() !== item.id"
-            >
-              <td
-                class="px-4 py-2 font-mono text-xs text-zinc-500"
-                (click)="editingItemId() !== item.id && openApuEditor(item.id)"
-              >
-                {{ item.code || 'N/A' }}
-              </td>
-
-              <td class="px-4 py-2 font-bold text-presuOscuro">
-                <ng-container *ngIf="editingItemId() !== item.id">
-                  <div
-                    class="flex items-center gap-2 cursor-pointer"
-                    (click)="openApuEditor(item.id)"
-                  >
-                    <i class="ph ph-cube text-purple-500"></i> {{ item.name }}
-                  </div>
-                </ng-container>
-                <input
-                  *ngIf="editingItemId() === item.id"
-                  type="text"
-                  [(ngModel)]="editItemName"
-                  class="w-full bg-white border border-blue-300 rounded px-2 py-1 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
-                />
-              </td>
-
-              <td class="px-4 py-2 text-center text-xs font-bold text-zinc-500 uppercase">
-                <ng-container *ngIf="editingItemId() !== item.id">{{ item.unit }}</ng-container>
-                <select
-                  *ngIf="editingItemId() === item.id"
-                  [(ngModel)]="editItemUnit"
-                  class="w-full text-center bg-white border border-blue-300 rounded px-2 py-1 text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none uppercase"
-                >
-                  <option *ngFor="let u of catalogService.units()" [value]="u.code">
-                    {{ u.code }}
-                  </option>
-                </select>
-              </td>
-
-              <td
-                class="px-4 py-2 text-right font-black text-presuOscuro"
-                (click)="editingItemId() !== item.id && openApuEditor(item.id)"
-              >
-                $ {{ item.total_unit | number: '1.2-2' }}
-              </td>
-
-              <td class="px-4 py-2 text-center">
-                <span
-                  *ngIf="!item.organization_id"
-                  class="text-[9px] bg-blue-100 text-blue-800 px-1 rounded font-bold uppercase"
-                  title="Global DB"
-                  >G</span
-                >
-                <div
-                  *ngIf="
-                    item.organization_id && viewMode === 'my_org' && editingItemId() !== item.id
-                  "
-                  class="opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2"
-                >
-                  <button
-                    (click)="startEdit(item)"
-                    class="text-blue-500 hover:text-blue-700 transition"
-                    title="Editar"
-                  >
-                    <i class="ph ph-pencil-simple"></i>
-                  </button>
-                  <button
-                    (click)="deleteItem(item)"
-                    class="text-red-500 hover:text-red-700 transition"
-                    title="Eliminar"
-                  >
-                    <i class="ph ph-trash"></i>
-                  </button>
-                  <button
-                    (click)="openApuEditor(item.id)"
-                    class="text-purple-500 hover:text-purple-700 transition font-bold text-xs"
-                    title="Ir al detalle"
-                  >
-                    Detalle <i class="ph ph-arrow-right"></i>
-                  </button>
-                </div>
-                <div
-                  *ngIf="editingItemId() === item.id"
-                  class="flex items-center justify-center gap-1"
-                >
-                  <button
-                    (click)="saveEdit(item)"
-                    class="text-green-600 hover:text-green-800 transition"
-                    title="Guardar"
-                  >
-                    <i class="ph ph-check-circle text-lg"></i>
-                  </button>
-                  <button
-                    (click)="cancelEdit()"
-                    class="text-zinc-400 hover:text-zinc-600 transition"
-                    title="Cancelar"
-                  >
-                    <i class="ph ph-x-circle text-lg"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </ng-container>
-        </tbody>
-      </table>
+    <!-- Search -->
+    <div style="position:relative;width:260px">
+      <i class="ph ph-magnifying-glass"
+         style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#909090;font-size:13px;pointer-events:none"></i>
+      <input type="text" placeholder="Buscar APU..."
+             [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
+             style="width:100%;border:1px solid #D2D2D2;border-radius:8px;padding:8px 10px 8px 30px;font-size:12px;background:#fff;color:#3A3838;outline:none;box-sizing:border-box"
+             onfocus="this.style.borderColor='#8C4F2B'" onblur="this.style.borderColor='#D2D2D2'" />
     </div>
   </div>
+
+  <!-- Spinner global -->
+  @if (apuService.isLoading()) {
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px;color:#909090;gap:10px">
+      <i class="ph ph-circle-notch" style="font-size:36px;color:#8C4F2B;animation:spin .8s linear infinite"></i>
+      <span style="font-size:13px;font-weight:600">Cargando APUs…</span>
+    </div>
+  } @else {
+
+    <!-- ══ MI ORGANIZACIÓN ══ -->
+    <div style="background:#fff;border-radius:12px;border:1px solid #D2D2D2;margin-bottom:20px;overflow:hidden">
+
+      <!-- Section header -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid #EBEBEB;background:#FAFAFA">
+        <div style="display:flex;align-items:center;gap:8px">
+          <i class="ph ph-buildings" style="font-size:16px;color:#8C4F2B"></i>
+          <span style="font-size:12px;font-weight:800;color:#3A3838;text-transform:uppercase;letter-spacing:.04em">Mi Organización</span>
+          <span style="background:#FDF3EC;color:#8C4F2B;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px">
+            {{ orgApus().length }}
+          </span>
+        </div>
+        <button (click)="isCreating.set(!isCreating())"
+                style="display:flex;align-items:center;gap:5px;padding:6px 12px;background:#8C4F2B;color:#fff;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.03em">
+          <i class="ph" [class.ph-plus]="!isCreating()" [class.ph-x]="isCreating()"></i>
+          {{ isCreating() ? 'Cancelar' : 'Nuevo APU' }}
+        </button>
+      </div>
+
+      <!-- Create form -->
+      @if (isCreating()) {
+        <div style="display:flex;gap:8px;align-items:center;padding:10px 18px;border-bottom:1px solid #EBEBEB;background:#FFFDF9">
+          <input type="text" placeholder="Nombre del APU *" [(ngModel)]="newName"
+                 style="flex:1;border:1px solid #D2D2D2;border-radius:6px;padding:7px 10px;font-size:12px;color:#3A3838;outline:none"
+                 onfocus="this.style.borderColor='#8C4F2B'" onblur="this.style.borderColor='#D2D2D2'" />
+          <select [(ngModel)]="newUnit"
+                  style="border:1px solid #D2D2D2;border-radius:6px;padding:7px 10px;font-size:12px;color:#3A3838;outline:none;background:#fff">
+            @for (u of catalogService.units(); track u.code) {
+              <option [value]="u.code">{{ u.code }}</option>
+            }
+          </select>
+          <button (click)="createApu()" [disabled]="!newName.trim()"
+                  style="padding:7px 16px;background:#8C4F2B;color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">
+            Crear
+          </button>
+        </div>
+      }
+
+      <!-- Org APU list -->
+      @if (orgApus().length === 0) {
+        <div style="padding:32px;text-align:center;color:#aaa">
+          <i class="ph ph-cube" style="font-size:32px;opacity:.3;display:block;margin-bottom:8px"></i>
+          <div style="font-size:12px">{{ searchTerm() ? 'Sin resultados' : 'Aún no tienes APUs propios. Crea el primero.' }}</div>
+        </div>
+      } @else {
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead>
+            <tr style="background:#F7F7F7">
+              <th style="padding:8px 18px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#909090;text-align:left;width:100px">Código</th>
+              <th style="padding:8px 18px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#909090;text-align:left">Nombre</th>
+              <th style="padding:8px 18px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#909090;text-align:center;width:80px">Unidad</th>
+              <th style="padding:8px 18px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#909090;text-align:right;width:120px">Total unit.</th>
+              <th style="width:110px"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (apu of orgApus(); track apu.id) {
+              <tr style="border-top:1px solid #F0F0F0" class="cv-row">
+                <td style="padding:9px 18px;color:#aaa;font-size:10px;font-family:monospace">{{ apu.code || '—' }}</td>
+
+                @if (editingId() === apu.id) {
+                  <td style="padding:6px 18px">
+                    <input type="text" [(ngModel)]="editName"
+                           style="width:100%;border:1px solid #8C4F2B;border-radius:5px;padding:5px 8px;font-size:12px;outline:none;box-sizing:border-box" />
+                  </td>
+                  <td style="padding:6px 18px;text-align:center">
+                    <select [(ngModel)]="editUnit"
+                            style="border:1px solid #D2D2D2;border-radius:5px;padding:5px 6px;font-size:11px;outline:none;background:#fff">
+                      @for (u of catalogService.units(); track u.code) {
+                        <option [value]="u.code">{{ u.code }}</option>
+                      }
+                    </select>
+                  </td>
+                  <td style="padding:6px 18px;text-align:right;color:#1A7A30;font-weight:700">
+                    {{ apu.total_unit | number:'1.2-2' }}
+                  </td>
+                  <td style="padding:6px 18px">
+                    <div style="display:flex;gap:4px;justify-content:center">
+                      <button (click)="saveEdit(apu)" class="cv-btn cv-btn--ok" title="Guardar"><i class="ph ph-check"></i></button>
+                      <button (click)="cancelEdit()" class="cv-btn" title="Cancelar"><i class="ph ph-x"></i></button>
+                    </div>
+                  </td>
+                } @else {
+                  <td style="padding:9px 18px;font-weight:700;color:#3A3838;cursor:pointer" (click)="openApuEditor(apu.id)">
+                    <div style="display:flex;align-items:center;gap:6px">
+                      <i class="ph ph-cube" style="color:#8C4F2B;font-size:13px"></i>
+                      {{ apu.name }}
+                    </div>
+                  </td>
+                  <td style="padding:9px 18px;text-align:center;font-weight:700;color:#555;font-size:11px">{{ apu.unit }}</td>
+                  <td style="padding:9px 18px;text-align:right;font-weight:700;color:#1A7A30;cursor:pointer" (click)="openApuEditor(apu.id)">
+                    {{ apu.total_unit | number:'1.2-2' }}
+                  </td>
+                  <td style="padding:9px 18px">
+                    <div style="display:flex;gap:4px;justify-content:center;opacity:0" class="cv-actions">
+                      <button (click)="openApuEditor(apu.id)" class="cv-btn cv-btn--view" title="Ver detalle"><i class="ph ph-arrow-square-out"></i></button>
+                      <button (click)="startEdit(apu)" class="cv-btn cv-btn--edit" title="Editar"><i class="ph ph-pencil-simple"></i></button>
+                      <button (click)="deleteApu(apu)" class="cv-btn cv-btn--del" title="Eliminar"><i class="ph ph-trash"></i></button>
+                    </div>
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+
+    <!-- ══ GLOBALES ══ -->
+    <div style="background:#fff;border-radius:12px;border:1px solid #D2D2D2;overflow:hidden">
+
+      <!-- Section header -->
+      <div style="display:flex;align-items:center;gap:8px;padding:12px 18px;border-bottom:1px solid #EBEBEB;background:#FAFAFA">
+        <i class="ph ph-globe" style="font-size:16px;color:#2980B9"></i>
+        <span style="font-size:12px;font-weight:800;color:#3A3838;text-transform:uppercase;letter-spacing:.04em">Catálogo Global</span>
+        <span style="background:#EEF6FE;color:#2980B9;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px">
+          {{ globalApus().length }}
+        </span>
+        <span style="margin-left:auto;font-size:10px;color:#aaa;font-style:italic">Solo lectura</span>
+      </div>
+
+      <!-- Global APU list -->
+      @if (globalApus().length === 0) {
+        <div style="padding:32px;text-align:center;color:#aaa">
+          <i class="ph ph-globe" style="font-size:32px;opacity:.3;display:block;margin-bottom:8px"></i>
+          <div style="font-size:12px">{{ searchTerm() ? 'Sin resultados' : 'No hay APUs globales disponibles.' }}</div>
+        </div>
+      } @else {
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead>
+            <tr style="background:#F7F7F7">
+              <th style="padding:8px 18px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#909090;text-align:left;width:100px">Código</th>
+              <th style="padding:8px 18px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#909090;text-align:left">Nombre</th>
+              <th style="padding:8px 18px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#909090;text-align:center;width:80px">Unidad</th>
+              <th style="padding:8px 18px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#909090;text-align:right;width:120px">Total unit.</th>
+              <th style="width:60px"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (apu of globalApus(); track apu.id) {
+              <tr style="border-top:1px solid #F0F0F0" class="cv-row">
+                <td style="padding:9px 18px;color:#aaa;font-size:10px;font-family:monospace">{{ apu.code || '—' }}</td>
+                <td style="padding:9px 18px;font-weight:600;color:#555;cursor:pointer" (click)="openApuEditor(apu.id)">
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <i class="ph ph-cube" style="color:#2980B9;font-size:13px"></i>
+                    {{ apu.name }}
+                  </div>
+                </td>
+                <td style="padding:9px 18px;text-align:center;font-weight:700;color:#555;font-size:11px">{{ apu.unit }}</td>
+                <td style="padding:9px 18px;text-align:right;font-weight:700;color:#1A7A30;cursor:pointer" (click)="openApuEditor(apu.id)">
+                  {{ apu.total_unit | number:'1.2-2' }}
+                </td>
+                <td style="padding:9px 18px;text-align:center">
+                  <button (click)="openApuEditor(apu.id)" class="cv-btn cv-btn--view" title="Ver detalle">
+                    <i class="ph ph-arrow-square-out"></i>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+
+  }
+
 </div>
+
+<style>
+  .cv-row:hover .cv-actions { opacity: 1 !important; }
+  .cv-btn {
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 27px;
+    height: 27px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: #aaa;
+    transition: background .12s, color .12s;
+  }
+  .cv-btn:hover { background: #F2F2F2; color: #3A3838; }
+  .cv-btn--view:hover { background: #EEF6FE; color: #2980B9; }
+  .cv-btn--edit:hover { background: #EEF6FE; color: #2980B9; }
+  .cv-btn--del:hover { background: #FDECEA; color: #C0392B; }
+  .cv-btn--ok { color: #1A7A30; }
+  .cv-btn--ok:hover { background: #D4EDDA; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>

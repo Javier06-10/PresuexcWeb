@@ -6,6 +6,7 @@ import { ProjectService } from '../../../services/project';
 import { ApuService } from '../../../services/apu.service';
 import { SupabaseService } from '../../../services/supabase.service';
 import { CatalogService } from '../../../services/catalog.service';
+import { showError, showWarning } from '../../../utils/alert.util';
 
 @Component({
   selector: 'app-item-options-modal',
@@ -316,13 +317,13 @@ export class ItemOptionsModal {
         this._linkApuToBudgetItem(item, created);
     } else {
         this.projectService.isSaving.set(false);
-        alert("Error al crear la plantilla.");
+        showError("Error al crear la plantilla.");
     }
   }
 
   async confirmCreateApu() {
     if (!this.newApuName.trim()) {
-        alert("El nombre es requerido");
+        showWarning("El nombre es requerido.");
         return;
     }
 

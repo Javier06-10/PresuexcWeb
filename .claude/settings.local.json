@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\CELULARES 360\\\\Desktop\\\\PresuXcel-Web\\\\src\\\\app\\\\components\\\\apu-zapata-muro\")",
+      "Bash(Out-Null)",
+      "Bash(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\CELULARES 360\\\\Desktop\\\\PresuXcel-Web\\\\src\\\\app\\\\components\\\\apu-zapata-columna\")",
+      "Bash(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\CELULARES 360\\\\Desktop\\\\PresuXcel-Web\\\\src\\\\app\\\\components\\\\apu-losa-fundacion\")",
+      "Bash(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\CELULARES 360\\\\Desktop\\\\PresuXcel-Web\\\\src\\\\app\\\\components\\\\apu-pilotes\")",
+      "Bash(Write-Output \"Directories created\")",
+      "Bash(Select-String \"jspdf|xlsx\")",
+      "mcp__claude_ai_Supabase__apply_migration",
+      "mcp__claude_ai_Supabase__execute_sql",
+      "Bash(npm install *)"
+    ]
+  }
+}

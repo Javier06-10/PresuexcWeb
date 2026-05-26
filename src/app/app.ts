@@ -22,6 +22,8 @@ import { ApuEditorModal } from './components/modals/apu-editor-modal/apu-editor-
 import { ParametricApuModal } from './components/modals/parametric-apu-modal/parametric-apu-modal';
 import { ConcreteModal } from './components/modals/concrete-modal/concrete-modal';
 import { ErrorModalComponent } from './components/modals/error-modal/error-modal.component';
+import { ProfileModal } from './components/modals/profile-modal/profile-modal';
+import { ResetPasswordModal } from './components/modals/reset-password-modal/reset-password-modal';
 import { LoginComponent } from './components/login/login';
 import { OnboardingComponent } from './components/onboarding/onboarding';
 import { CatalogViewComponent } from './components/catalog-view/catalog-view';
@@ -54,6 +56,8 @@ import { ProjectService } from './services/project';
     ParametricApuModal,
     ConcreteModal,
     ErrorModalComponent,
+    ProfileModal,
+    ResetPasswordModal,
     AddChapterModal,
     LoginComponent,
     OnboardingComponent,

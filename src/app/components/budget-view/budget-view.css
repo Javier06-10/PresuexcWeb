@@ -90,38 +90,270 @@ input[type=number] {
 }
 
 /* ── SIDEBAR ── */
+/* ── SIDEBAR ─────────────────────────────────────────────── */
 .sidebar {
-  width: 200px;
-  background: #fff;
+  width: 220px;
+  min-width: 220px;
+  background: #FAFAFA;
   border-right: 1px solid var(--gray-border);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  overflow-x: hidden;
   flex-shrink: 0;
-  transition: width 0.3s ease;
+  transition: width 0.25s cubic-bezier(.4,0,.2,1),
+              min-width 0.25s cubic-bezier(.4,0,.2,1);
+}
+.sidebar.collapsed {
+  width: 48px;
+  min-width: 48px;
 }
 
-.sidebar.collapsed {
-  width: 60px;
+/* Topbar */
+.sb-topbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 8px;
+  border-bottom: 1px solid var(--gray-border);
+  flex-shrink: 0;
+  background: #fff;
+}
+.sb-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  background: var(--brand);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  transition: background .15s;
+  white-space: nowrap;
+  flex: 1;
+  justify-content: center;
+}
+.sb-back-btn:hover { background: var(--brand-dark); }
+.sb-back-label { }
+.sb-toggle-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--gray-hint);
+  width: 28px;
+  height: 28px;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  flex-shrink: 0;
+  transition: background .12s, color .12s;
+}
+.sb-toggle-btn:hover { background: var(--gray-3); color: var(--gray-text); }
+
+/* Project chip */
+.sb-project-chip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--gray-border);
+  background: #fff;
   overflow: hidden;
 }
+.sb-project-icon {
+  font-size: 15px;
+  color: var(--brand);
+  flex-shrink: 0;
+}
+.sb-project-name {
+  font-size: 12px;
+  font-weight: 800;
+  color: #3A3838;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
-.sidebar.collapsed .sb-section,
-.sidebar.collapsed .sb-sub-item span.truncate,
-.sidebar.collapsed .sb-item span:not(.ic) {
+/* Section label */
+.sb-section-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px 5px;
+  font-size: 9px;
+  font-weight: 800;
+  color: #909090;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.sb-section-label i { font-size: 11px; flex-shrink: 0; }
+
+/* Level tag (multi-level budgets) */
+.sb-level-tag {
+  padding: 4px 12px;
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--brand);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Group wrapper */
+.sb-group { padding: 2px 0; }
+
+/* Generic nav item (Resumen) */
+.sb-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-muted);
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: background .1s, color .1s;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.sb-item:hover  { background: var(--gray-3); color: #3A3838; }
+.sb-item.active { background: var(--brand-light); color: var(--brand); border-left-color: var(--brand); font-weight: 700; }
+.sb-icon { font-size: 14px; flex-shrink: 0; }
+.sb-label { overflow: hidden; text-overflow: ellipsis; }
+
+/* Chapter row */
+.sb-chapter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px 6px 12px;
+  cursor: pointer;
+  transition: background .1s;
+  border-left: 3px solid transparent;
+  overflow: hidden;
+}
+.sb-chapter:hover { background: #F0F0F0; }
+.sb-chapter-left {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  overflow: hidden;
+  min-width: 0;
+}
+.sb-chapter-num {
+  flex-shrink: 0;
+  font-size: 9px;
+  font-weight: 800;
+  color: #fff;
+  background: var(--brand);
+  padding: 1px 5px;
+  border-radius: 4px;
+  letter-spacing: .03em;
+}
+.sb-chapter-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: #3A3838;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sb-caret {
+  font-size: 10px;
+  color: var(--gray-hint);
+  flex-shrink: 0;
+  transition: transform .2s;
+}
+.sb-caret--open { transform: rotate(180deg); }
+
+/* Items group (partidas container) */
+.sb-items-group {
+  background: #F7F7F7;
+  border-left: 2px solid #E0E0E0;
+  margin-left: 12px;
+}
+
+/* Partida row */
+.sb-partida {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 10px 5px 10px;
+  font-size: 11px;
+  color: var(--gray-muted);
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: background .1s, color .1s, border-color .1s;
+  overflow: hidden;
+}
+.sb-partida:hover { background: #EBEBEB; color: #3A3838; }
+.sb-partida.active {
+  background: var(--brand-light);
+  color: var(--brand);
+  border-left-color: var(--brand);
+  font-weight: 700;
+}
+.sb-partida-num {
+  flex-shrink: 0;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--gray-hint);
+  min-width: 18px;
+}
+.sb-partida.active .sb-partida-num { color: var(--brand); }
+.sb-partida-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sb-partida-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--gray-hint);
+  flex-shrink: 0;
+}
+.sb-partida.active .sb-partida-dot { background: var(--brand); }
+
+/* Divider */
+.sb-divider {
+  height: 1px;
+  background: var(--gray-border);
+  margin: 6px 0;
+}
+
+/* ── Collapsed state ─────────────────────────────────────── */
+.sidebar.collapsed .sb-back-label,
+.sidebar.collapsed .sb-project-name,
+.sidebar.collapsed .sb-section-label span,
+.sidebar.collapsed .sb-level-tag,
+.sidebar.collapsed .sb-label,
+.sidebar.collapsed .sb-chapter-name,
+.sidebar.collapsed .sb-chapter-num,
+.sidebar.collapsed .sb-caret,
+.sidebar.collapsed .sb-partida-name,
+.sidebar.collapsed .sb-partida-num,
+.sidebar.collapsed .sb-items-group {
   display: none;
 }
-.sidebar.collapsed .sb-item {
-  justify-content: center;
-  padding: 10px 0;
-}
-.sidebar.collapsed .sb-item .ic {
-  margin: 0;
-}
-.sidebar.collapsed .sb-sub-item {
-  padding: 10px 0;
-  justify-content: center;
-}
+.sidebar.collapsed .sb-back-btn   { flex: unset; padding: 5px 7px; }
+.sidebar.collapsed .sb-chapter    { justify-content: center; padding: 8px 0; }
+.sidebar.collapsed .sb-item       { justify-content: center; padding: 8px 0; border-left: none; }
+.sidebar.collapsed .sb-section-label { justify-content: center; padding: 8px 0 4px; }
+.sidebar.collapsed .sb-project-chip  { justify-content: center; }
 
 /* ── APU SELECTOR SCREEN ── */
 .apu-selector{padding:0}
@@ -220,6 +452,7 @@ input[type=number] {
   flex: 1;
   overflow: hidden;
   flex-direction: column;
+  min-width: 0;
 }
 .workspace.side-mode {
   flex-direction: row;
@@ -621,4 +854,86 @@ input[type=number] {
   color: #B0B0B0;
   margin-top: 8px;
   font-style: italic;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── PRINT ─────────────────────────────────────────────────── */
+@media print {
+
+  /* Ocultar todo lo que no sea la hoja del presupuesto */
+  app-header,
+  .sidebar,
+  .apu-panel-below,
+  .apu-panel-side,
+  .header-actions,
+  .page-header .header-actions,
+  [title="Imprimir"],
+  [title="Exportar a Excel/CSV"],
+  [title="Exportar a PDF"],
+  [title="Compartir link"] {
+    display: none !important;
+  }
+
+  /* Mostrar solo el panel de resumen aunque esté oculto */
+  .app-body {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+
+  .workspace {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+
+  .main-panel {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding: 8px !important;
+    box-shadow: none !important;
+  }
+
+  /* Tabla: bordes visibles, colores de fondo preservados */
+  table {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    page-break-inside: auto;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  /* Ocultar botones inline de la tabla (+ añadir, papeleras) */
+  button {
+    display: none !important;
+  }
+
+  /* Mostrar solo los inputs como texto plano */
+  input {
+    border: none !important;
+    background: transparent !important;
+    outline: none !important;
+    pointer-events: none;
+  }
+
+  /* Ocultar la vista de APU/quickcalc si está activa */
+  .main-panel[style*="display: none"] {
+    display: none !important;
+  }
 }

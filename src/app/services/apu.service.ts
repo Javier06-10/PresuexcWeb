@@ -1,5 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
+import { showError } from '../utils/alert.util';
 
 export interface ApuTemplate {
   id: string;
@@ -114,7 +115,7 @@ export class ApuService {
       return data as ApuTemplate;
     } catch (err: any) {
       console.error('Error creating APU:', err);
-      alert('Error creating APU: ' + (err.message || JSON.stringify(err)));
+      showError(err.message || JSON.stringify(err), 'Error al crear APU');
       return null;
     }
   }
@@ -217,7 +218,7 @@ export class ApuService {
       return true;
     } catch (err: any) {
       console.error('Error updating APU:', err);
-      alert('Error updating APU: ' + (err.message || JSON.stringify(err)));
+      showError(err.message || JSON.stringify(err), 'Error al actualizar APU');
       return false;
     }
   }
@@ -235,7 +236,7 @@ export class ApuService {
       return true;
     } catch (err: any) {
       console.error('Error deleting APU:', err);
-      alert('Error deleting APU: ' + (err.message || JSON.stringify(err)));
+      showError(err.message || JSON.stringify(err), 'Error al eliminar APU');
       return false;
     }
   }

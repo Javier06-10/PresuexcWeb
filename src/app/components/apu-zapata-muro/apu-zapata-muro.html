@@ -1,0 +1,227 @@
+<div style="display:flex;flex-direction:column;gap:10px">
+
+  <!-- Tramos table -->
+  <div class="card">
+    <div class="card-title">
+      <i class="ph ph-wall" style="font-size:13px;color:var(--brand)"></i>
+      Zapata Corrida / De Muro
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead>
+        <tr style="background:var(--gray-3)">
+          <th style="padding:6px 8px;text-align:left;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--gray-border)">Descripción</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:120px">Largo (m)</th>
+          <th style="width:36px;border-bottom:1px solid var(--gray-border)"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let t of tramos(); let i = index" style="border-bottom:1px solid var(--gray-3)">
+          <td style="padding:5px 8px">
+            <input type="text" [ngModel]="t.descripcion" (ngModelChange)="updateTramo(i,'descripcion',$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 8px;font-size:12px;background:var(--field-bg);width:100%"
+              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'" />
+          </td>
+          <td style="padding:5px 4px">
+            <input type="number" step="0.5" [ngModel]="t.largo" (ngModelChange)="updateTramo(i,'largo',+$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'" />
+          </td>
+          <td style="padding:5px 4px;text-align:center">
+            <button *ngIf="tramos().length > 1" (click)="removeTramo(i)"
+              style="background:var(--red);color:#fff;border:none;border-radius:4px;padding:4px 7px;cursor:pointer;font-size:12px;display:flex;align-items:center">
+              <i class="ph ph-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr style="background:var(--brand-light)">
+          <td style="padding:7px 8px;font-size:11px;font-weight:700;color:var(--brand);text-transform:uppercase;text-align:right">Total</td>
+          <td style="padding:7px 8px;text-align:center;font-size:15px;font-weight:800;color:var(--brand)">{{ longTotal() | number:'1.2-2' }}</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+    <button (click)="addTramo()" style="margin-top:10px;background:var(--gray-3);color:var(--gray-muted);border:1px dashed var(--gray-border);border-radius:6px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px">
+      <i class="ph ph-plus"></i> Añadir Tramo
+    </button>
+  </div>
+
+  <div class="row2">
+    <!-- Sección y hormigón -->
+    <div class="card" style="margin-bottom:0">
+      <div class="card-title"><i class="ph ph-sliders" style="font-size:13px;color:var(--brand)"></i> Sección y Hormigón</div>
+      <div class="f">
+        <label>Base (cm)</label>
+        <input type="number" step="5" [ngModel]="b()" (ngModelChange)="b.set(+$event)" />
+      </div>
+      <div class="f">
+        <label>Altura (cm)</label>
+        <input type="number" step="5" [ngModel]="h()" (ngModelChange)="h.set(+$event)" />
+      </div>
+      <div class="f">
+        <label>f'c (kg/cm²)</label>
+        <select [ngModel]="fc()" (ngModelChange)="fc.set(+$event)">
+          <option [value]="210">210</option>
+          <option [value]="250">250</option>
+          <option [value]="280">280</option>
+          <option [value]="350">350</option>
+        </select>
+      </div>
+      <div class="f">
+        <label>Recubrimiento (cm)</label>
+        <input type="number" step="1" [ngModel]="rec()" (ngModelChange)="rec.set(+$event)" />
+      </div>
+      <div class="f">
+        <label>Desperdicio (%)</label>
+        <input type="number" step="1" [ngModel]="desp()" (ngModelChange)="desp.set(+$event)" />
+      </div>
+      <div class="f">
+        <label>Encofrado</label>
+        <select [ngModel]="encMetodo()" (ngModelChange)="encMetodo.set($event)">
+          <option value="madera">Madera (2 caras)</option>
+          <option value="tierra">Contra tierra (1 cara)</option>
+          <option value="sin">Sin encofrado</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Cómputo -->
+    <div class="card" style="margin-bottom:0">
+      <div class="card-title"><i class="ph ph-calculator" style="font-size:13px;color:var(--brand)"></i> Cómputo</div>
+      <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:var(--gray-muted)">Longitud total:</span>
+          <span style="font-weight:700">{{ longTotal() | number:'1.2-2' }} m</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:var(--gray-muted)">Sección ({{b()}}×{{h()}} cm):</span>
+          <span style="font-weight:700">{{ seccion() | number:'1.4-4' }} m²</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:var(--gray-muted)">Vol. neto:</span>
+          <span style="font-weight:700">{{ volNeto() | number:'1.3-3' }} m³</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;border-top:1px solid var(--gray-border);padding-top:6px">
+          <span style="color:var(--brand);font-weight:700">Vol. presup. (+{{desp()}}%):</span>
+          <span style="font-weight:800;color:var(--brand);font-size:14px">{{ volPres() | number:'1.3-3' }} m³</span>
+        </div>
+        <div style="margin-top:8px;border-top:1px solid var(--gray-border);padding-top:8px;font-size:11px;color:var(--gray-muted)">Acero:</div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:var(--gray-muted)">Longitudinal:</span>
+          <span style="font-weight:700">{{ (kgLong1()+kgLong2()+kgLong3()) | number:'1.1-1' }} kg</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:var(--gray-muted)">Transversal ({{ nEst() }} estribos):</span>
+          <span style="font-weight:700">{{ kgTransv() | number:'1.1-1' }} kg</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:var(--brand);font-weight:700">Total acero:</span>
+          <span style="font-weight:800;color:var(--brand)">{{ kgTotal() | number:'1.1-1' }} kg</span>
+        </div>
+        <div *ngIf="encMetodo() !== 'sin'" style="display:flex;justify-content:space-between">
+          <span style="color:var(--gray-muted)">Encofrado:</span>
+          <span style="font-weight:700">{{ encofrado() | number:'1.2-2' }} m²</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Acero longitudinal -->
+  <div class="card">
+    <div class="card-title"><i class="ph ph-line-segments" style="font-size:13px;color:var(--brand)"></i> Acero Longitudinal</div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <!-- Capa 1 -->
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Capa 1</div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <span style="font-size:11px;color:var(--gray-muted)">∅:</span>
+          <button *ngFor="let d of diams" class="vbtn" [class.sel]="al1()===d" (click)="al1.set(d)">{{labelDiam(d)}}</button>
+          <span style="font-size:11px;color:var(--gray-muted);margin-left:10px">Cant.:</span>
+          <input type="number" min="0" step="1" [ngModel]="cv1()" (ngModelChange)="cv1.set(+$event)"
+            style="width:52px;border:1px solid var(--gray-border);border-radius:4px;padding:3px 6px;font-size:12px;text-align:center;background:var(--field-bg)" />
+          <span style="font-size:11px;color:var(--brand);font-weight:700;margin-left:4px">{{ kgLong1() | number:'1.1-1' }} kg</span>
+        </div>
+      </div>
+      <!-- Capa 2 -->
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Capa 2</div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <span style="font-size:11px;color:var(--gray-muted)">∅:</span>
+          <button *ngFor="let d of diams" class="vbtn" [class.sel]="al2()===d" (click)="al2.set(d)">{{labelDiam(d)}}</button>
+          <span style="font-size:11px;color:var(--gray-muted);margin-left:10px">Cant.:</span>
+          <input type="number" min="0" step="1" [ngModel]="cv2()" (ngModelChange)="cv2.set(+$event)"
+            style="width:52px;border:1px solid var(--gray-border);border-radius:4px;padding:3px 6px;font-size:12px;text-align:center;background:var(--field-bg)" />
+          <span style="font-size:11px;color:var(--brand);font-weight:700;margin-left:4px">{{ kgLong2() | number:'1.1-1' }} kg</span>
+        </div>
+      </div>
+      <!-- Capa 3 -->
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Capa 3 (opcional)</div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <span style="font-size:11px;color:var(--gray-muted)">∅:</span>
+          <button *ngFor="let d of diams" class="vbtn" [class.sel]="al3()===d" (click)="al3.set(d)">{{labelDiam(d)}}</button>
+          <span style="font-size:11px;color:var(--gray-muted);margin-left:10px">Cant.:</span>
+          <input type="number" min="0" step="1" [ngModel]="cv3()" (ngModelChange)="cv3.set(+$event)"
+            style="width:52px;border:1px solid var(--gray-border);border-radius:4px;padding:3px 6px;font-size:12px;text-align:center;background:var(--field-bg)" />
+          <span style="font-size:11px;color:var(--brand);font-weight:700;margin-left:4px">{{ kgLong3() | number:'1.1-1' }} kg</span>
+        </div>
+      </div>
+      <div class="f" style="margin-top:4px">
+        <label>Long. de barra (m)</label>
+        <input type="number" step="1" [ngModel]="lbarra()" (ngModelChange)="lbarra.set(+$event)" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Acero transversal (estribos) -->
+  <div class="card">
+    <div class="card-title"><i class="ph ph-squares-four" style="font-size:13px;color:var(--brand)"></i> Acero Transversal (Estribos)</div>
+    <div style="margin-bottom:8px">
+      <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Diámetro estribo</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button *ngFor="let d of diams" class="vbtn" [class.sel]="at()===d" (click)="at.set(d)">{{labelDiam(d)}}</button>
+      </div>
+    </div>
+    <div class="row2" style="gap:8px">
+      <div class="f">
+        <label>Separación (cm)</label>
+        <input type="number" step="5" [ngModel]="sep()" (ngModelChange)="sep.set(+$event)" />
+      </div>
+      <div class="f">
+        <label>Long. gancho (cm)</label>
+        <input type="number" step="2" [ngModel]="lg()" (ngModelChange)="lg.set(+$event)" />
+      </div>
+    </div>
+    <div style="margin-top:8px;font-size:12px;color:var(--gray-muted)">
+      N° estribos: <strong>{{ nEst() }}</strong> · Ancho ef.: <strong>{{ anchoEf() | number:'1.2-2' }} m</strong> · Total: <strong style="color:var(--brand)">{{ kgTransv() | number:'1.1-1' }} kg</strong>
+    </div>
+  </div>
+
+  <!-- Metrics -->
+  <div class="metrics-row">
+    <div class="metric">
+      <div class="m-lbl">Long. Total</div>
+      <div class="m-val">{{ longTotal() | number:'1.1-1' }}</div>
+      <div class="m-unit">m</div>
+    </div>
+    <div class="metric">
+      <div class="m-lbl">Vol. Neto</div>
+      <div class="m-val">{{ volNeto() | number:'1.2-2' }}</div>
+      <div class="m-unit">m³</div>
+    </div>
+    <div class="metric" style="grid-column:span 2;border-color:var(--brand);background:var(--brand-light)">
+      <div class="m-lbl" style="color:var(--brand-dark)">Vol. Presupuestado</div>
+      <div class="m-val" style="font-size:36px;color:var(--brand-dark)">{{ volPres() | number:'1.3-3' }}</div>
+      <div class="m-unit" style="color:var(--brand)">m³</div>
+    </div>
+    <div class="metric">
+      <div class="m-lbl">Acero Total</div>
+      <div class="m-val">{{ kgTotal() | number:'1.0-0' }}</div>
+      <div class="m-unit">kg</div>
+    </div>
+  </div>
+
+</div>

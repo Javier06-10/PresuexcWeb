@@ -1,0 +1,85 @@
+<div style="display:flex;flex-direction:column;gap:10px">
+
+  <!-- LISTADO DE APARATOS -->
+  <div class="card">
+    <div class="card-title">
+      <i class="ph ph-drop" style="font-size:13px;color:var(--brand)"></i>
+      Aparatos Sanitarios
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead>
+        <tr style="background:var(--gray-3)">
+          <th style="padding:6px 8px;text-align:left;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--gray-border)">Descripción / Ubicación</th>
+          <th style="padding:6px 8px;text-align:left;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:200px">Tipo de aparato</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:70px">Cant.</th>
+          <th style="width:36px;border-bottom:1px solid var(--gray-border)"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let ap of aparatos(); let i = index" style="border-bottom:1px solid var(--gray-3)">
+          <td style="padding:5px 8px">
+            <input type="text" [ngModel]="ap.descripcion" (ngModelChange)="updateAparato(i,'descripcion',$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 8px;font-size:12px;background:var(--field-bg);width:100%"
+              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'" />
+          </td>
+          <td style="padding:5px 4px">
+            <select [ngModel]="ap.tipo" (ngModelChange)="updateAparato(i,'tipo',$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:11px;background:var(--field-bg);width:100%">
+              <option *ngFor="let t of TIPOS" [value]="t">{{ t }}</option>
+            </select>
+          </td>
+          <td style="padding:5px 4px">
+            <input type="number" step="1" min="1" [ngModel]="ap.cantidad" (ngModelChange)="updateAparato(i,'cantidad',+$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/>
+          </td>
+          <td style="padding:5px 4px;text-align:center">
+            <button *ngIf="aparatos().length > 1" (click)="removeAparato(i)"
+              style="background:var(--red);color:#fff;border:none;border-radius:4px;padding:4px 7px;cursor:pointer;font-size:12px;display:flex;align-items:center">
+              <i class="ph ph-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr style="background:var(--brand-light)">
+          <td colspan="2" style="padding:7px 8px;font-size:11px;font-weight:700;color:var(--brand);text-transform:uppercase;text-align:right">Total Aparatos</td>
+          <td style="padding:7px 8px;text-align:center;font-size:15px;font-weight:800;color:var(--brand)">{{ totalUnidades() }}</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+    <button (click)="addAparato()" style="margin-top:10px;background:var(--gray-3);color:var(--gray-muted);border:1px dashed var(--gray-border);border-radius:6px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px">
+      <i class="ph ph-plus"></i> Añadir Aparato
+    </button>
+  </div>
+
+  <!-- OPCIONES -->
+  <div class="card">
+    <div class="card-title"><i class="ph ph-sliders" style="font-size:13px;color:var(--brand)"></i> Elementos Incluidos</div>
+    <div style="display:flex;gap:32px;font-size:13px">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" [ngModel]="incluye_accesorios()" (ngModelChange)="incluye_accesorios.set($event)"
+          style="width:16px;height:16px;accent-color:var(--brand)" />
+        Accesorios (llaves, sifones, anclajes)
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" [ngModel]="incluye_mano_obra()" (ngModelChange)="incluye_mano_obra.set($event)"
+          style="width:16px;height:16px;accent-color:var(--brand)" />
+        Instalación / mano de obra
+      </label>
+    </div>
+  </div>
+
+  <!-- MÉTRICAS -->
+  <div class="metrics-row">
+    <div class="metric" style="grid-column:span 4;border-color:var(--brand);background:var(--brand-light)">
+      <div class="m-lbl" style="color:var(--brand-dark)">Total Aparatos Sanitarios</div>
+      <div class="m-val" style="font-size:36px;color:var(--brand-dark)">{{ totalUnidades() }}</div>
+      <div class="m-unit" style="color:var(--brand)">unidades</div>
+    </div>
+  </div>
+
+</div>

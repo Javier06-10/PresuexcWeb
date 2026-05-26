@@ -1,4 +1,5 @@
 import { Injectable, signal, inject } from '@angular/core';
+import { showError, showSuccess, showDeleteConfirm } from '../utils/alert.util';
 import { SupabaseService } from './supabase.service';
 
 export interface Project {
@@ -186,7 +187,7 @@ export class ProjectService {
 
     if (error) {
       console.error('Error deleting project:', error);
-      alert('Error al eliminar el proyecto: ' + error.message);
+      showError('Error al eliminar el proyecto: ' + error.message);
       return false;
     }
 
@@ -393,7 +394,7 @@ export class ProjectService {
   }
 
   async removeItem(chapter: BudgetChapter, index: number) {
-    if (confirm("¿Borrar esta fila de forma definitiva?")) {
+    if (await showDeleteConfirm("¿Borrar esta partida de forma definitiva?")) {
       const itemToDel = chapter.items![index];
       chapter.items?.splice(index, 1);
       this.updateTotal();
@@ -405,7 +406,7 @@ export class ProjectService {
   }
 
   async removeChapter(level: BudgetLevel, index: number) {
-    if (confirm("¿Borrar este renglón y todas sus partidas de forma definitiva?")) {
+    if (await showDeleteConfirm("¿Borrar este capítulo y todas sus partidas de forma definitiva?")) {
       const chapterToDel = level.chapters![index];
       level.chapters?.splice(index, 1);
       this.updateTotal();
@@ -417,7 +418,7 @@ export class ProjectService {
   }
 
   async removeLevel(index: number) {
-    if (confirm("¿Borrar este nivel y todo su contenido de forma definitiva?")) {
+    if (await showDeleteConfirm("¿Borrar este nivel y todo su contenido de forma definitiva?")) {
       const levels = this.activeBudgetLevels();
       const levelToDel = levels[index];
       levels.splice(index, 1);
@@ -568,10 +569,10 @@ export class ProjectService {
 
       // 4. Feedback al usuario
       if (errors.length > 0) {
-        alert('❌ ERRORES AL GUARDAR:\n' + errors.join('\n'));
+        showError(errors.join('\n'), 'Errores al guardar');
       }
     } catch (err) {
-      alert("❌ Excepción guardando: " + String(err));
+      showError(String(err), 'Excepción al guardar');
     } finally {
       if (errors.length === 0) {
         this.hasUnsavedChanges.set(false);

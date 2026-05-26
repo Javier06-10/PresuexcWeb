@@ -1,56 +1,106 @@
-<div class="app-body" [style.fontFamily]="configService.fuenteConsolidadaPresupuesto()" [class.hidden]="uiState.activeView() !== 'budget'">
+<div class="app-body" [style.fontFamily]="configService.fuenteConsolidadaPresupuesto()" [style.display]="uiState.activeView() === 'budget' ? 'flex' : 'none'">
   
   <!-- SIDEBAR -->
   <div class="sidebar" [class.collapsed]="!isSidebarOpen()">
-    <div style="padding: 10px; display: flex; justify-content: flex-end;">
-      <button (click)="toggleSidebar()" style="background: none; border: none; cursor: pointer; color: var(--gray-hint);">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="3" y1="12" x2="21" y2="12"></line>
-          <line x1="3" y1="6" x2="21" y2="6"></line>
-          <line x1="3" y1="18" x2="21" y2="18"></line>
-        </svg>
+
+    <!-- Topbar: volver + toggle -->
+    <div class="sb-topbar">
+      <button (click)="volverAlPanel()" class="sb-back-btn" title="Volver al panel">
+        <i class="ph ph-arrow-left"></i>
+        <span class="sb-back-label">Panel</span>
+      </button>
+      <button (click)="toggleSidebar()" class="sb-toggle-btn" title="Colapsar">
+        <i class="ph ph-sidebar-simple"></i>
       </button>
     </div>
-    
-    <div class="sb-section">Mis presupuestos</div>
-    <div class="sb-item" [class.active]="activeSidebarTab() === 'resumen'" (click)="selectResumen()">
-      <span class="ic"><i class="ph ph-list-dashes"></i></span>Resumen general
+
+    <!-- Nombre del proyecto -->
+    <div class="sb-project-chip">
+      <i class="ph ph-folder-open sb-project-icon"></i>
+      <span class="sb-project-name truncate">{{ projectService.activeProject()?.name || 'Presupuesto' }}</span>
     </div>
-    
+
+    <!-- ── Resumen ── -->
+    <div class="sb-group">
+      <div class="sb-item" [class.active]="activeSidebarTab() === 'resumen'" (click)="selectResumen()">
+        <i class="ph ph-chart-bar sb-icon"></i>
+        <span class="sb-label">Resumen general</span>
+      </div>
+    </div>
+
     <div class="sb-divider"></div>
-    <div class="sb-section">Análisis y cálculo</div>
-    
+
+    <!-- ── Capítulos y partidas ── -->
+    <div class="sb-section-label">
+      <i class="ph ph-list-numbers"></i>
+      <span>Capítulos</span>
+    </div>
+
     <ng-container *ngIf="projectService.activeBudget() as budget">
-      <ng-container *ngFor="let nivel of projectService.activeBudgetLevels(); let lvlIdx = index">
-        <!-- Nivel name as header if multiple levels, else skip -->
-        <div class="sb-section" *ngIf="projectService.activeBudgetLevels().length > 1">{{ nivel.name }}</div>
-        
-        <ng-container *ngFor="let cap of nivel.chapters; let capIdx = index">
-          <div class="sb-item" (click)="toggleChapter(cap.id)" style="justify-content:space-between">
-            <div style="display:flex;align-items:center;gap:8px;font-weight:600;font-size:11px">
-              <span class="ic"><i class="ph" [class.ph-folder-open]="isChapterOpen(cap.id)" [class.ph-folder]="!isChapterOpen(cap.id)"></i></span>
-              {{ cap.chapter_number }} — {{ cap.name }}
+      <ng-container *ngFor="let nivel of projectService.activeBudgetLevels()">
+
+        <div class="sb-level-tag" *ngIf="projectService.activeBudgetLevels().length > 1">
+          {{ nivel.name }}
+        </div>
+
+        <ng-container *ngFor="let cap of nivel.chapters">
+          <!-- Capítulo header -->
+          <div class="sb-chapter" (click)="toggleChapter(cap.id)">
+            <div class="sb-chapter-left">
+              <span class="sb-chapter-num">{{ cap.chapter_number }}</span>
+              <span class="sb-chapter-name truncate">{{ cap.name }}</span>
             </div>
-            <i class="ph ph-caret-down text-[10px]" [class.rotate-180]="isChapterOpen(cap.id)" style="transition:transform .2s;flex-shrink:0"></i>
+            <i class="ph ph-caret-down sb-caret" [class.sb-caret--open]="isChapterOpen(cap.id)"></i>
           </div>
-          
-          <div *ngIf="isChapterOpen(cap.id)">
-            <div *ngFor="let item of cap.items; let itemIdx = index" class="sb-sub-item" [class.active]="activeSidebarTab() === 'item' && selectedBudgetItem()?.id === item.id" (click)="selectItem(item, cap.id)">
-              <span class="sb-sub-dot"></span>
-              <span class="truncate" title="{{ item.description || 'Nueva Partida' }}">{{ item.item_number }} - {{ item.description || 'Nueva Partida' }}</span>
+
+          <!-- Partidas -->
+          <div *ngIf="isChapterOpen(cap.id)" class="sb-items-group">
+            <div *ngFor="let item of cap.items"
+                 class="sb-partida"
+                 [class.active]="activeSidebarTab() === 'item' && selectedBudgetItem()?.id === item.id"
+                 (click)="selectItem(item, cap.id)"
+                 title="{{ item.description || 'Nueva Partida' }}">
+              <span class="sb-partida-num">{{ item.item_number }}</span>
+              <span class="sb-partida-name truncate">{{ item.description || 'Nueva Partida' }}</span>
             </div>
           </div>
         </ng-container>
+
       </ng-container>
     </ng-container>
-    
+
     <div class="sb-divider"></div>
-    <div class="sb-section">Herramientas</div>
-    <div class="sb-item" (click)="volverAlPanel()"><span class="ic"><i class="ph ph-arrow-left"></i></span>Volver al panel</div>
+
+    <!-- ── Calculadora rápida ── -->
+    <div class="sb-section-label">
+      <i class="ph ph-calculator"></i>
+      <span>Calc. Rápida</span>
+    </div>
+
+    <ng-container *ngFor="let cat of QUICK_CALC_TREE">
+      <div class="sb-chapter" (click)="toggleQuickCalcCat(cat.id)">
+        <div class="sb-chapter-left">
+          <i class="ph sb-icon" [ngClass]="cat.icon" style="width:14px;text-align:center;flex-shrink:0"></i>
+          <span class="sb-chapter-name truncate">{{ cat.name }}</span>
+        </div>
+        <i class="ph ph-caret-down sb-caret" [class.sb-caret--open]="isQuickCalcCatOpen(cat.id)"></i>
+      </div>
+      <div *ngIf="isQuickCalcCatOpen(cat.id)" class="sb-items-group">
+        <div *ngFor="let qItem of cat.items"
+             class="sb-partida"
+             [class.active]="activeSidebarTab() === 'quickcalc' && selectedQuickCalcKey() === qItem.key"
+             (click)="selectQuickCalcItem(qItem.key)"
+             title="{{ qItem.name }}">
+          <span class="sb-partida-dot"></span>
+          <span class="sb-partida-name truncate">{{ qItem.name }}</span>
+        </div>
+      </div>
+    </ng-container>
+
   </div>
 
   <!-- WORKSPACE -->
-  <div class="workspace" [class.side-mode]="apuPosition() === 'lado' && activeSidebarTab() === 'item'">
+  <div class="workspace" style="min-width:0" [class.side-mode]="apuPosition() === 'lado' && activeSidebarTab() === 'item'">
     
     <!-- ============================================== -->
     <!-- VISTA TABULAR: RESUMEN GENERAL                 -->
@@ -84,6 +134,9 @@
                       {{ projectService.isSaving() ? 'Guardando...' : projectService.hasUnsavedChanges() ? '● Guardar' : '✓ Guardado' }}
                   </button>
                   <button (click)="imprimir()" class="bg-blue-600 text-white text-[10px] px-3 py-1 rounded uppercase font-bold hover:bg-blue-700 shadow flex items-center gap-1"><i class="ph ph-printer"></i> Imprimir</button>
+                  <button (click)="exportCSV()" class="bg-emerald-600 text-white text-[10px] px-3 py-1 rounded uppercase font-bold hover:bg-emerald-700 shadow flex items-center gap-1" title="Exportar a Excel/CSV"><i class="ph ph-file-csv"></i> CSV</button>
+                  <button (click)="exportPDF()" class="bg-red-600 text-white text-[10px] px-3 py-1 rounded uppercase font-bold hover:bg-red-700 shadow flex items-center gap-1" title="Exportar a PDF"><i class="ph ph-file-pdf"></i> PDF</button>
+                  <button (click)="openShareModal()" class="bg-violet-600 text-white text-[10px] px-3 py-1 rounded uppercase font-bold hover:bg-violet-700 shadow flex items-center gap-1" title="Compartir link"><i class="ph ph-share-network"></i> Compartir</button>
               </div>
               <div class="text-[11px] font-bold text-presuOscuro">Fecha: <span class="bg-amber-50 px-2 border border-amber-200">{{ currentDate }}</span></div>
           </div>
@@ -130,7 +183,7 @@
                                   </td>
                               </tr>
                               
-                              <tr *ngFor="let item of cap.items; let itemIdx = index" class="hover:bg-zinc-50 transition border border-zinc-300 bg-white group">
+                              <tr *ngFor="let item of cap.items; let itemIdx = index" class="hover:bg-zinc-50 transition border border-zinc-300 bg-white group relative">
                                   <td class="border border-zinc-400 p-1 text-center text-zinc-400 font-normal w-12">
                                       <div class="flex items-center justify-center gap-1.5">
                                           <button (click)="projectService.addItem(cap)" class="bg-blue-500 hover:bg-blue-600 text-white w-[18px] h-[18px] rounded-full flex items-center justify-center cursor-pointer text-[10px] opacity-0 group-hover:opacity-100"><i class="ph ph-plus"></i></button>
@@ -138,13 +191,21 @@
                                       </div>
                                   </td>
                                   <td class="border border-zinc-400 p-1 outline-none text-presuOscuro font-medium">
-                                      <input type="text" [(ngModel)]="item.description" 
-                                             (click)="openItemOptions(cap, item)"
-                                             [readonly]="!item.description" 
-                                             [ngStyle]="{'cursor': !item.description ? 'pointer' : 'text'}"
-                                             placeholder="Clic aquí para partida o APU..."
-                                             (ngModelChange)="projectService.updateItemGranular(lvlIdx, capIdx, itemIdx, item)" 
-                                             class="w-full bg-transparent focus:outline-none placeholder:text-zinc-400">
+                                      <div class="flex items-center gap-1">
+                                        <input type="text" [(ngModel)]="item.description"
+                                               (click)="openItemOptions(cap, item)"
+                                               [readonly]="!item.description"
+                                               [ngStyle]="{'cursor': !item.description ? 'pointer' : 'text'}"
+                                               placeholder="Clic aquí para partida o APU..."
+                                               (ngModelChange)="projectService.updateItemGranular(lvlIdx, capIdx, itemIdx, item)"
+                                               class="flex-1 bg-transparent focus:outline-none placeholder:text-zinc-400">
+                                        <button *ngIf="item.description"
+                                                (click)="selectItem(item, cap.id)"
+                                                class="opacity-0 group-hover:opacity-100 flex-shrink-0 bg-amber-100 hover:bg-amber-200 text-amber-700 border border-amber-300 rounded px-1.5 py-0.5 text-[9px] font-bold flex items-center gap-0.5 transition whitespace-nowrap"
+                                                title="Abrir calculadora APU">
+                                          <i class="ph ph-chart-bar"></i> APU
+                                        </button>
+                                      </div>
                                   </td>
                                   <td class="border border-zinc-400 p-1 outline-none text-center font-bold text-presuOscuro">
                                       <input type="number" [(ngModel)]="item.quantity" (ngModelChange)="projectService.updateItemGranular(lvlIdx, capIdx, itemIdx, item)" class="w-full bg-transparent text-center focus:outline-none">
@@ -182,7 +243,47 @@
                           <td colspan="5" class="border border-zinc-400 p-2 text-right pr-4 uppercase">SUB-TOTAL COSTOS DIRECTOS</td>
                           <td class="border border-zinc-400 p-2 text-right px-2 font-black">$ {{ budget.subtotal | number:'1.2-2' }}</td>
                       </tr>
-                      
+
+                      <!-- GASTOS INDIRECTOS -->
+                      <ng-container *ngIf="(budget.codia_total || 0) + (budget.dir_tec_total || 0) + (budget.ayudantes_total || 0) > 0">
+                        <tr class="text-zinc-500 border border-zinc-300 text-xs bg-white">
+                          <td colspan="5" class="border border-zinc-300 p-1.5 text-right pr-4 italic">CODIA ({{ budget.codia_rate || 0.2 }}%)</td>
+                          <td class="border border-zinc-300 p-1.5 text-right px-2">$ {{ (budget.codia_total || 0) | number:'1.2-2' }}</td>
+                        </tr>
+                        <tr class="text-zinc-500 border border-zinc-300 text-xs bg-white">
+                          <td colspan="5" class="border border-zinc-300 p-1.5 text-right pr-4 italic">Dirección Técnica ({{ budget.dir_tec_rate || 10 }}%)</td>
+                          <td class="border border-zinc-300 p-1.5 text-right px-2">$ {{ (budget.dir_tec_total || 0) | number:'1.2-2' }}</td>
+                        </tr>
+                        <tr class="text-zinc-500 border border-zinc-300 text-xs bg-white">
+                          <td colspan="5" class="border border-zinc-300 p-1.5 text-right pr-4 italic">Ayudantes ({{ budget.ayudantes_rate || 1 }}%)</td>
+                          <td class="border border-zinc-300 p-1.5 text-right px-2">$ {{ (budget.ayudantes_total || 0) | number:'1.2-2' }}</td>
+                        </tr>
+                      </ng-container>
+                      <ng-container *ngIf="(budget.overhead_total || 0) > 0">
+                        <tr class="text-zinc-500 border border-zinc-300 text-xs bg-white">
+                          <td colspan="5" class="border border-zinc-300 p-1.5 text-right pr-4 italic">Gastos Generales ({{ budget.overhead_rate || 0 }}%)</td>
+                          <td class="border border-zinc-300 p-1.5 text-right px-2">$ {{ (budget.overhead_total || 0) | number:'1.2-2' }}</td>
+                        </tr>
+                      </ng-container>
+                      <ng-container *ngIf="(budget.profit_total || 0) > 0">
+                        <tr class="text-zinc-500 border border-zinc-300 text-xs bg-white">
+                          <td colspan="5" class="border border-zinc-300 p-1.5 text-right pr-4 italic">Utilidad ({{ budget.profit_rate || 0 }}%)</td>
+                          <td class="border border-zinc-300 p-1.5 text-right px-2">$ {{ (budget.profit_total || 0) | number:'1.2-2' }}</td>
+                        </tr>
+                      </ng-container>
+                      <ng-container *ngIf="(budget.contingency_total || 0) > 0">
+                        <tr class="text-zinc-500 border border-zinc-300 text-xs bg-white">
+                          <td colspan="5" class="border border-zinc-300 p-1.5 text-right pr-4 italic">Imprevistos ({{ budget.contingency_rate || 0 }}%)</td>
+                          <td class="border border-zinc-300 p-1.5 text-right px-2">$ {{ (budget.contingency_total || 0) | number:'1.2-2' }}</td>
+                        </tr>
+                      </ng-container>
+                      <ng-container *ngIf="(budget.itbis_total || 0) > 0">
+                        <tr class="text-zinc-500 border border-zinc-300 text-xs bg-white">
+                          <td colspan="5" class="border border-zinc-300 p-1.5 text-right pr-4 italic">ITBIS ({{ budget.itbis_rate || 0 }}%)</td>
+                          <td class="border border-zinc-300 p-1.5 text-right px-2">$ {{ (budget.itbis_total || 0) | number:'1.2-2' }}</td>
+                        </tr>
+                      </ng-container>
+
                       <tr class="font-black text-white border border-zinc-400 text-sm" [style.backgroundColor]="configService.colorFilaSubConsolidado()">
                           <td colspan="5" class="border border-zinc-400 p-2 text-right pr-4 uppercase">GRAN TOTAL GENERAL</td>
                           <td class="border border-zinc-400 p-2 text-right px-2 font-black text-amber-300">$ {{ budget.grand_total | number:'1.2-2' }}</td>
@@ -224,8 +325,13 @@
             </div>
           </div>
           <div class="header-actions">
-            <button class="btn-save" (click)="saveActiveItem()">
-              <i class="ph ph-floppy-disk text-sm"></i> Guardar
+            <button class="btn-save" (click)="saveActiveItem()"
+              [style.background]="hasUnsavedApuChanges() ? 'var(--brand)' : '#fff'"
+              [style.color]="hasUnsavedApuChanges() ? '#fff' : 'var(--gray-muted)'"
+              [style.borderColor]="hasUnsavedApuChanges() ? 'var(--brand)' : 'var(--gray-border)'">
+              <i class="ph" [class.ph-floppy-disk]="!isSavingApu()" [class.ph-spinner]="isSavingApu()"
+                 [style.animation]="isSavingApu() ? 'spin 1s linear infinite' : 'none'"></i>
+              {{ isSavingApu() ? 'Guardando...' : hasUnsavedApuChanges() ? '● Guardar' : '✓ Guardado' }}
             </button>
 
             <!-- APU BTN + mini posición integrados -->
@@ -255,22 +361,174 @@
         <!-- Si tiene template paramétrico, generamos su form dinámico -->
         <ng-container *ngIf="selectedApuTemplate() as apu; else noTemplate">
           
-          <ng-container *ngIf="apu.name.toLowerCase().includes('capa vegetal') || apu.code === '01.01'; else genericApu">
+          <!-- Routing to each Preliminares APU component by name/code -->
+          <ng-container *ngIf="matchApu(apu, 'capa vegetal', '01.01')">
             <app-apu-capa-vegetal [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-capa-vegetal>
           </ng-container>
+          <ng-container *ngIf="matchApu(apu, 'cielo abierto', '01.02')">
+            <app-apu-excavacion-cielo [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-excavacion-cielo>
+          </ng-container>
+          <ng-container *ngIf="matchApu(apu, 'cimiento', '01.03')">
+            <app-apu-excavacion-cimientos [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-excavacion-cimientos>
+          </ng-container>
+          <ng-container *ngIf="matchApu(apu, 'relleno', '01.04')">
+            <app-apu-relleno [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-relleno>
+          </ng-container>
+          <ng-container *ngIf="matchApu(apu, 'charrancha', '01.05') || matchApu(apu, 'replanteo', '01.05')">
+            <app-apu-charrancha [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-charrancha>
+          </ng-container>
+          <ng-container *ngIf="matchApu(apu, 'fumigaci', '01.06')">
+            <app-apu-fumigacion [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-fumigacion>
+          </ng-container>
+          <ng-container *ngIf="matchApu(apu, 'barrera', '01.07') || matchApu(apu, 'vapor', '01.07')">
+            <app-apu-barrera-vapor [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-barrera-vapor>
+          </ng-container>
 
-          <ng-template #genericApu>
+          <!-- Routing to Obra Gris APU components -->
+          <ng-container *ngIf="matchApu(apu, 'zapata corrida', '') || matchApu(apu, 'zapata muro', '') || matchApu(apu, 'zapata de muro', '')">
+            <app-apu-zapata-muro [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-zapata-muro>
+          </ng-container>
+          <ng-container *ngIf="matchApu(apu, 'zapata aislada', '') || matchApu(apu, 'zapata columna', '') || matchApu(apu, 'zapata de columna', '')">
+            <app-apu-zapata-columna [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-zapata-columna>
+          </ng-container>
+          <ng-container *ngIf="matchApu(apu, 'losa fundacion', '') || matchApu(apu, 'losa de fundacion', '') || matchApu(apu, 'platea', '')">
+            <app-apu-losa-fundacion [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-losa-fundacion>
+          </ng-container>
+          <ng-container *ngIf="matchApu(apu, 'pilote', '')">
+            <app-apu-pilotes [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-pilotes>
+          </ng-container>
+          <ng-container *ngIf="matchApu(apu, 'zapata', '02.01')">
+            <app-apu-hormigon-zapata [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-hormigon-zapata>
+          </ng-container>
+          <ng-container *ngIf="matchApu(apu, 'columna', '02.02') || matchApu(apu, 'castillo', '02.02')">
+            <app-apu-hormigon-columna [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-hormigon-columna>
+          </ng-container>
+          <ng-container *ngIf="matchApu(apu, 'viga', '02.03') || matchApu(apu, 'nervio', '02.03')">
+            <app-apu-hormigon-viga [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-hormigon-viga>
+          </ng-container>
+          <ng-container *ngIf="matchApu(apu, 'losa', '02.04') || matchApu(apu, 'entrepiso', '02.04')">
+            <app-apu-hormigon-losa [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-hormigon-losa>
+          </ng-container>
+          <ng-container *ngIf="matchApu(apu, 'mamposter', '02.05') || matchApu(apu, 'bloque', '02.05') || matchApu(apu, 'muro', '02.05')">
+            <app-apu-mamposteria [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-mamposteria>
+          </ng-container>
+          <ng-container *ngIf="matchApu(apu, 'contrapiso', '02.06') || matchApu(apu, 'contra piso', '02.06')">
+            <app-apu-contrapiso [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-contrapiso>
+          </ng-container>
+
+          <!-- Routing to Acabados APU components -->
+          <ng-container *ngIf="matchApu(apu, 'enlucido', '03.01') || matchApu(apu, 'revoque', '03.01') || matchApu(apu, 'repello', '03.01')">
+            <app-apu-enlucido [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-enlucido>
+          </ng-container>
+          <ng-container *ngIf="matchApu(apu, 'cerámica', '03.02') || matchApu(apu, 'ceramica', '03.02') || matchApu(apu, 'porcelanato', '03.02') || matchApu(apu, 'baldosa', '03.02')">
+            <app-apu-ceramica [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-ceramica>
+          </ng-container>
+          <ng-container *ngIf="matchApu(apu, 'pintura', '03.03') || matchApu(apu, 'pintado', '03.03')">
+            <app-apu-pintura [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-pintura>
+          </ng-container>
+          <ng-container *ngIf="matchApu(apu, 'cubierta', '03.04') || matchApu(apu, 'techo', '03.04') || matchApu(apu, 'zinc', '03.04') || matchApu(apu, 'teja', '03.04')">
+            <app-apu-cubierta [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-cubierta>
+          </ng-container>
+          <ng-container *ngIf="matchApu(apu, 'cielo raso', '03.05') || matchApu(apu, 'gypsum', '03.05') || matchApu(apu, 'drywall', '03.05') || matchApu(apu, 'plaf', '03.05')">
+            <app-apu-cielo-raso [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-cielo-raso>
+          </ng-container>
+          <ng-container *ngIf="matchApu(apu, 'impermeabil', '03.06') || matchApu(apu, 'membrana asfalt', '03.06')">
+            <app-apu-impermeabilizacion [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-impermeabilizacion>
+          </ng-container>
+
+          <!-- Carpintería -->
+          <ng-container *ngIf="matchApu(apu, 'puerta', '04.01') || matchApu(apu, 'portón', '04.01') || matchApu(apu, 'porton', '04.01')">
+            <app-apu-puerta [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-puerta>
+          </ng-container>
+          <ng-container *ngIf="matchApu(apu, 'ventana', '04.02') || matchApu(apu, 'vidriera', '04.02') || matchApu(apu, 'celosía', '04.02') || matchApu(apu, 'celosia', '04.02')">
+            <app-apu-ventana [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-ventana>
+          </ng-container>
+
+          <!-- Instalaciones -->
+          <ng-container *ngIf="matchApu(apu, 'tuberia', '05.01') || matchApu(apu, 'tubería', '05.01') || matchApu(apu, 'conduit', '05.01') || matchApu(apu, 'ducto', '05.01')">
+            <app-apu-tuberia [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-tuberia>
+          </ng-container>
+          <ng-container *ngIf="matchApu(apu, 'eléctric', '05.02') || matchApu(apu, 'electric', '05.02') || matchApu(apu, 'tomacorriente', '05.02') || matchApu(apu, 'punto luz', '05.02')">
+            <app-apu-instalacion-electrica [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-instalacion-electrica>
+          </ng-container>
+          <ng-container *ngIf="matchApu(apu, 'aparato sanitario', '05.03') || matchApu(apu, 'inodoro', '05.03') || matchApu(apu, 'lavabo', '05.03') || matchApu(apu, 'ducha', '05.03')">
+            <app-apu-aparato-sanitario [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-aparato-sanitario>
+          </ng-container>
+
+          <!-- Exteriores -->
+          <ng-container *ngIf="matchApu(apu, 'acera', '06.01') || matchApu(apu, 'andén', '06.01') || matchApu(apu, 'anden', '06.01') || matchApu(apu, 'adoquin', '06.01')">
+            <app-apu-acera [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-acera>
+          </ng-container>
+          <ng-container *ngIf="matchApu(apu, 'escalera', '06.02') || matchApu(apu, 'peldaño', '06.02')">
+            <app-apu-escalera [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-escalera>
+          </ng-container>
+
+          <!-- Carpintería interior -->
+          <ng-container *ngIf="matchApu(apu, 'closet', '07.01') || matchApu(apu, 'armario', '07.01') || matchApu(apu, 'ropero', '07.01')">
+            <app-apu-closet [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-closet>
+          </ng-container>
+
+          <!-- Piso flotante / Laminado -->
+          <ng-container *ngIf="matchApu(apu, 'piso flotante', '') || matchApu(apu, 'laminado', '') || matchApu(apu, 'vinilico', '') || matchApu(apu, 'vinílico', '') || matchApu(apu, 'parquet', '')">
+            <app-apu-piso-flotante [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-piso-flotante>
+          </ng-container>
+
+          <!-- Revestimiento de paredes -->
+          <ng-container *ngIf="matchApu(apu, 'revestimiento', '') || matchApu(apu, 'enchape', '') || matchApu(apu, 'azulejo', '') || matchApu(apu, 'baldosa pared', '')">
+            <app-apu-revestimiento [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-revestimiento>
+          </ng-container>
+
+          <!-- Muro perimetral -->
+          <ng-container *ngIf="matchApu(apu, 'muro perimetral', '') || matchApu(apu, 'cerca', '') || matchApu(apu, 'cerco', '') || matchApu(apu, 'verja', '') || matchApu(apu, 'tapia', '')">
+            <app-apu-muro-perimetral [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-muro-perimetral>
+          </ng-container>
+
+          <!-- Cisterna / Tanque -->
+          <ng-container *ngIf="matchApu(apu, 'cisterna', '') || matchApu(apu, 'tanque', '') || matchApu(apu, 'aljibe', '') || matchApu(apu, 'reservorio', '')">
+            <app-apu-cisterna [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-cisterna>
+          </ng-container>
+
+          <!-- Instalación sanitaria -->
+          <ng-container *ngIf="matchApu(apu, 'instalacion sanitaria', '') || matchApu(apu, 'instalación sanitaria', '') || matchApu(apu, 'plomeria', '') || matchApu(apu, 'plomería', '') || matchApu(apu, 'fontaneria', '')">
+            <app-apu-instalacion-sanitaria [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-instalacion-sanitaria>
+          </ng-container>
+
+          <!-- Desbanque -->
+          <ng-container *ngIf="matchApu(apu, 'desbanque', '') || matchApu(apu, 'descapote', '') || matchApu(apu, 'limpieza terreno', '') || matchApu(apu, 'nivelacion terreno', '')">
+            <app-apu-desbanque [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-desbanque>
+          </ng-container>
+
+          <!-- Carpintería de aluminio -->
+          <ng-container *ngIf="matchApu(apu, 'carpinteria aluminio', '') || matchApu(apu, 'carpintería aluminio', '') || matchApu(apu, 'mampara', '') || matchApu(apu, 'aluminio y vidrio', '')">
+            <app-apu-carpinteria-aluminio [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-carpinteria-aluminio>
+          </ng-container>
+
+          <!-- Instalación de gas -->
+          <ng-container *ngIf="matchApu(apu, 'instalacion gas', '') || matchApu(apu, 'instalación gas', '') || matchApu(apu, 'tuberia gas', '') || matchApu(apu, 'punto gas', '')">
+            <app-apu-instalacion-gas [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-instalacion-gas>
+          </ng-container>
+
+          <!-- Jardinería -->
+          <ng-container *ngIf="matchApu(apu, 'jardineria', '') || matchApu(apu, 'jardinería', '') || matchApu(apu, 'paisajismo', '') || matchApu(apu, 'cesped', '') || matchApu(apu, 'césped', '')">
+            <app-apu-jardineria [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-jardineria>
+          </ng-container>
+
+          <!-- Estructura metálica -->
+          <ng-container *ngIf="matchApu(apu, 'estructura metalica', '') || matchApu(apu, 'estructura metálica', '') || matchApu(apu, 'cubierta metalica', '') || matchApu(apu, 'galpon', '') || matchApu(apu, 'pergola', '')">
+            <app-apu-estructura-metalica [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-estructura-metalica>
+          </ng-container>
+
+          <!-- Fallback genérico para APUs sin componente dedicado -->
+          <ng-container *ngIf="!isKnownPreliminares(apu)">
           <div class="row2">
-            <!-- Formulario de Parámetros -->
             <div class="card" style="margin-bottom:0">
               <div class="card-title">
-                <i class="ph ph-rulers text-[13px]"></i>
+                <i class="ph ph-rulers" style="font-size:13px"></i>
                 Dimensiones y Parámetros
               </div>
-              <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div class="row3">
                 <div *ngFor="let param of parameters()" class="f">
                   <label>{{ param.label }} ({{ param.unit }})</label>
-                  
                   <select *ngIf="param.ref_table && getDropdownOptions(param.key).length > 0"
                     [value]="getParamValue(param.key, param.default)"
                     (change)="updateParam(param.key, $any($event.target).value)">
@@ -279,46 +537,47 @@
                       {{ opt[param.ref_label_field || 'label'] || opt.n_num || opt.length_m || opt.id }}
                     </option>
                   </select>
-
                   <input *ngIf="!param.ref_table || getDropdownOptions(param.key).length === 0"
                     type="number" step="any"
                     [value]="getParamValue(param.key, param.default)"
-                    (input)="updateParam(param.key, $any($event.target).value)"
-                  />
+                    (input)="updateParam(param.key, $any($event.target).value)" />
                 </div>
               </div>
             </div>
-
-            <!-- Métricas -->
-            <div class="card bg-[var(--brand-light)] border-[var(--brand)] border-opacity-30 flex flex-col justify-center" style="margin-bottom:0">
-               <div class="card-title"><i class="ph ph-calculator"></i> Totales Calculados</div>
-               
-               <div class="flex justify-between items-end mb-2">
-                 <div class="m-lbl font-bold uppercase text-[10px] text-zinc-500">Cantidad Total ({{ apu.unit }})</div>
-                 <div class="m-val font-black text-2xl text-[var(--brand)]">{{ calculatedQuantity() | number:'1.2-2' }}</div>
+            <div class="card" style="margin-bottom:0;background:var(--brand-light);border-color:var(--brand)">
+               <div class="card-title"><i class="ph ph-calculator" style="font-size:13px"></i> Totales Calculados</div>
+               <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:8px">
+                 <span style="font-size:10px;font-weight:700;color:var(--gray-muted);text-transform:uppercase">Cantidad ({{ apu.unit }})</span>
+                 <span style="font-size:24px;font-weight:800;color:var(--brand)">{{ calculatedQuantity() | number:'1.2-2' }}</span>
                </div>
-               
-               <div class="flex justify-between items-end mb-2">
-                 <div class="m-lbl font-bold uppercase text-[10px] text-zinc-500">Costo Unitario (CU)</div>
-                 <div class="m-val font-bold text-lg text-zinc-800">$ {{ totalUnitarioApu() | number:'1.2-2' }}</div>
+               <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:8px">
+                 <span style="font-size:10px;font-weight:700;color:var(--gray-muted);text-transform:uppercase">Costo Unitario</span>
+                 <span style="font-size:16px;font-weight:700;color:var(--gray-text)">$ {{ totalUnitarioApu() | number:'1.2-2' }}</span>
                </div>
-               
-               <div class="flex justify-between items-end pt-2 border-t border-[var(--brand)] border-opacity-20 mt-2">
-                 <div class="m-lbl font-bold uppercase text-[11px] text-[var(--brand-dark)]">COSTO TOTAL PARTIDA</div>
-                 <div class="m-val font-black text-3xl text-[var(--brand-dark)]">$ {{ totalApuItem() | number:'1.2-2' }}</div>
+               <div style="display:flex;justify-content:space-between;align-items:flex-end;padding-top:8px;border-top:1px solid var(--brand)">
+                 <span style="font-size:11px;font-weight:800;color:var(--brand-dark);text-transform:uppercase">Costo Total Partida</span>
+                 <span style="font-size:28px;font-weight:900;color:var(--brand-dark)">$ {{ totalApuItem() | number:'1.2-2' }}</span>
                </div>
             </div>
           </div>
-          </ng-template>
+          </ng-container>
           
         </ng-container>
 
         <ng-template #noTemplate>
-           <div class="bg-amber-50 border border-amber-200 p-6 rounded-lg flex flex-col items-center text-amber-700">
-             <i class="ph ph-warning-circle text-3xl mb-2"></i>
-             <p class="font-bold">Esta partida no tiene una plantilla APU asociada.</p>
-             <p class="text-sm opacity-80">Por favor, asigne un APU desde la base de precios en el "Resumen General".</p>
-           </div>
+          <ng-container *ngIf="apuService.isLoading(); else reallyNoTemplate">
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px;color:var(--gray-hint);gap:10px">
+              <i class="ph ph-spinner" style="font-size:32px;animation:spin 1s linear infinite"></i>
+              <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em">Cargando plantilla APU…</span>
+            </div>
+          </ng-container>
+          <ng-template #reallyNoTemplate>
+            <div class="bg-amber-50 border border-amber-200 p-6 rounded-lg flex flex-col items-center text-amber-700">
+              <i class="ph ph-warning-circle text-3xl mb-2"></i>
+              <p class="font-bold">Esta partida no tiene una plantilla APU asociada.</p>
+              <p class="text-sm opacity-80">Presiona el botón atrás para asignar un APU.</p>
+            </div>
+          </ng-template>
         </ng-template>
       </ng-container> <!-- ends viewingApuDetails -->
 
@@ -333,7 +592,7 @@
           </div>
 
           <div class="apu-cards-grid">
-            <div class="apu-card-new" (click)="uiState.isCatalogPickerOpen.set(true)">
+            <div class="apu-card-new" (click)="openNewApuForCurrentItem()">
               <div class="nc-icon">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               </div>
@@ -357,9 +616,325 @@
       </ng-template>
     </ng-container> <!-- ends activeSidebarTab item -->
 
-
-      </div>
     </div> <!-- /main-panel item -->
 
+    <!-- ============================================== -->
+    <!-- APU COST PANEL — Below (default)               -->
+    <!-- ============================================== -->
+    <div *ngIf="showApuPanel() && apuPosition() === 'abajo' && activeSidebarTab() === 'item' && viewingApuDetails()"
+         class="apu-panel-below">
+      <ng-container *ngTemplateOutlet="apuPanelContent"></ng-container>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- APU COST PANEL — Side                          -->
+    <!-- ============================================== -->
+    <div *ngIf="showApuPanel() && apuPosition() === 'lado' && activeSidebarTab() === 'item' && viewingApuDetails()"
+         class="apu-panel-side">
+      <ng-container *ngTemplateOutlet="apuPanelContent"></ng-container>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- CALCULADORA RÁPIDA                            -->
+    <!-- ============================================== -->
+    <div class="main-panel" style="display:flex;flex-direction:column;overflow:hidden;padding:0;min-width:0" *ngIf="activeSidebarTab() === 'quickcalc' && selectedQuickCalcKey() as qKey">
+      <!-- Header -->
+      <div class="page-header" style="padding:12px 14px;margin-bottom:0;flex-shrink:0;border-bottom:1px solid #EAE4DC;background:#fff">
+        <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:0">
+          <div class="page-title">
+            <i class="ph ph-calculator" style="font-size:16px;color:var(--brand);margin-right:6px"></i>
+            {{ quickCalcLabel(qKey) }}
+            <span style="font-size:11px;font-weight:700;background:var(--brand-light);color:var(--brand);border:1px solid var(--brand);border-radius:4px;padding:2px 8px;margin-left:8px">
+              {{ quickCalcUnit(qKey) }}
+            </span>
+          </div>
+          <div style="font-size:11px;color:var(--gray-hint)">Calculadora rápida — independiente del presupuesto</div>
+        </div>
+        <!-- Resultado + Agregar al presupuesto -->
+        <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+          <div *ngIf="quickCalcParams()['cantidad_calculada']" style="text-align:right">
+            <div style="font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase">Resultado</div>
+            <div style="font-size:22px;font-weight:900;color:var(--brand);line-height:1">
+              {{ quickCalcParams()['cantidad_calculada'] | number:'1.2-2' }}
+              <span style="font-size:12px;font-weight:600">{{ quickCalcUnit(qKey) }}</span>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;min-width:160px">
+            <select [ngModel]="quickCalcTargetChapterId()" (ngModelChange)="quickCalcTargetChapterId.set($event)"
+              style="border:1px solid var(--gray-border);border-radius:5px;padding:5px 8px;font-size:11px;background:var(--field-bg);width:100%">
+              <option value="">— Seleccionar capítulo —</option>
+              <option *ngFor="let cap of quickCalcChapters()" [value]="cap.id">
+                {{ cap.chapter_number }} — {{ cap.name }}
+              </option>
+            </select>
+            <button (click)="addQuickCalcToBudget()"
+              [disabled]="!quickCalcParams()['cantidad_calculada']"
+              style="background:var(--brand);color:#fff;border:none;border-radius:5px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;opacity:1;transition:opacity .15s"
+              [style.opacity]="!quickCalcParams()['cantidad_calculada'] ? '0.4' : '1'">
+              <i class="ph ph-plus-circle"></i> Agregar al presupuesto
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layout: form izquierda + canvas derecha -->
+      <div style="display:flex;flex:1;min-height:0;overflow:hidden">
+
+      <!-- APU Component routing por clave -->
+      <div style="flex:1;min-width:0;overflow-y:auto;padding:10px 14px">
+      <ng-container *ngIf="qKey === 'capa-vegetal'">
+        <app-apu-capa-vegetal [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-capa-vegetal>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'exc-cielo'">
+        <app-apu-excavacion-cielo [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-excavacion-cielo>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'exc-cimientos'">
+        <app-apu-excavacion-cimientos [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-excavacion-cimientos>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'relleno'">
+        <app-apu-relleno [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-relleno>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'charrancha'">
+        <app-apu-charrancha [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-charrancha>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'fumigacion'">
+        <app-apu-fumigacion [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-fumigacion>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'barrera-vapor'">
+        <app-apu-barrera-vapor [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-barrera-vapor>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'zapata'">
+        <app-apu-hormigon-zapata [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-hormigon-zapata>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'zapata-muro'">
+        <app-apu-zapata-muro [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-zapata-muro>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'zapata-columna'">
+        <app-apu-zapata-columna [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-zapata-columna>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'losa-fundacion'">
+        <app-apu-losa-fundacion [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-losa-fundacion>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'pilotes'">
+        <app-apu-pilotes [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-pilotes>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'columna'">
+        <app-apu-hormigon-columna [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-hormigon-columna>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'viga'">
+        <app-apu-hormigon-viga [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-hormigon-viga>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'losa'">
+        <app-apu-hormigon-losa [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-hormigon-losa>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'mamposteria'">
+        <app-apu-mamposteria [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-mamposteria>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'contrapiso'">
+        <app-apu-contrapiso [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-contrapiso>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'enlucido'">
+        <app-apu-enlucido [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-enlucido>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'ceramica'">
+        <app-apu-ceramica [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-ceramica>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'pintura'">
+        <app-apu-pintura [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-pintura>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'cubierta'">
+        <app-apu-cubierta [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-cubierta>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'cielo-raso'">
+        <app-apu-cielo-raso [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-cielo-raso>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'impermeabilizacion'">
+        <app-apu-impermeabilizacion [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-impermeabilizacion>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'puerta'">
+        <app-apu-puerta [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-puerta>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'ventana'">
+        <app-apu-ventana [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-ventana>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'tuberia'">
+        <app-apu-tuberia [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-tuberia>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'instalacion-electrica'">
+        <app-apu-instalacion-electrica [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-instalacion-electrica>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'aparato-sanitario'">
+        <app-apu-aparato-sanitario [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-aparato-sanitario>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'acera'">
+        <app-apu-acera [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-acera>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'escalera'">
+        <app-apu-escalera [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-escalera>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'closet'">
+        <app-apu-closet [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-closet>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'revestimiento'">
+        <app-apu-revestimiento [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-revestimiento>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'piso-flotante'">
+        <app-apu-piso-flotante [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-piso-flotante>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'muro-perimetral'">
+        <app-apu-muro-perimetral [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-muro-perimetral>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'cisterna'">
+        <app-apu-cisterna [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-cisterna>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'instalacion-sanitaria'">
+        <app-apu-instalacion-sanitaria [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-instalacion-sanitaria>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'desbanque'">
+        <app-apu-desbanque [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-desbanque>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'carpinteria-aluminio'">
+        <app-apu-carpinteria-aluminio [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-carpinteria-aluminio>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'instalacion-gas'">
+        <app-apu-instalacion-gas [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-instalacion-gas>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'jardineria'">
+        <app-apu-jardineria [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-jardineria>
+      </ng-container>
+      <ng-container *ngIf="qKey === 'estructura-metalica'">
+        <app-apu-estructura-metalica [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-estructura-metalica>
+      </ng-container>
+      </div><!-- /APU form col -->
+
+      <!-- Canvas de visualización: columna derecha fija -->
+      <div style="width:390px;flex-shrink:0;border-left:1px solid #EAE4DC;background:#FAFAF8;display:flex;flex-direction:column;padding:8px;gap:6px;overflow:hidden">
+        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--gray-hint);text-align:center;flex-shrink:0;padding-bottom:5px;border-bottom:1px solid #EAE4DC">Vista previa <span style="font-weight:400;opacity:.55">· arrastra para rotar</span></div>
+        <div style="flex:1;min-height:0;border-radius:8px;overflow:hidden">
+          <app-quick-calc-canvas
+            [qKey]="qKey"
+            [params]="quickCalcParams()"
+            style="display:block;width:100%;height:100%">
+          </app-quick-calc-canvas>
+        </div>
+      </div>
+
+      </div><!-- /flex layout -->
+    </div> <!-- /quickcalc panel -->
+
   </div> <!-- /workspace -->
+
+  <!-- ============================================== -->
+  <!-- MODAL: COMPARTIR LINK                          -->
+  <!-- ============================================== -->
+  <div *ngIf="showShareModal()"
+       class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+       (click)="showShareModal.set(false)">
+    <div class="bg-white rounded-2xl shadow-2xl w-[420px] max-w-[95vw] p-6"
+         (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-between mb-5">
+        <div class="flex items-center gap-2 text-violet-700">
+          <i class="ph ph-share-network text-xl"></i>
+          <span class="font-bold text-sm uppercase tracking-wide">Compartir Presupuesto</span>
+        </div>
+        <button (click)="showShareModal.set(false)"
+                class="text-zinc-400 hover:text-zinc-700 transition text-lg">
+          <i class="ph ph-x"></i>
+        </button>
+      </div>
+
+      <!-- Sin token -->
+      <ng-container *ngIf="!shareService.shareToken()">
+        <p class="text-xs text-zinc-500 mb-4">
+          Genera un link de solo lectura para que tu cliente pueda ver el presupuesto sin necesidad de cuenta.
+        </p>
+        <button (click)="generateShareLink()"
+                [disabled]="shareService.isGenerating()"
+                class="w-full bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white font-bold text-sm py-2.5 rounded-lg flex items-center justify-center gap-2 transition">
+          <i class="ph" [class.ph-link]="!shareService.isGenerating()" [class.ph-spinner]="shareService.isGenerating()" [style.animation]="shareService.isGenerating() ? 'spin 1s linear infinite' : ''"></i>
+          {{ shareService.isGenerating() ? 'Generando...' : 'Generar link de acceso' }}
+        </button>
+      </ng-container>
+
+      <!-- Con token -->
+      <ng-container *ngIf="shareService.shareToken()">
+        <p class="text-xs text-zinc-500 mb-3">Link generado. Compártelo con tu cliente:</p>
+        <div class="flex items-center gap-2 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 mb-4">
+          <span class="text-xs text-zinc-600 flex-1 truncate select-all">{{ shareService.shareUrl() }}</span>
+          <button (click)="copyShareUrl()"
+                  class="flex-shrink-0 bg-violet-600 hover:bg-violet-700 text-white text-[10px] font-bold px-3 py-1.5 rounded-md flex items-center gap-1 transition">
+            <i class="ph ph-copy"></i> Copiar
+          </button>
+        </div>
+        <div class="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-4">
+          <i class="ph ph-info text-amber-500"></i>
+          <p class="text-xs text-amber-700">El link da acceso de solo lectura. Cualquiera con el link puede ver el presupuesto.</p>
+        </div>
+        <button (click)="revokeShareLink()"
+                class="w-full bg-white hover:bg-red-50 border border-red-200 text-red-600 font-bold text-xs py-2 rounded-lg flex items-center justify-center gap-2 transition">
+          <i class="ph ph-trash"></i> Revocar link
+        </button>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- APU PANEL SHARED CONTENT TEMPLATE              -->
+  <!-- ============================================== -->
+  <ng-template #apuPanelContent>
+    <ng-container *ngIf="selectedApuTemplate() as apu">
+      <div class="apu-inner-header">
+        <div class="apu-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 20h20M6 20V10M12 20V4M18 20v-8"/></svg>
+          APU — {{ apu.name }}
+          <span class="badge-green">{{ apu.unit }}</span>
+        </div>
+        <span class="apu-note-top">Costo unitario: <strong>$ {{ (apu.total_unit || 0) | number:'1.2-2' }}</strong></span>
+      </div>
+      <div class="apu-body-wrap">
+        <table class="apu-table">
+          <thead>
+            <tr>
+              <th style="width:40%">Descripción</th>
+              <th style="text-align:center;width:10%">Cant.</th>
+              <th style="text-align:center;width:12%">Unid.</th>
+              <th style="text-align:right;width:14%">P.Unit.</th>
+              <th style="text-align:right;width:14%">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let grupo of ['materials','labor','equipment','other']">
+              <ng-container *ngIf="getApuItemsByGroup(apu, grupo).length > 0">
+                <tr class="gr">
+                  <td colspan="5">{{ getGroupLabel(grupo) }}</td>
+                </tr>
+                <tr *ngFor="let item of getApuItemsByGroup(apu, grupo)">
+                  <td>{{ item.description }}</td>
+                  <td style="text-align:center">{{ item.quantity }}</td>
+                  <td style="text-align:center">{{ item.unit }}</td>
+                  <td style="text-align:right">$ {{ (item.unit_price || 0) | number:'1.2-2' }}</td>
+                  <td style="text-align:right">$ {{ ((item.quantity||0)*(item.unit_price||0)) | number:'1.2-2' }}</td>
+                </tr>
+              </ng-container>
+            </ng-container>
+            <tr class="tot">
+              <td colspan="4">COSTO UNITARIO TOTAL</td>
+              <td style="text-align:right">$ {{ (apu.total_unit || 0) | number:'1.2-2' }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="apu-foot">* Precios en {{ configService.monedaGlobal() }} sin impuestos.</p>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="!selectedApuTemplate()">
+      <div class="apu-inner-header">
+        <div class="apu-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 20h20M6 20V10M12 20V4M18 20v-8"/></svg> APU</div>
+      </div>
+      <div style="padding:24px;text-align:center;color:var(--gray-hint);font-size:12px">
+        <i class="ph ph-chart-bar" style="font-size:32px;display:block;margin-bottom:8px"></i>
+        Selecciona un APU para ver su desglose de costos.
+      </div>
+    </ng-container>
+  </ng-template>
 

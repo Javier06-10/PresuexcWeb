@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { UiState } from '../../../services/ui-state';
 import { ProjectService, Project } from '../../../services/project';
 import { ClientService } from '../../../services/client.service';
+import { showError, showWarning } from '../../../utils/alert.util';
 
 @Component({
   selector: 'app-new-project-modal',
@@ -54,7 +55,7 @@ export class NewProjectModal {
 
   async save() {
     if (!this.proyecto.trim()) {
-      alert("Por favor, completa el Nombre del Proyecto.");
+      showWarning("Por favor, completa el Nombre del Proyecto.");
       return;
     }
     const newProjectData: Partial<Project> = {
@@ -72,11 +73,11 @@ export class NewProjectModal {
         // Open the Initialization Wizard for this new project
         this.uiState.isBudgetInitModalOpen.set(true);
       } else {
-        alert("Error al crear el proyecto en Supabase (Null devuelto).");
+        showError("Error al crear el proyecto (respuesta nula).");
       }
     } catch (err: any) {
       console.error("Error al guardar proyecto:", err);
-      alert("Error de BD: " + err.message);
+      showError(err.message, 'Error de base de datos');
     }
   }
 }

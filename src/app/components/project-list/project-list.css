@@ -1,0 +1,193 @@
+/* ── Sidebar ─────────────────────────────────────────────── */
+.pl-sidebar {
+  width: 230px;
+  background: #fff;
+  border-right: 1px solid #D2D2D2;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: width 0.22s cubic-bezier(.4,0,.2,1);
+}
+
+.pl-sidebar--collapsed {
+  width: 52px;
+}
+
+/* Header */
+.pl-sb-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 8px;
+  border-bottom: 1px solid #EBEBEB;
+  min-height: 46px;
+  gap: 6px;
+}
+
+.pl-sb-brand {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #3A3838;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.pl-sb-toggle {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #909090;
+  font-size: 16px;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s, color .15s;
+  margin-left: auto;
+}
+
+.pl-sb-toggle:hover {
+  background: #F2F2F2;
+  color: #3A3838;
+}
+
+/* Section label */
+.pl-sb-section-label {
+  padding: 8px 14px 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #909090;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+}
+
+/* Divider */
+.pl-sb-divider {
+  height: 1px;
+  background: #EBEBEB;
+  margin: 4px 0;
+}
+
+/* Nav items */
+.pl-sb-nav {
+  padding: 4px 0;
+}
+
+.pl-sb-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  background: transparent;
+  border: none;
+  border-left: 3px solid transparent;
+  color: #3A3838;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+  transition: background .12s, color .12s;
+}
+
+.pl-sb-item:hover {
+  background: #F7F7F7;
+  color: #8C4F2B;
+}
+
+.pl-sb-item--active {
+  background: #FDF3EC !important;
+  color: #8C4F2B !important;
+  border-left-color: #8C4F2B !important;
+}
+
+/* Icon inside items */
+.pl-sb-icon {
+  font-size: 15px;
+  flex-shrink: 0;
+  width: 18px;
+  text-align: center;
+}
+
+.pl-sidebar--collapsed .pl-sb-item {
+  justify-content: center;
+  padding: 10px 0;
+  border-left: none;
+}
+
+.pl-sidebar--collapsed .pl-sb-item--active {
+  background: #FDF3EC !important;
+}
+
+/* Label inside item */
+.pl-sb-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Badge */
+.pl-sb-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: #E8E8E8;
+  color: #555;
+  flex-shrink: 0;
+}
+
+.pl-sb-badge--green {
+  background: #D4EDDA;
+  color: #1A7A30;
+}
+
+/* Stats block */
+.pl-sb-stats {
+  border-top: 1px solid #EBEBEB;
+  padding: 14px;
+}
+
+/* Bottom actions */
+.pl-sb-bottom {
+  border-top: 1px solid #EBEBEB;
+  padding: 4px 0 6px;
+}
+
+.pl-sb-item--bottom {
+  color: #555;
+  font-size: 11px;
+}
+
+.pl-sb-item--bottom:hover {
+  background: #F7F7F7;
+  color: #8C4F2B;
+}
+
+/* ── Project cards ───────────────────────────────────────── */
+.pl-new-card:hover {
+  border-color: #8C4F2B !important;
+  background: #FDF8F5 !important;
+}
+
+.pl-project-card:hover {
+  border-color: #8C4F2B !important;
+  box-shadow: 0 2px 8px rgba(140,79,43,.12);
+}
+
+.pl-project-card:hover .pl-delete-btn {
+  color: #bbb !important;
+}
+
+.pl-delete-btn:hover {
+  color: #C0392B !important;
+  background: #FDECEA !important;
+}

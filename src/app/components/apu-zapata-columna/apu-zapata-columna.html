@@ -1,0 +1,227 @@
+<div style="display:flex;flex-direction:column;gap:10px">
+
+  <div class="row2">
+    <!-- Geometría -->
+    <div class="card" style="margin-bottom:0">
+      <div class="card-title">
+        <i class="ph ph-cube" style="font-size:13px;color:var(--brand)"></i>
+        Geometría y Hormigón
+      </div>
+      <div class="f">
+        <label>Largo L (m)</label>
+        <input type="number" step="0.05" [ngModel]="L()" (ngModelChange)="L.set(+$event)" />
+      </div>
+      <div class="f">
+        <label>Ancho B (m)</label>
+        <input type="number" step="0.05" [ngModel]="B()" (ngModelChange)="B.set(+$event)" />
+      </div>
+      <div class="f">
+        <label>Altura H (m)</label>
+        <input type="number" step="0.05" [ngModel]="H()" (ngModelChange)="H.set(+$event)" />
+      </div>
+      <div class="f">
+        <label>Cantidad (N°)</label>
+        <input type="number" step="1" min="1" [ngModel]="cant()" (ngModelChange)="cant.set(+$event)" />
+      </div>
+      <div class="f">
+        <label>f'c (kg/cm²)</label>
+        <select [ngModel]="fc()" (ngModelChange)="fc.set(+$event)">
+          <option [value]="210">210</option>
+          <option [value]="250">250</option>
+          <option [value]="280">280</option>
+          <option [value]="350">350</option>
+        </select>
+      </div>
+      <div class="f">
+        <label>Recubrimiento (cm)</label>
+        <input type="number" step="1" [ngModel]="rec()" (ngModelChange)="rec.set(+$event)" />
+      </div>
+      <div class="f">
+        <label>Desperdicio (%)</label>
+        <input type="number" step="1" [ngModel]="desp()" (ngModelChange)="desp.set(+$event)" />
+      </div>
+      <div class="f">
+        <label>Encofrado</label>
+        <select [ngModel]="encMetodo()" (ngModelChange)="encMetodo.set($event)">
+          <option value="madera">Madera</option>
+          <option value="tierra">Contra tierra</option>
+          <option value="sin">Sin encofrado</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Cómputo -->
+    <div class="card" style="margin-bottom:0">
+      <div class="card-title"><i class="ph ph-calculator" style="font-size:13px;color:var(--brand)"></i> Cómputo</div>
+      <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:var(--gray-muted)">Vol. zapata unit.:</span>
+          <span style="font-weight:700">{{ (L()*B()*H()) | number:'1.3-3' }} m³</span>
+        </div>
+        <div *ngIf="pedOn()" style="display:flex;justify-content:space-between">
+          <span style="color:var(--gray-muted)">Vol. pedestal unit.:</span>
+          <span style="font-weight:700">{{ volPedestal()/cant() | number:'1.3-3' }} m³</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:var(--gray-muted)">Vol. neto (×{{ cant() }}):</span>
+          <span style="font-weight:700">{{ volNeto() | number:'1.3-3' }} m³</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;border-top:1px solid var(--gray-border);padding-top:6px">
+          <span style="color:var(--brand);font-weight:700">Vol. presup. (+{{desp()}}%):</span>
+          <span style="font-weight:800;color:var(--brand);font-size:14px">{{ volTotal() | number:'1.3-3' }} m³</span>
+        </div>
+        <div style="margin-top:8px;border-top:1px solid var(--gray-border);padding-top:8px;font-size:11px;font-weight:700;color:var(--gray-muted);text-transform:uppercase">Acero</div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:var(--gray-muted)">Parrilla inf. ({{ nBarsL() }}L + {{ nBarsB() }}B):</span>
+          <span style="font-weight:700">{{ kgParrillaInf() | number:'1.1-1' }} kg</span>
+        </div>
+        <div *ngIf="doble()" style="display:flex;justify-content:space-between">
+          <span style="color:var(--gray-muted)">Parrilla sup.:</span>
+          <span style="font-weight:700">{{ kgParrillaSup() | number:'1.1-1' }} kg</span>
+        </div>
+        <div *ngIf="arrOn()" style="display:flex;justify-content:space-between">
+          <span style="color:var(--gray-muted)">Arranques col.:</span>
+          <span style="font-weight:700">{{ kgArranque() | number:'1.1-1' }} kg</span>
+        </div>
+        <div *ngIf="pedOn()" style="display:flex;justify-content:space-between">
+          <span style="color:var(--gray-muted)">Acero pedestal:</span>
+          <span style="font-weight:700">{{ (kgPedVert()+kgPedEstb()) | number:'1.1-1' }} kg</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;border-top:1px solid var(--gray-border);padding-top:6px">
+          <span style="color:var(--brand);font-weight:700">Total acero:</span>
+          <span style="font-weight:800;color:var(--brand)">{{ kgTotal() | number:'1.1-1' }} kg</span>
+        </div>
+        <div *ngIf="encMetodo() !== 'sin'" style="display:flex;justify-content:space-between">
+          <span style="color:var(--gray-muted)">Encofrado:</span>
+          <span style="font-weight:700">{{ encofrado() | number:'1.2-2' }} m²</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Parrilla inferior -->
+  <div class="card">
+    <div class="card-title"><i class="ph ph-grid-four" style="font-size:13px;color:var(--brand)"></i> Parrilla de Refuerzo</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Dirección L (∅ / sep. cm)</div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <button *ngFor="let d of diams" class="vbtn" [class.sel]="diam_l()===d" (click)="diam_l.set(d)">{{labelDiam(d)}}</button>
+          <span style="font-size:11px;color:var(--gray-muted);margin-left:8px">sep:</span>
+          <input type="number" step="5" [ngModel]="sep_l()" (ngModelChange)="sep_l.set(+$event)"
+            style="width:60px;border:1px solid var(--gray-border);border-radius:4px;padding:3px 6px;font-size:12px;text-align:center;background:var(--field-bg)" />
+          <span style="font-size:11px;color:var(--gray-muted)">cm · {{ nBarsL() }} barras</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Dirección B (∅ / sep. cm)</div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <button *ngFor="let d of diams" class="vbtn" [class.sel]="diam_b()===d" (click)="diam_b.set(d)">{{labelDiam(d)}}</button>
+          <span style="font-size:11px;color:var(--gray-muted);margin-left:8px">sep:</span>
+          <input type="number" step="5" [ngModel]="sep_b()" (ngModelChange)="sep_b.set(+$event)"
+            style="width:60px;border:1px solid var(--gray-border);border-radius:4px;padding:3px 6px;font-size:12px;text-align:center;background:var(--field-bg)" />
+          <span style="font-size:11px;color:var(--gray-muted)">cm · {{ nBarsB() }} barras</span>
+        </div>
+      </div>
+      <div class="row2" style="gap:8px">
+        <div class="f">
+          <label>Long. gancho (cm)</label>
+          <input type="number" step="2" [ngModel]="gancho()" (ngModelChange)="gancho.set(+$event)" />
+        </div>
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+        <input type="checkbox" [ngModel]="doble()" (ngModelChange)="doble.set($event)"
+          style="width:16px;height:16px;accent-color:var(--brand)" />
+        Parrilla doble (superior + inferior)
+      </label>
+    </div>
+  </div>
+
+  <!-- Arranque de columna -->
+  <div class="card">
+    <div class="card-title"><i class="ph ph-arrow-up" style="font-size:13px;color:var(--brand)"></i> Arranque de Columna</div>
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;margin-bottom:10px">
+      <input type="checkbox" [ngModel]="arrOn()" (ngModelChange)="arrOn.set($event)"
+        style="width:16px;height:16px;accent-color:var(--brand)" />
+      Incluir arranques de columna
+    </label>
+    <div *ngIf="arrOn()" style="display:flex;flex-direction:column;gap:10px">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Diámetro varilla</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button *ngFor="let d of diams" class="vbtn" [class.sel]="arr()===d" (click)="arr.set(d)">{{labelDiam(d)}}</button>
+        </div>
+      </div>
+      <div class="row2" style="gap:8px">
+        <div class="f">
+          <label>Cant. varillas</label>
+          <input type="number" step="1" min="1" [ngModel]="narr()" (ngModelChange)="narr.set(+$event)" />
+        </div>
+        <div class="f">
+          <label>Proyección (m)</label>
+          <input type="number" step="0.05" [ngModel]="proy()" (ngModelChange)="proy.set(+$event)" />
+        </div>
+        <div class="f">
+          <label>Patilla (cm)</label>
+          <input type="number" step="2" [ngModel]="patilla()" (ngModelChange)="patilla.set(+$event)" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pedestal (opcional) -->
+  <div class="card">
+    <div class="card-title"><i class="ph ph-columns" style="font-size:13px;color:var(--brand)"></i> Pedestal (Opcional)</div>
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;margin-bottom:10px">
+      <input type="checkbox" [ngModel]="pedOn()" (ngModelChange)="pedOn.set($event)"
+        style="width:16px;height:16px;accent-color:var(--brand)" />
+      Incluir pedestal sobre la zapata
+    </label>
+    <div *ngIf="pedOn()" style="display:flex;flex-direction:column;gap:8px">
+      <div class="row2" style="gap:8px">
+        <div class="f"><label>Lado A (m)</label><input type="number" step="0.05" [ngModel]="pedA()" (ngModelChange)="pedA.set(+$event)" /></div>
+        <div class="f"><label>Lado B (m)</label><input type="number" step="0.05" [ngModel]="pedB()" (ngModelChange)="pedB.set(+$event)" /></div>
+        <div class="f"><label>Altura (m)</label><input type="number" step="0.05" [ngModel]="pedH()" (ngModelChange)="pedH.set(+$event)" /></div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Varillas verticales</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+          <button *ngFor="let d of diams" class="vbtn" [class.sel]="pedVar()===d" (click)="pedVar.set(d)">{{labelDiam(d)}}</button>
+        </div>
+        <div class="f"><label>Cantidad</label><input type="number" step="1" min="4" [ngModel]="pedVarCant()" (ngModelChange)="pedVarCant.set(+$event)" /></div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Estribos pedestal</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+          <button *ngFor="let d of diams" class="vbtn" [class.sel]="pedEstb()===d" (click)="pedEstb.set(d)">{{labelDiam(d)}}</button>
+        </div>
+        <div class="f"><label>Separación (cm)</label><input type="number" step="5" [ngModel]="pedSep()" (ngModelChange)="pedSep.set(+$event)" /></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Metrics -->
+  <div class="metrics-row">
+    <div class="metric">
+      <div class="m-lbl">Zapatas</div>
+      <div class="m-val">{{ cant() }}</div>
+      <div class="m-unit">uds</div>
+    </div>
+    <div class="metric">
+      <div class="m-lbl">Vol. Neto</div>
+      <div class="m-val">{{ volNeto() | number:'1.2-2' }}</div>
+      <div class="m-unit">m³</div>
+    </div>
+    <div class="metric" style="grid-column:span 2;border-color:var(--brand);background:var(--brand-light)">
+      <div class="m-lbl" style="color:var(--brand-dark)">Vol. Presupuestado</div>
+      <div class="m-val" style="font-size:36px;color:var(--brand-dark)">{{ volTotal() | number:'1.3-3' }}</div>
+      <div class="m-unit" style="color:var(--brand)">m³</div>
+    </div>
+    <div class="metric">
+      <div class="m-lbl">Acero Total</div>
+      <div class="m-val">{{ kgTotal() | number:'1.0-0' }}</div>
+      <div class="m-unit">kg</div>
+    </div>
+  </div>
+
+</div>

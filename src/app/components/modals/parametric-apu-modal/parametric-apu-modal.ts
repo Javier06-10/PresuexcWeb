@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { UiState } from '../../../services/ui-state';
 import { ProjectService } from '../../../services/project';
 import { SupabaseService } from '../../../services/supabase.service';
+import { showError } from '../../../utils/alert.util';
 
 @Component({
   selector: 'app-parametric-apu-modal',
@@ -316,7 +317,7 @@ export class ParametricApuModal {
       this.closeModal();
     } catch (err) {
       console.error('Error insertando APU paramétrico:', err);
-      alert('Error al insertar el APU: ' + String(err));
+      showError(String(err), 'Error al insertar el APU');
     } finally {
       this.isInserting.set(false);
     }

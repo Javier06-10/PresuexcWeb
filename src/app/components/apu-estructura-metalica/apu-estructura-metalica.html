@@ -1,0 +1,155 @@
+<div style="display:flex;flex-direction:column;gap:10px">
+
+  <div class="card">
+    <div class="card-title">
+      <i class="ph ph-buildings" style="font-size:13px;color:var(--brand)"></i>
+      Estructura Metálica / Cubierta
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead>
+        <tr style="background:var(--gray-3)">
+          <th style="padding:6px 8px;text-align:left;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--gray-border)">Descripción</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:100px">Largo (m)</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:100px">Ancho (m)</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:55px">Cant.</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:90px">Área pl. (m²)</th>
+          <th style="width:36px;border-bottom:1px solid var(--gray-border)"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let tramo of tramos(); let i = index" style="border-bottom:1px solid var(--gray-3)">
+          <td style="padding:5px 8px">
+            <input type="text" [ngModel]="tramo.descripcion" (ngModelChange)="updateTramo(i,'descripcion',$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 8px;font-size:12px;background:var(--field-bg);width:100%"
+              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'" />
+          </td>
+          <td style="padding:5px 4px"><input type="number" step="0.5" [ngModel]="tramo.largo" (ngModelChange)="updateTramo(i,'largo',+$event)"
+            style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+            onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+            onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
+          <td style="padding:5px 4px"><input type="number" step="0.5" [ngModel]="tramo.ancho" (ngModelChange)="updateTramo(i,'ancho',+$event)"
+            style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+            onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+            onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
+          <td style="padding:5px 4px"><input type="number" step="1" min="1" [ngModel]="tramo.cant" (ngModelChange)="updateTramo(i,'cant',+$event)"
+            style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+            onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+            onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
+          <td style="padding:5px 8px;text-align:center;font-weight:700;font-size:13px;color:var(--brand)">
+            {{ (tramo.largo||0)*(tramo.ancho||0)*(tramo.cant||1) | number:'1.2-2' }}
+          </td>
+          <td style="padding:5px 4px;text-align:center">
+            <button *ngIf="tramos().length > 1" (click)="removeTramo(i)"
+              style="background:var(--red);color:#fff;border:none;border-radius:4px;padding:4px 7px;cursor:pointer;font-size:12px;display:flex;align-items:center">
+              <i class="ph ph-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr style="background:var(--brand-light)">
+          <td colspan="4" style="padding:7px 8px;font-size:11px;font-weight:700;color:var(--brand);text-transform:uppercase;text-align:right">Área en planta</td>
+          <td style="padding:7px 8px;text-align:center;font-size:15px;font-weight:800;color:var(--brand)">{{ areaTotal() | number:'1.2-2' }}</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+    <button (click)="addTramo()" style="margin-top:10px;background:var(--gray-3);color:var(--gray-muted);border:1px dashed var(--gray-border);border-radius:6px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px">
+      <i class="ph ph-plus"></i> Añadir Tramo
+    </button>
+  </div>
+
+  <div class="row2">
+    <div class="card" style="margin-bottom:0">
+      <div class="card-title"><i class="ph ph-sliders" style="font-size:13px;color:var(--brand)"></i> Especificaciones</div>
+      <div class="f" style="margin-bottom:8px">
+        <label>Tipo de estructura</label>
+        <select [ngModel]="tipoEstructura()" (ngModelChange)="tipoEstructura.set($event)">
+          <option>Cubierta metálica liviana</option>
+          <option>Cercha metálica</option>
+          <option>Estructura para galpón</option>
+          <option>Pérgola metálica</option>
+          <option>Marquesina / Dosel</option>
+          <option>Mezzanine / Entrepiso metálico</option>
+          <option>Escalera metálica</option>
+          <option>Carport / Garaje metálico</option>
+        </select>
+      </div>
+      <div class="f" style="margin-bottom:8px">
+        <label>Perfil / sección</label>
+        <select [ngModel]="perfil()" (ngModelChange)="perfil.set($event)">
+          <option>Correa galvanizada C150</option>
+          <option>Correa galvanizada C200</option>
+          <option>Tubo cuadrado 50x50</option>
+          <option>Tubo rectangular 50x100</option>
+          <option>Perfil H (IPE 200)</option>
+          <option>Perfil I (IPN 200)</option>
+          <option>Ángulo 50x50x4</option>
+        </select>
+      </div>
+      <div class="f" style="margin-bottom:8px">
+        <label>Material de cubierta</label>
+        <select [ngModel]="cubierta()" (ngModelChange)="cubierta.set($event)">
+          <option>Zinc trapezoidal cal. 26</option>
+          <option>Zinc ondulado cal. 26</option>
+          <option>Zinc prepintado</option>
+          <option>Policarbonato traslúcido 6mm</option>
+          <option>Policarbonato opaco 8mm</option>
+          <option>Teja asfáltica</option>
+          <option>Sin cubierta (solo estructura)</option>
+        </select>
+      </div>
+      <div class="f" style="margin-bottom:8px">
+        <label>Pendiente (grados)</label>
+        <input type="number" step="1" min="0" max="45" [ngModel]="pendiente()" (ngModelChange)="pendiente.set(+$event)" />
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" [ngModel]="con_pintura()" (ngModelChange)="con_pintura.set($event)"
+            style="width:16px;height:16px;accent-color:var(--brand)" />
+          Incluye pintura anticorrosiva
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" [ngModel]="con_instalacion()" (ngModelChange)="con_instalacion.set($event)"
+            style="width:16px;height:16px;accent-color:var(--brand)" />
+          Incluye montaje e instalación
+        </label>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:0">
+      <div class="card-title"><i class="ph ph-calculator" style="font-size:13px;color:var(--brand)"></i> Cómputo</div>
+      <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:var(--gray-muted)">Área en planta:</span>
+          <span style="font-weight:700">{{ areaTotal() | number:'1.2-2' }} m²</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:var(--gray-muted)">Pendiente:</span>
+          <span style="font-weight:700">{{ pendiente() }}°</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;border-top:1px solid var(--gray-border);padding-top:6px">
+          <span style="color:var(--brand);font-weight:700">Área inclinada real:</span>
+          <span style="font-weight:800;color:var(--brand);font-size:14px">{{ areaInclinada() | number:'1.2-2' }} m²</span>
+        </div>
+        <div style="font-size:10px;color:var(--gray-hint);margin-top:4px">
+          * Área real = área planta / cos({{ pendiente() }}°). Usada como cantidad.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="metrics-row">
+    <div class="metric">
+      <div class="m-lbl">Área Planta</div>
+      <div class="m-val">{{ areaTotal() | number:'1.1-1' }}</div>
+      <div class="m-unit">m²</div>
+    </div>
+    <div class="metric" style="grid-column:span 3;border-color:var(--brand);background:var(--brand-light)">
+      <div class="m-lbl" style="color:var(--brand-dark)">Área Inclinada Real</div>
+      <div class="m-val" style="font-size:36px;color:var(--brand-dark)">{{ areaInclinada() | number:'1.2-2' }}</div>
+      <div class="m-unit" style="color:var(--brand)">m²</div>
+    </div>
+  </div>
+
+</div>

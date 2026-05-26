@@ -1,68 +1,186 @@
-<div id="modalPreciosGlobales" class="fixed inset-0 bg-presuOscuro/70 backdrop-blur-xs flex items-center justify-center z-50 transition-all duration-300" [class.opacity-0]="!uiState.isPricesModalOpen()" [class.pointer-events-none]="!uiState.isPricesModalOpen()">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-6xl p-6 mx-4 transform transition-all duration-300 border-t-4 border-presuOxido" [class.scale-95]="!uiState.isPricesModalOpen()">
-            
-            <div class="flex items-center justify-between border-b border-zinc-200 pb-3 mb-4">
-                <div class="flex items-center gap-2">
-                    <i class="ph ph-database text-xl text-presuOxido"></i>
-                    <h3 class="text-base font-bold text-presuOscuro uppercase tracking-wide">Base de Precios Globales</h3>
-                </div>
-                <button (click)="backToConfig()" class="text-zinc-400 hover:text-presuOscuro flex items-center gap-1 text-xs font-bold uppercase transition">
-                    <i class="ph ph-arrow-left font-bold"></i> Volver
-                </button>
-            </div>
+<div style="height:calc(100vh - 50px);background:#F2F2F2;overflow-y:auto;padding:24px 28px">
 
-            <div class="flex justify-center bg-zinc-100 p-1 border border-zinc-300 rounded-xl max-w-lg mx-auto mb-4 shadow-inner">
-                <button (click)="setType('MAT')" [class.bg-presuOxido]="activeType() === 'MAT'" [class.text-white]="activeType() === 'MAT'" [class.shadow-md]="activeType() === 'MAT'" [class.text-zinc-500]="activeType() !== 'MAT'" class="w-1/3 text-center py-2 text-xs font-black uppercase tracking-wider rounded-lg transition duration-200 hover:text-presuOscuro">
-                    Materiales
-                </button>
-                <button (click)="setType('MO')" [class.bg-presuOxido]="activeType() === 'MO'" [class.text-white]="activeType() === 'MO'" [class.shadow-md]="activeType() === 'MO'" [class.text-zinc-500]="activeType() !== 'MO'" class="w-1/3 text-center py-2 text-xs font-black uppercase tracking-wider rounded-lg transition duration-200 hover:text-presuOscuro">
-                    Mano de Obra
-                </button>
-                <button (click)="setType('JOR')" [class.bg-presuOxido]="activeType() === 'JOR'" [class.text-white]="activeType() === 'JOR'" [class.shadow-md]="activeType() === 'JOR'" [class.text-zinc-500]="activeType() !== 'JOR'" class="w-1/3 text-center py-2 text-xs font-black uppercase tracking-wider rounded-lg transition duration-200 hover:text-presuOscuro">
-                    Jornales Diarios
-                </button>
-            </div>
-
-            <div id="contenedor-filtro-capitulo" class="bg-zinc-50 border border-zinc-300 rounded-xl p-4 flex items-center gap-3 shadow-sm mb-4 transition-all duration-200">
-                <div class="flex-1">
-                    <label class="text-[10px] font-black text-presuOscuro uppercase tracking-wide block mb-1">Filtrar por Capítulo Técnico</label>
-                    <select [(ngModel)]="activeCategory" class="w-full bg-white border border-zinc-300 rounded-lg p-2.5 text-xs font-bold text-presuOscuro focus:outline-none cursor-pointer shadow-inner">
-                        </select>
-                </div>
-                <button (click)="addCategory()" class="mt-5 h-10 w-10 flex items-center justify-center rounded-xl bg-presuOscuro hover:bg-zinc-600 text-white font-bold transition shadow-md text-lg select-none" title="Agregar Categoría Nueva">
-                    +
-                </button>
-            </div>
-
-            <div class="border border-zinc-300 rounded-xl overflow-hidden bg-white shadow-sm">
-                <div class="overflow-x-auto max-h-[340px]">
-                    <table class="w-full text-left text-xs border-collapse min-w-[900px]">
-                        <thead>
-                            <tr class="bg-zinc-800 text-white text-[10px] uppercase font-bold tracking-wider sticky top-0 z-10">
-                                <th class="p-3 border-r border-zinc-700 w-1/4">Descripción de Partida / Insumo</th>
-                                <th class="p-3 border-r border-zinc-700 text-center w-[13%]">Precio 1</th>
-                                <th class="p-3 border-r border-zinc-700 text-center w-[13%]">Precio 2</th>
-                                <th class="p-3 border-r border-zinc-700 text-center w-[13%]">Precio 3</th>
-                                <th class="p-3 border-r border-zinc-700 text-center w-[13%]">Precio 4</th>
-                                <th class="p-3 border-r border-zinc-700 text-center w-[13%]">Precio 5</th>
-                                <th class="p-3 text-center w-[6%]">Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla-precios-dinamica" class="font-bold text-presuOscuro">
-                            </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="mt-3 flex justify-start">
-                <button (click)="addRow()" class="flex items-center gap-1.5 bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow transition">
-                    <i class="ph ph-plus-bold"></i>
-                    <span>Añadir Fila</span>
-                </button>
-            </div>
-
-            <div class="mt-4 pt-3 border-t border-zinc-200 flex justify-end">
-                <button (click)="confirm()" class="bg-presuOxido text-white font-bold px-6 py-2 rounded-lg text-xs uppercase shadow shadow-md">Confirmar</button>
-            </div>
-        </div>
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <button (click)="uiState.activeView.set('projects')"
+              style="background:none;border:none;cursor:pointer;color:#909090;font-size:18px;display:flex;align-items:center;padding:4px;border-radius:6px"
+              title="Volver">
+        <i class="ph ph-arrow-left"></i>
+      </button>
+      <div>
+        <h2 style="font-size:16px;font-weight:800;color:#3A3838;margin:0">Base de Precios</h2>
+        <p style="font-size:11px;color:#909090;margin:0">Materiales, mano de obra y equipos</p>
+      </div>
     </div>
+
+    <!-- Search -->
+    <div style="position:relative;width:260px">
+      <i class="ph ph-magnifying-glass"
+         style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#909090;font-size:13px;pointer-events:none"></i>
+      <input type="text" placeholder="Buscar descripción o código..."
+             [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)"
+             style="width:100%;border:1px solid #D2D2D2;border-radius:8px;padding:8px 10px 8px 30px;font-size:12px;background:#fff;color:#3A3838;outline:none;box-sizing:border-box"
+             onfocus="this.style.borderColor='#8C4F2B'" onblur="this.style.borderColor='#D2D2D2'" />
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div style="display:flex;gap:4px;background:#fff;border:1px solid #D2D2D2;border-radius:10px;padding:4px;width:fit-content;margin-bottom:20px">
+    <button (click)="setType('MAT')" class="pv-tab" [class.pv-tab--active]="activeType()==='MAT'">
+      <i class="ph ph-package"></i> Materiales
+      <span class="pv-tab-count" [class.pv-tab-count--active]="activeType()==='MAT'">{{ catalogService.materials().length }}</span>
+    </button>
+    <button (click)="setType('MO')" class="pv-tab" [class.pv-tab--active]="activeType()==='MO'">
+      <i class="ph ph-hard-hat"></i> Mano de Obra
+      <span class="pv-tab-count" [class.pv-tab-count--active]="activeType()==='MO'">{{ catalogService.labor().length }}</span>
+    </button>
+    <button (click)="setType('JOR')" class="pv-tab" [class.pv-tab--active]="activeType()==='JOR'">
+      <i class="ph ph-wrench"></i> Equipos
+      <span class="pv-tab-count" [class.pv-tab-count--active]="activeType()==='JOR'">{{ catalogService.equipment().length }}</span>
+    </button>
+  </div>
+
+  @if (catalogService.isLoading()) {
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px;color:#909090;gap:10px">
+      <i class="ph ph-circle-notch" style="font-size:36px;color:#8C4F2B;animation:pv-spin .8s linear infinite"></i>
+      <span style="font-size:13px;font-weight:600">Cargando datos…</span>
+    </div>
+  } @else {
+
+    <!-- ══ MI ORGANIZACIÓN ══ -->
+    <div style="background:#fff;border-radius:12px;border:1px solid #D2D2D2;margin-bottom:20px;overflow:hidden">
+
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid #EBEBEB;background:#FAFAFA">
+        <div style="display:flex;align-items:center;gap:8px">
+          <i class="ph ph-buildings" style="font-size:15px;color:#8C4F2B"></i>
+          <span style="font-size:12px;font-weight:800;color:#3A3838;text-transform:uppercase;letter-spacing:.04em">Mi Organización</span>
+          <span style="background:#FDF3EC;color:#8C4F2B;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px">{{ orgItems().length }}</span>
+        </div>
+        <button (click)="showAddForm.set(!showAddForm())" class="pv-btn-add">
+          <i class="ph" [class.ph-plus]="!showAddForm()" [class.ph-x]="showAddForm()"></i>
+          {{ showAddForm() ? 'Cancelar' : 'Nuevo' }}
+        </button>
+      </div>
+
+      @if (showAddForm()) {
+        <div style="display:flex;gap:8px;align-items:center;padding:10px 18px;border-bottom:1px solid #EBEBEB;background:#FFFDF9">
+          <input type="text" placeholder="Descripción *" [(ngModel)]="newDescription"
+                 class="pv-input pv-input--flex" />
+          <input type="text" placeholder="Unidad" [(ngModel)]="newUnit"
+                 class="pv-input pv-input--sm" />
+          <div style="position:relative">
+            <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:10px;font-weight:700;color:#909090;pointer-events:none">
+              {{ configService.monedaGlobal() }}
+            </span>
+            <input type="number" min="0" step="0.01" placeholder="0.00" [(ngModel)]="newPrice"
+                   class="pv-input pv-input--price" />
+          </div>
+          <button (click)="addItem()" [disabled]="saving() || !newDescription.trim()" class="pv-btn-save">
+            @if (saving()) { <i class="ph ph-spinner" style="animation:pv-spin .8s linear infinite"></i> }
+            @else { Guardar }
+          </button>
+        </div>
+      }
+
+      @if (orgItems().length === 0) {
+        <div style="padding:28px;display:flex;align-items:center;justify-content:center;gap:8px;color:#aaa;font-size:11px">
+          <i class="ph ph-package" style="font-size:22px;opacity:.3"></i>
+          {{ searchQuery() ? 'Sin resultados' : 'Aún no tienes registros propios. Usa "Nuevo" para agregar.' }}
+        </div>
+      } @else {
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead>
+            <tr style="background:#F7F7F7">
+              <th class="pv-th" style="width:90px">Cód.</th>
+              <th class="pv-th">Descripción</th>
+              <th class="pv-th" style="width:80px;text-align:center">Unidad</th>
+              <th class="pv-th" style="width:140px;text-align:right">Precio ({{ configService.monedaGlobal() }})</th>
+              <th class="pv-th" style="width:85px;text-align:center">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of orgItems(); track item.id) {
+              <tr class="pv-row">
+                <td class="pv-td" style="color:#aaa;font-size:10px;font-family:monospace">{{ item.code || '—' }}</td>
+                @if (editingId() === item.id) {
+                  <td class="pv-td">
+                    <input type="text" [(ngModel)]="editBuffer.description" class="pv-input pv-input--inline" />
+                  </td>
+                  <td class="pv-td" style="text-align:center">
+                    <input type="text" [(ngModel)]="editBuffer.unit" class="pv-input pv-input--unit" />
+                  </td>
+                  <td class="pv-td pv-price">{{ getPrice(item) | number:'1.2-2' }}</td>
+                  <td class="pv-td" style="text-align:center">
+                    <div style="display:flex;gap:4px;justify-content:center">
+                      <button (click)="saveEdit(item)" [disabled]="saving()" class="pv-btn-icon pv-btn-icon--ok" title="Guardar">
+                        <i class="ph ph-check"></i>
+                      </button>
+                      <button (click)="cancelEdit()" class="pv-btn-icon" title="Cancelar">
+                        <i class="ph ph-x"></i>
+                      </button>
+                    </div>
+                  </td>
+                } @else {
+                  <td class="pv-td" style="font-weight:600;color:#3A3838">{{ item.description }}</td>
+                  <td class="pv-td" style="text-align:center;font-weight:700;color:#555">{{ item.unit || '—' }}</td>
+                  <td class="pv-td pv-price">{{ getPrice(item) | number:'1.2-2' }}</td>
+                  <td class="pv-td" style="text-align:center">
+                    <div style="display:flex;gap:4px;justify-content:center" class="pv-actions">
+                      <button (click)="startEdit(item)" class="pv-btn-icon pv-btn-icon--edit" title="Editar">
+                        <i class="ph ph-pencil-simple"></i>
+                      </button>
+                      <button (click)="deleteItem(item)" class="pv-btn-icon pv-btn-icon--del" title="Eliminar">
+                        <i class="ph ph-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+
+    <!-- ══ GLOBALES ══ -->
+    <div style="background:#fff;border-radius:12px;border:1px solid #D2D2D2;overflow:hidden">
+
+      <div style="display:flex;align-items:center;gap:8px;padding:12px 18px;border-bottom:1px solid #EBEBEB;background:#FAFAFA">
+        <i class="ph ph-globe" style="font-size:15px;color:#2980B9"></i>
+        <span style="font-size:12px;font-weight:800;color:#2980B9;text-transform:uppercase;letter-spacing:.04em">Catálogo Global</span>
+        <span style="background:#EEF6FE;color:#2980B9;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px">{{ globalItems().length }}</span>
+        <span style="margin-left:auto;font-size:10px;color:#aaa;font-style:italic">Solo lectura</span>
+      </div>
+
+      @if (globalItems().length === 0) {
+        <div style="padding:28px;display:flex;align-items:center;justify-content:center;gap:8px;color:#aaa;font-size:11px">
+          <i class="ph ph-globe" style="font-size:22px;opacity:.3"></i>
+          {{ searchQuery() ? 'Sin resultados' : 'No hay registros globales disponibles.' }}
+        </div>
+      } @else {
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead>
+            <tr style="background:#F7F7F7">
+              <th class="pv-th" style="width:90px">Cód.</th>
+              <th class="pv-th">Descripción</th>
+              <th class="pv-th" style="width:80px;text-align:center">Unidad</th>
+              <th class="pv-th" style="width:140px;text-align:right">Precio ({{ configService.monedaGlobal() }})</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of globalItems(); track item.id) {
+              <tr class="pv-row">
+                <td class="pv-td" style="color:#aaa;font-size:10px;font-family:monospace">{{ item.code || '—' }}</td>
+                <td class="pv-td" style="font-weight:600;color:#555">{{ item.description }}</td>
+                <td class="pv-td" style="text-align:center;font-weight:700;color:#555">{{ item.unit || '—' }}</td>
+                <td class="pv-td pv-price">{{ getPrice(item) | number:'1.2-2' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+
+  }
+</div>

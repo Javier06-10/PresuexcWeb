@@ -1,3 +1,122 @@
+/* ── CSS VARIABLES GLOBALES (PresuXcel) ── */
+:root {
+  --brand: #8B4513;
+  --brand-dark: #6B3410;
+  --brand-light: #FAF0E6;
+  --gray-bg: #EFEFEF;
+  --gray-3: #E8E8E8;
+  --gray-border: #D2D2D2;
+  --gray-text: #1E1E1E;
+  --gray-muted: #555;
+  --gray-hint: #909090;
+  --green: #1A7A30;
+  --green-light: #D4EDDA;
+  --green-border: #28A745;
+  --red: #C0392B;
+  --red-light: #FDECEA;
+  --field-bg: #E8E8E8;
+}
+
+/* ── CARDS ── */
+.card {
+  background: #fff;
+  border: 1px solid var(--gray-border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+.card-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--gray-hint);
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  margin-bottom: 10px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--gray-3);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── GRID ROWS ── */
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.row4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 10px; }
+
+/* ── FIELDS ── */
+.f { display: flex; flex-direction: column; gap: 3px; }
+.f label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gray-muted);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.f input,
+.f select {
+  border: 1px solid var(--gray-border);
+  border-radius: 5px;
+  padding: 6px 9px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-text);
+  background: var(--field-bg);
+  height: 34px;
+  width: 100%;
+  transition: border-color .15s, background .15s;
+}
+.f input:focus,
+.f select:focus {
+  outline: none;
+  border-color: var(--brand);
+  background: #fff;
+}
+.f input[readonly] {
+  background: #DCDCDC;
+  color: var(--gray-muted);
+  cursor: default;
+  font-weight: 600;
+}
+.f .hint { font-size: 10px; color: var(--gray-hint); margin-top: 2px; }
+
+/* ── METRICS ── */
+.metrics-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; }
+.metric {
+  background: #fff;
+  border: 1px solid var(--gray-border);
+  border-radius: 7px;
+  padding: 10px 12px;
+}
+.metric .m-lbl {
+  font-size: 10px;
+  color: var(--gray-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin-bottom: 4px;
+}
+.metric .m-val { font-size: 22px; font-weight: 700; color: var(--gray-text); }
+.metric .m-unit { font-size: 10px; color: var(--gray-hint); margin-top: 1px; }
+
+/* ── SAVE BUTTON ── */
+.btn-save {
+  background: #fff;
+  color: var(--gray-muted);
+  border: 1px solid var(--gray-border);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.btn-save:hover { background: var(--gray-3); }
+
 /* Eliminado Tailwind Native config, se usa CDN */
 /* Ocultar flechas nativas de inputs numéricos */
 input[type="number"]::-webkit-inner-spin-button,
@@ -39,4 +158,64 @@ input[type="number"] {
 }
 .group:hover .btn-flotante {
     display: flex;
+}
+
+/* ── PRINT: solo muestra la hoja del presupuesto ── */
+@media print {
+  /* Ocultar todo por defecto */
+  body > * { display: none !important; }
+
+  /* Mostrar solo el componente raíz */
+  body > app-root { display: block !important; }
+
+  /* Dentro del root, ocultar header y sidebar */
+  app-root app-header { display: none !important; }
+  app-root app-budget-view .sidebar { display: none !important; }
+
+  /* El workspace ocupa toda la página */
+  app-root app-budget-view { display: block !important; }
+  app-root app-budget-view .app-body {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  app-root app-budget-view .workspace {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+  app-root app-budget-view .main-panel {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    padding: 10px !important;
+  }
+
+  /* Botones de acción: ocultar todos */
+  app-root app-budget-view button { display: none !important; }
+
+  /* Inputs del presupuesto: sin borde, solo texto */
+  app-root app-budget-view input {
+    border: none !important;
+    background: transparent !important;
+    -webkit-appearance: none;
+    padding: 0 !important;
+  }
+
+  /* Paneles APU: ocultar */
+  app-root app-budget-view .apu-panel-below,
+  app-root app-budget-view .apu-panel-side { display: none !important; }
+
+  /* Preservar colores de fondo en la tabla */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Evitar cortes de página dentro de filas */
+  tr { page-break-inside: avoid; }
+  thead { display: table-header-group; }
 }

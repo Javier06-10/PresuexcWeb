@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { UiState } from '../../../services/ui-state';
 import { ProjectService } from '../../../services/project';
 import { SupabaseService } from '../../../services/supabase.service';
+import { showError, showWarning } from '../../../utils/alert.util';
 
 @Component({
   selector: 'app-budget-init-modal',
@@ -159,7 +160,7 @@ export class BudgetInitModal {
   async generateBudget() {
     const budget = this.projectService.activeBudget();
     if (!budget) {
-      alert("No hay un presupuesto activo.");
+      showWarning("No hay un presupuesto activo.");
       return;
     }
 
@@ -177,7 +178,7 @@ export class BudgetInitModal {
       this.levels = [{ name: 'Primer Nivel', order: 1, chapters: ['Preliminares'], newCustomChapter: '' }];
     } catch (err) {
       console.error(err);
-      alert("Error al generar estructura: " + String(err));
+      showError(String(err), 'Error al generar estructura');
     } finally {
       this.projectService.isSaving.set(false);
     }

@@ -34,7 +34,7 @@
       <h4
         class="text-xs font-bold text-presuOscuro uppercase tracking-wide mb-3 border-b border-zinc-200 pb-2"
       >
-        Método de Cálculo para Hormigón In Situ
+        Método de Cálculo para Hormigón
       </h4>
       <div class="space-y-3">
         <!-- Fuller -->
@@ -56,10 +56,10 @@
             />
             <div class="flex flex-col">
               <span class="text-sm font-bold text-presuOscuro"
-                >Método de Proporciones (Fuller)</span
+                >Método de Proporciones (In situ)</span
               >
               <span class="text-[11px] text-zinc-500 leading-tight"
-                >Cálculo basado en la curva granulométrica ideal. Recomendado para mezclas
+                >Cálculo basado en el metodo de fuller. Recomendado para mezclas
                 tradicionales.</span
               >
             </div>
@@ -75,18 +75,37 @@
         </div>
 
         <!-- Empirico -->
-        <div class="flex items-center justify-between p-3 border rounded-lg transition" [ngClass]="configService.metodoCalculoHormigon() === 'empirico' ? 'border-presuOxido bg-orange-50' : 'border-zinc-300 hover:border-zinc-400 hover:bg-zinc-50'">
-            <label class="flex items-start gap-3 cursor-pointer flex-1">
-                <input type="radio" name="concreteMethod" [checked]="configService.metodoCalculoHormigon() === 'empirico'" (change)="setMethod('empirico')" class="mt-0.5 w-4 h-4 text-presuOxido focus:ring-presuOxido accent-presuOxido">
-                <div class="flex flex-col">
-                    <span class="text-sm font-bold text-presuOscuro">Método Empírico</span>
-                    <span class="text-[11px] text-zinc-500 leading-tight">Basado en experiencias previas del constructor</span>
-                </div>
-            </label>
-            <button *ngIf="configService.metodoCalculoHormigon() === 'empirico'" (click)="openEmpiricoModal()" class="text-zinc-400 hover:text-presuOxido transition text-sm flex items-center gap-1 font-bold">
-                Editar
-                <i class="ph ph-edit"></i>
-            </button>
+        <div
+          class="flex items-center justify-between p-3 border rounded-lg transition"
+          [ngClass]="
+            configService.metodoCalculoHormigon() === 'empirico'
+              ? 'border-presuOxido bg-orange-50'
+              : 'border-zinc-300 hover:border-zinc-400 hover:bg-zinc-50'
+          "
+        >
+          <label class="flex items-start gap-3 cursor-pointer flex-1">
+            <input
+              type="radio"
+              name="concreteMethod"
+              [checked]="configService.metodoCalculoHormigon() === 'empirico'"
+              (change)="setMethod('empirico')"
+              class="mt-0.5 w-4 h-4 text-presuOxido focus:ring-presuOxido accent-presuOxido"
+            />
+            <div class="flex flex-col">
+              <span class="text-sm font-bold text-presuOscuro">Método Premezclado</span>
+              <span class="text-[11px] text-zinc-500 leading-tight"
+                >Hormigon adquirido con una resistencia específica</span
+              >
+            </div>
+          </label>
+          <button
+            *ngIf="configService.metodoCalculoHormigon() === 'empirico'"
+            (click)="openEmpiricoModal()"
+            class="text-zinc-400 hover:text-presuOxido transition text-sm flex items-center gap-1 font-bold"
+          >
+            Editar
+            <i class="ph ph-edit"></i>
+          </button>
         </div>
       </div>
     </div>

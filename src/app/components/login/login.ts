@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SupabaseService } from '../../services/supabase.service';
+import { showInfo, showSuccess } from '../../utils/alert.util';
 
 @Component({
   selector: 'app-login',
@@ -44,12 +45,12 @@ export class LoginComponent {
       if (this.isRecoveryMode()) {
         const { error } = await this.supabaseService.resetPassword(this.email());
         if (error) throw error;
-        alert("Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.");
+        showInfo("Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.");
         this.backToLogin();
       } else if (this.isRegisterMode()) {
         const { error } = await this.supabaseService.signUpWithPassword(this.email(), this.password());
         if (error) throw error;
-        alert("Registro exitoso. Revisa tu correo o inicia sesión ahora.");
+        showSuccess("Registro exitoso. Revisa tu correo o inicia sesión ahora.");
         this.isRegisterMode.set(false);
       } else {
         const { error } = await this.supabaseService.signInWithPassword(this.email(), this.password());

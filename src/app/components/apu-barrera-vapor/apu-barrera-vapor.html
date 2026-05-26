@@ -1,0 +1,135 @@
+<div style="display:flex;flex-direction:column;gap:10px">
+
+  <!-- GEOMETRÍA -->
+  <div class="card">
+    <div class="card-title">
+      <i class="ph ph-waves" style="font-size:13px;color:var(--brand)"></i>
+      Geometría — Áreas de Barrera de Vapor
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead>
+        <tr style="background:var(--gray-3)">
+          <th style="padding:6px 8px;text-align:left;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--gray-border)">Descripción</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:120px">Largo (m)</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:120px">Ancho (m)</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:100px">Área (m²)</th>
+          <th style="width:36px;border-bottom:1px solid var(--gray-border)"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let tramo of tramos(); let i = index" style="border-bottom:1px solid var(--gray-3)">
+          <td style="padding:5px 8px">
+            <input type="text" [ngModel]="tramo.descripcion" (ngModelChange)="updateTramo(i,'descripcion',$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 8px;font-size:12px;background:var(--field-bg);width:100%"
+              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'" />
+          </td>
+          <td style="padding:5px 6px"><input type="number" step="any" [ngModel]="tramo.largo" (ngModelChange)="updateTramo(i,'largo',+$event)"
+            style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 6px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+            onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+            onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
+          <td style="padding:5px 6px"><input type="number" step="any" [ngModel]="tramo.ancho" (ngModelChange)="updateTramo(i,'ancho',+$event)"
+            style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 6px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+            onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+            onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
+          <td style="padding:5px 8px;text-align:center;font-weight:700;font-size:13px;color:var(--brand)">
+            {{ (tramo.largo||0)*(tramo.ancho||0) | number:'1.2-2' }}
+          </td>
+          <td style="padding:5px 4px;text-align:center">
+            <button *ngIf="tramos().length > 1" (click)="removeTramo(i)"
+              style="background:var(--red);color:#fff;border:none;border-radius:4px;padding:4px 7px;cursor:pointer;font-size:12px;line-height:1;display:flex;align-items:center">
+              <i class="ph ph-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr style="background:var(--brand-light)">
+          <td colspan="3" style="padding:7px 8px;font-size:11px;font-weight:700;color:var(--brand);text-transform:uppercase;text-align:right">Área Neta</td>
+          <td style="padding:7px 8px;text-align:center;font-size:15px;font-weight:800;color:var(--brand)">{{ areaNeta() | number:'1.2-2' }}</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+    <button (click)="addTramo()" style="margin-top:10px;background:var(--gray-3);color:var(--gray-muted);border:1px dashed var(--gray-border);border-radius:6px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px">
+      <i class="ph ph-plus"></i> Añadir Área
+    </button>
+  </div>
+
+  <!-- PARÁMETROS + PERSONAL -->
+  <div class="row2">
+    <div class="card" style="margin-bottom:0">
+      <div class="card-title"><i class="ph ph-sliders" style="font-size:13px;color:var(--brand)"></i> Parámetros del Material</div>
+      <div class="f" style="margin-bottom:8px">
+        <label>Tipo de Membrana / Barrera</label>
+        <select [ngModel]="tipoMembrana()" (ngModelChange)="tipoMembrana.set($event)">
+          <option>Polietileno 6 mil (150 μm)</option>
+          <option>Polietileno 10 mil (250 μm)</option>
+          <option>Polietileno 20 mil (500 μm)</option>
+          <option>Membrana bituminosa 1mm</option>
+          <option>Membrana bituminosa 3mm</option>
+          <option>Lámina HDPE 0.5mm</option>
+        </select>
+      </div>
+      <div class="row3">
+        <div class="f"><label>Solapamiento (%)</label>
+          <input type="number" step="1" [ngModel]="solapamiento()" (ngModelChange)="solapamiento.set(+$event)" /></div>
+        <div class="f"><label>Altura muros (m)</label>
+          <input type="number" step="0.05" [ngModel]="alturaMuros()" (ngModelChange)="alturaMuros.set(+$event)" /></div>
+        <div class="f"><label>Desperdicio (%)</label>
+          <input type="number" step="1" [ngModel]="desperdicio()" (ngModelChange)="desperdicio.set(+$event)" /></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:0">
+      <div class="card-title"><i class="ph ph-users" style="font-size:13px;color:var(--brand)"></i> Personal de Instalación</div>
+      <div class="row2" style="margin-bottom:8px">
+        <div class="f"><label>Instaladores</label>
+          <input type="number" step="1" [ngModel]="instaladores()" (ngModelChange)="instaladores.set(+$event)" /></div>
+        <div class="f"><label>Ayudantes</label>
+          <input type="number" step="1" [ngModel]="ayudantes()" (ngModelChange)="ayudantes.set(+$event)" /></div>
+      </div>
+      <div style="margin-top:12px;padding:10px;background:var(--gray-3);border-radius:6px">
+        <div style="font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Cómputo de membrana</div>
+        <div style="display:flex;flex-direction:column;gap:5px;font-size:12px">
+          <div style="display:flex;justify-content:space-between">
+            <span style="color:var(--gray-muted)">Área neta:</span>
+            <span style="font-weight:700;color:var(--gray-text)">{{ areaNeta() | number:'1.2-2' }} m²</span>
+          </div>
+          <div style="display:flex;justify-content:space-between">
+            <span style="color:var(--gray-muted)">Con solape + muros:</span>
+            <span style="font-weight:700;color:var(--gray-text)">{{ areaConMuros() | number:'1.2-2' }} m²</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;border-top:1px solid var(--gray-border);padding-top:4px">
+            <span style="color:var(--brand);font-weight:700">Área presupuestada:</span>
+            <span style="font-weight:800;color:var(--brand);font-size:14px">{{ areaPresupuestada() | number:'1.2-2' }} m²</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MÉTRICAS -->
+  <div class="metrics-row">
+    <div class="metric">
+      <div class="m-lbl">Área Neta</div>
+      <div class="m-val">{{ areaNeta() | number:'1.2-2' }}</div>
+      <div class="m-unit">m²</div>
+    </div>
+    <div class="metric">
+      <div class="m-lbl">Con Solape</div>
+      <div class="m-val">{{ areaSolape() | number:'1.2-2' }}</div>
+      <div class="m-unit">m²</div>
+    </div>
+    <div class="metric">
+      <div class="m-lbl">+ Muros</div>
+      <div class="m-val">{{ areaConMuros() | number:'1.2-2' }}</div>
+      <div class="m-unit">m²</div>
+    </div>
+    <div class="metric" style="border-color:var(--brand);background:var(--brand-light)">
+      <div class="m-lbl" style="color:var(--brand-dark)">Presupuestado</div>
+      <div class="m-val" style="color:var(--brand-dark)">{{ areaPresupuestada() | number:'1.2-2' }}</div>
+      <div class="m-unit" style="color:var(--brand)">m²</div>
+    </div>
+  </div>
+
+</div>

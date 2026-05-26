@@ -1,0 +1,230 @@
+<div style="display:flex;flex-direction:column;gap:10px">
+
+  <!-- Tipo de pilote -->
+  <div class="card">
+    <div class="card-title">
+      <i class="ph ph-arrow-fat-lines-down" style="font-size:13px;color:var(--brand)"></i>
+      Tipo de Pilote
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+      <button *ngFor="let t of tipos" class="tipo-btn" [class.sel]="tipo()===t" (click)="tipo.set(t)">
+        {{ labelTipo(t) }}
+      </button>
+    </div>
+    <div style="font-size:11px;color:var(--gray-muted)">
+      <ng-container *ngIf="tipo()==='perforado'">Pilote de hormigón vaciado in situ con perforación rotatoria.</ng-container>
+      <ng-container *ngIf="tipo()==='helice'">Pilote de hélice continua (CFA) – extracción simultánea.</ng-container>
+      <ng-container *ngIf="tipo()==='franki'">Pilote Franki – bulbo de ensanche en la punta.</ng-container>
+      <ng-container *ngIf="tipo()==='micropilote'">Micropilote – diámetros pequeños, alta densidad de refuerzo.</ng-container>
+      <ng-container *ngIf="tipo()==='prefab'">Pilote prefabricado de hormigón hincado.</ng-container>
+      <ng-container *ngIf="tipo()==='acero'">Perfil de acero tipo H o tubular hincado.</ng-container>
+    </div>
+  </div>
+
+  <div class="row2">
+    <!-- Parámetros generales -->
+    <div class="card" style="margin-bottom:0">
+      <div class="card-title"><i class="ph ph-sliders" style="font-size:13px;color:var(--brand)"></i> Parámetros</div>
+      <div class="f">
+        <label>Diámetro D (m)</label>
+        <input type="number" step="0.05" min="0.10" [ngModel]="D()" (ngModelChange)="D.set(+$event)" />
+      </div>
+      <div class="f">
+        <label>Longitud L (m)</label>
+        <input type="number" step="0.50" min="1" [ngModel]="L()" (ngModelChange)="L.set(+$event)" />
+      </div>
+      <div class="f">
+        <label>Cantidad (N°)</label>
+        <input type="number" step="1" min="1" [ngModel]="cant()" (ngModelChange)="cant.set(+$event)" />
+      </div>
+      <div class="f">
+        <label>f'c (kg/cm²)</label>
+        <select [ngModel]="fc()" (ngModelChange)="fc.set(+$event)">
+          <option [value]="250">250</option>
+          <option [value]="280">280</option>
+          <option [value]="350">350</option>
+        </select>
+      </div>
+      <div class="f">
+        <label>Sobrelongitud (m)</label>
+        <input type="number" step="0.05" [ngModel]="sobre()" (ngModelChange)="sobre.set(+$event)" />
+      </div>
+      <div class="f">
+        <label>Recubrimiento (cm)</label>
+        <input type="number" step="1" [ngModel]="rec()" (ngModelChange)="rec.set(+$event)" />
+      </div>
+    </div>
+
+    <!-- Estabilización y cómputo -->
+    <div class="card" style="margin-bottom:0">
+      <div class="card-title"><i class="ph ph-calculator" style="font-size:13px;color:var(--brand)"></i> Estabilización y Cómputo</div>
+      <div class="f" style="margin-bottom:10px">
+        <label>Método estabilización</label>
+        <select [ngModel]="metodo()" (ngModelChange)="metodo.set($event)">
+          <option *ngFor="let m of metodos" [value]="m.key">{{ m.label }}</option>
+        </select>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;font-size:12px;margin-top:8px">
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:var(--gray-muted)">Vol. teórico unit.:</span>
+          <span style="font-weight:700">{{ volTeoUnit() | number:'1.3-3' }} m³</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:var(--gray-muted)">Factor desperdicio:</span>
+          <span style="font-weight:700">× {{ wasteFactor() | number:'1.2-2' }}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:var(--gray-muted)">Vol. presup. unit.:</span>
+          <span style="font-weight:700">{{ volPresUnit() | number:'1.3-3' }} m³</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;border-top:1px solid var(--gray-border);padding-top:6px">
+          <span style="color:var(--brand);font-weight:700">Vol. total (×{{ cant() }}):</span>
+          <span style="font-weight:800;color:var(--brand);font-size:14px">{{ volTotal() | number:'1.3-3' }} m³</span>
+        </div>
+        <div style="margin-top:6px;border-top:1px solid var(--gray-border);padding-top:6px">
+          <div style="display:flex;justify-content:space-between">
+            <span style="color:var(--gray-muted)">Acero long.:</span>
+            <span style="font-weight:700">{{ kgLong() | number:'1.1-1' }} kg/pilote</span>
+          </div>
+          <div style="display:flex;justify-content:space-between">
+            <span style="color:var(--gray-muted)">Zuncho helic. ({{ vueltas() | number:'1.0-0' }} vueltas):</span>
+            <span style="font-weight:700">{{ kgZun() | number:'1.1-1' }} kg/pilote</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:4px">
+            <span style="color:var(--brand);font-weight:700">Total acero:</span>
+            <span style="font-weight:800;color:var(--brand)">{{ kgTotal() | number:'1.0-0' }} kg</span>
+          </div>
+        </div>
+        <div style="margin-top:6px;border-top:1px solid var(--gray-border);padding-top:6px">
+          <div style="display:flex;justify-content:space-between">
+            <span style="color:var(--brand-dark);font-weight:700">Longitud total:</span>
+            <span style="font-weight:800;color:var(--brand-dark);font-size:13px">{{ longTotal() | number:'1.2-2' }} ml</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Jaula de refuerzo -->
+  <div class="card">
+    <div class="card-title"><i class="ph ph-cylinder" style="font-size:13px;color:var(--brand)"></i> Jaula de Refuerzo</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="row2" style="gap:8px">
+        <div class="f">
+          <label>Long. jaula (m)</label>
+          <input type="number" step="0.5" [ngModel]="ljaula()" (ngModelChange)="ljaula.set(+$event)" />
+        </div>
+        <div class="f">
+          <label>Anclaje en cabezal (m)</label>
+          <input type="number" step="0.05" [ngModel]="anclaje()" (ngModelChange)="anclaje.set(+$event)" />
+        </div>
+      </div>
+
+      <!-- Acero longitudinal -->
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Varillas longitudinales</div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <button *ngFor="let d of diams" class="vbtn" [class.sel]="along()===d" (click)="along.set(d)">{{labelDiam(d)}}</button>
+          <span style="font-size:11px;color:var(--gray-muted);margin-left:10px">Cant.:</span>
+          <input type="number" step="1" min="3" [ngModel]="nLong()" (ngModelChange)="nLong.set(+$event)"
+            style="width:52px;border:1px solid var(--gray-border);border-radius:4px;padding:3px 6px;font-size:12px;text-align:center;background:var(--field-bg)" />
+          <span style="font-size:11px;color:var(--brand);font-weight:700;margin-left:4px">{{ kgLong() | number:'1.1-1' }} kg/pilote</span>
+        </div>
+      </div>
+
+      <!-- Zuncho helicoidal -->
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Zuncho helicoidal</div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <button *ngFor="let d of diams" class="vbtn" [class.sel]="azun()===d" (click)="azun.set(d)">{{labelDiam(d)}}</button>
+          <span style="font-size:11px;color:var(--gray-muted);margin-left:10px">Paso:</span>
+          <input type="number" step="5" [ngModel]="paso()" (ngModelChange)="paso.set(+$event)"
+            style="width:60px;border:1px solid var(--gray-border);border-radius:4px;padding:3px 6px;font-size:12px;text-align:center;background:var(--field-bg)" />
+          <span style="font-size:11px;color:var(--gray-muted)">cm</span>
+          <span style="font-size:11px;color:var(--brand);font-weight:700;margin-left:4px">{{ kgZun() | number:'1.1-1' }} kg/pilote</span>
+        </div>
+        <div style="margin-top:6px;font-size:11px;color:var(--gray-muted)">
+          Núcleo = {{ nucleo() | number:'1.3-3' }} m · Vueltas = {{ vueltas() | number:'1.0-0' }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Complementarias -->
+  <div class="card">
+    <div class="card-title"><i class="ph ph-plus-circle" style="font-size:13px;color:var(--brand)"></i> Actividades Complementarias</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <!-- Descabezado -->
+      <div style="border:1px solid var(--gray-border);border-radius:6px;padding:10px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;margin-bottom:8px">
+          <input type="checkbox" [ngModel]="descOn()" (ngModelChange)="descOn.set($event)"
+            style="width:16px;height:16px;accent-color:var(--brand)" />
+          <strong>Descabezado de pilotes</strong>
+        </label>
+        <div *ngIf="descOn()" class="f">
+          <label>Cantidad</label>
+          <input type="number" step="1" min="1" [ngModel]="descCant()" (ngModelChange)="descCant.set(+$event)" />
+        </div>
+      </div>
+      <!-- Prueba de carga -->
+      <div style="border:1px solid var(--gray-border);border-radius:6px;padding:10px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;margin-bottom:8px">
+          <input type="checkbox" [ngModel]="pruebaOn()" (ngModelChange)="pruebaOn.set($event)"
+            style="width:16px;height:16px;accent-color:var(--brand)" />
+          <strong>Prueba de carga</strong>
+        </label>
+        <div *ngIf="pruebaOn()" style="display:flex;flex-direction:column;gap:8px">
+          <div class="f">
+            <label>Tipo</label>
+            <select [ngModel]="pruebaTipo()" (ngModelChange)="pruebaTipo.set($event)">
+              <option>Estática</option>
+              <option>Dinámica (PDA)</option>
+              <option>Integridad (PIT)</option>
+            </select>
+          </div>
+          <div class="f">
+            <label>Cantidad</label>
+            <input type="number" step="1" min="1" [ngModel]="pruebaCant()" (ngModelChange)="pruebaCant.set(+$event)" />
+          </div>
+        </div>
+      </div>
+      <!-- Movilización -->
+      <div style="border:1px solid var(--gray-border);border-radius:6px;padding:10px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;margin-bottom:8px">
+          <input type="checkbox" [ngModel]="movilizaOn()" (ngModelChange)="movilizaOn.set($event)"
+            style="width:16px;height:16px;accent-color:var(--brand)" />
+          <strong>Movilización de equipo</strong>
+        </label>
+        <div *ngIf="movilizaOn()" class="f">
+          <label>Cantidad global</label>
+          <input type="number" step="1" min="1" [ngModel]="movilizaCant()" (ngModelChange)="movilizaCant.set(+$event)" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Metrics -->
+  <div class="metrics-row">
+    <div class="metric">
+      <div class="m-lbl">Pilotes</div>
+      <div class="m-val">{{ cant() }}</div>
+      <div class="m-unit">uds</div>
+    </div>
+    <div class="metric">
+      <div class="m-lbl">Vol. Hormigón</div>
+      <div class="m-val">{{ volTotal() | number:'1.2-2' }}</div>
+      <div class="m-unit">m³</div>
+    </div>
+    <div class="metric" style="grid-column:span 2;border-color:var(--brand);background:var(--brand-light)">
+      <div class="m-lbl" style="color:var(--brand-dark)">Longitud Total</div>
+      <div class="m-val" style="font-size:36px;color:var(--brand-dark)">{{ longTotal() | number:'1.2-2' }}</div>
+      <div class="m-unit" style="color:var(--brand)">ml</div>
+    </div>
+    <div class="metric">
+      <div class="m-lbl">Acero Total</div>
+      <div class="m-val">{{ kgTotal() | number:'1.0-0' }}</div>
+      <div class="m-unit">kg</div>
+    </div>
+  </div>
+
+</div>

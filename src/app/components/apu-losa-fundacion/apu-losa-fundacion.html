@@ -1,0 +1,244 @@
+<div style="display:flex;flex-direction:column;gap:10px">
+
+  <!-- Tramos -->
+  <div class="card">
+    <div class="card-title">
+      <i class="ph ph-squares-four" style="font-size:13px;color:var(--brand)"></i>
+      Losa de Fundación / Platea
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead>
+        <tr style="background:var(--gray-3)">
+          <th style="padding:6px 8px;text-align:left;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--gray-border)">Descripción</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:90px">Largo (m)</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:90px">Ancho (m)</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:55px">Cant.</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:80px">Área (m²)</th>
+          <th style="width:36px;border-bottom:1px solid var(--gray-border)"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let t of tramos(); let i = index" style="border-bottom:1px solid var(--gray-3)">
+          <td style="padding:5px 8px">
+            <input type="text" [ngModel]="t.descripcion" (ngModelChange)="updateTramo(i,'descripcion',$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 8px;font-size:12px;background:var(--field-bg);width:100%"
+              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'" />
+          </td>
+          <td style="padding:5px 4px"><input type="number" step="0.5" [ngModel]="t.largo" (ngModelChange)="updateTramo(i,'largo',+$event)"
+            style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+            onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+            onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'" /></td>
+          <td style="padding:5px 4px"><input type="number" step="0.5" [ngModel]="t.ancho" (ngModelChange)="updateTramo(i,'ancho',+$event)"
+            style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+            onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+            onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'" /></td>
+          <td style="padding:5px 4px"><input type="number" step="1" min="1" [ngModel]="t.cant" (ngModelChange)="updateTramo(i,'cant',+$event)"
+            style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+            onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+            onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'" /></td>
+          <td style="padding:5px 8px;text-align:center;font-weight:700;font-size:13px;color:var(--brand)">
+            {{ ((t.largo||0)*(t.ancho||0)*(t.cant||1)) | number:'1.2-2' }}
+          </td>
+          <td style="padding:5px 4px;text-align:center">
+            <button *ngIf="tramos().length > 1" (click)="removeTramo(i)"
+              style="background:var(--red);color:#fff;border:none;border-radius:4px;padding:4px 7px;cursor:pointer;font-size:12px;display:flex;align-items:center">
+              <i class="ph ph-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr style="background:var(--brand-light)">
+          <td colspan="4" style="padding:7px 8px;font-size:11px;font-weight:700;color:var(--brand);text-transform:uppercase;text-align:right">Área total</td>
+          <td style="padding:7px 8px;text-align:center;font-size:15px;font-weight:800;color:var(--brand)">{{ areaNeta() | number:'1.2-2' }}</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+    <button (click)="addTramo()" style="margin-top:10px;background:var(--gray-3);color:var(--gray-muted);border:1px dashed var(--gray-border);border-radius:6px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px">
+      <i class="ph ph-plus"></i> Añadir Zona
+    </button>
+  </div>
+
+  <div class="row2">
+    <!-- Especificaciones -->
+    <div class="card" style="margin-bottom:0">
+      <div class="card-title"><i class="ph ph-sliders" style="font-size:13px;color:var(--brand)"></i> Especificaciones</div>
+      <div class="f">
+        <label>Espesor (cm)</label>
+        <input type="number" step="5" [ngModel]="espesor()" (ngModelChange)="espesor.set(+$event)" />
+      </div>
+      <div class="f">
+        <label>f'c (kg/cm²)</label>
+        <select [ngModel]="fc()" (ngModelChange)="fc.set(+$event)">
+          <option [value]="210">210</option>
+          <option [value]="250">250</option>
+          <option [value]="280">280</option>
+          <option [value]="350">350</option>
+        </select>
+      </div>
+      <div class="f">
+        <label>Recubrimiento (cm)</label>
+        <input type="number" step="1" [ngModel]="rec()" (ngModelChange)="rec.set(+$event)" />
+      </div>
+      <div class="f">
+        <label>Desperdicio (%)</label>
+        <input type="number" step="1" [ngModel]="desp()" (ngModelChange)="desp.set(+$event)" />
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;margin-top:4px">
+        <input type="checkbox" [ngModel]="encOn()" (ngModelChange)="encOn.set($event)"
+          style="width:16px;height:16px;accent-color:var(--brand)" />
+        Encofrado perimetral
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;margin-top:8px">
+        <input type="checkbox" [ngModel]="doble()" (ngModelChange)="doble.set($event)"
+          style="width:16px;height:16px;accent-color:var(--brand)" />
+        Parrilla doble (superior + inferior)
+      </label>
+    </div>
+
+    <!-- Cómputo -->
+    <div class="card" style="margin-bottom:0">
+      <div class="card-title"><i class="ph ph-calculator" style="font-size:13px;color:var(--brand)"></i> Cómputo</div>
+      <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:var(--gray-muted)">Área neta:</span>
+          <span style="font-weight:700">{{ areaNeta() | number:'1.2-2' }} m²</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:var(--gray-muted)">Espesor:</span>
+          <span style="font-weight:700">{{ espesor() }} cm</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:var(--gray-muted)">Vol. neto:</span>
+          <span style="font-weight:700">{{ volNeto() | number:'1.3-3' }} m³</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;border-top:1px solid var(--gray-border);padding-top:6px">
+          <span style="color:var(--brand);font-weight:700">Vol. presup. (+{{desp()}}%):</span>
+          <span style="font-weight:800;color:var(--brand);font-size:14px">{{ volPres() | number:'1.3-3' }} m³</span>
+        </div>
+        <div style="margin-top:6px;border-top:1px solid var(--gray-border);padding-top:6px">
+          <div style="display:flex;justify-content:space-between">
+            <span style="color:var(--gray-muted)">Acero inferior:</span>
+            <span style="font-weight:700">{{ (kgInfX()+kgInfY()) | number:'1.0-0' }} kg</span>
+          </div>
+          <div *ngIf="doble()" style="display:flex;justify-content:space-between">
+            <span style="color:var(--gray-muted)">Acero superior:</span>
+            <span style="font-weight:700">{{ (kgSupX()+kgSupY()) | number:'1.0-0' }} kg</span>
+          </div>
+          <div *ngIf="doble()&&burros()" style="display:flex;justify-content:space-between">
+            <span style="color:var(--gray-muted)">Burros/silletas:</span>
+            <span style="font-weight:700">{{ kgBurros() | number:'1.0-0' }} kg</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:4px">
+            <span style="color:var(--brand);font-weight:700">Total acero:</span>
+            <span style="font-weight:800;color:var(--brand)">{{ kgTotal() | number:'1.0-0' }} kg</span>
+          </div>
+        </div>
+        <div *ngIf="encOn()" style="display:flex;justify-content:space-between">
+          <span style="color:var(--gray-muted)">Encofrado perimetral:</span>
+          <span style="font-weight:700">{{ encofrado() | number:'1.2-2' }} m²</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Parrilla inferior -->
+  <div class="card">
+    <div class="card-title"><i class="ph ph-grid-four" style="font-size:13px;color:var(--brand)"></i> Parrilla Inferior</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Dir. X — ∅ / separación (cm)</div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <button *ngFor="let d of diams" class="vbtn" [class.sel]="dxi()===d" (click)="dxi.set(d)">{{labelDiam(d)}}</button>
+          <span style="font-size:11px;color:var(--gray-muted);margin-left:8px">sep:</span>
+          <input type="number" step="5" [ngModel]="sxi()" (ngModelChange)="sxi.set(+$event)"
+            style="width:60px;border:1px solid var(--gray-border);border-radius:4px;padding:3px 6px;font-size:12px;text-align:center;background:var(--field-bg)" />
+          <span style="font-size:11px;color:var(--gray-muted)">cm · {{ kgInfX() | number:'1.0-0' }} kg</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Dir. Y — ∅ / separación (cm)</div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <button *ngFor="let d of diams" class="vbtn" [class.sel]="dyi()===d" (click)="dyi.set(d)">{{labelDiam(d)}}</button>
+          <span style="font-size:11px;color:var(--gray-muted);margin-left:8px">sep:</span>
+          <input type="number" step="5" [ngModel]="syi()" (ngModelChange)="syi.set(+$event)"
+            style="width:60px;border:1px solid var(--gray-border);border-radius:4px;padding:3px 6px;font-size:12px;text-align:center;background:var(--field-bg)" />
+          <span style="font-size:11px;color:var(--gray-muted)">cm · {{ kgInfY() | number:'1.0-0' }} kg</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Parrilla superior (si doble) -->
+  <div *ngIf="doble()" class="card">
+    <div class="card-title"><i class="ph ph-stack" style="font-size:13px;color:var(--brand)"></i> Parrilla Superior</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Dir. X — ∅ / separación (cm)</div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <button *ngFor="let d of diams" class="vbtn" [class.sel]="dxs()===d" (click)="dxs.set(d)">{{labelDiam(d)}}</button>
+          <span style="font-size:11px;color:var(--gray-muted);margin-left:8px">sep:</span>
+          <input type="number" step="5" [ngModel]="sxs()" (ngModelChange)="sxs.set(+$event)"
+            style="width:60px;border:1px solid var(--gray-border);border-radius:4px;padding:3px 6px;font-size:12px;text-align:center;background:var(--field-bg)" />
+        </div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Dir. Y — ∅ / separación (cm)</div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <button *ngFor="let d of diams" class="vbtn" [class.sel]="dys()===d" (click)="dys.set(d)">{{labelDiam(d)}}</button>
+          <span style="font-size:11px;color:var(--gray-muted);margin-left:8px">sep:</span>
+          <input type="number" step="5" [ngModel]="sys()" (ngModelChange)="sys.set(+$event)"
+            style="width:60px;border:1px solid var(--gray-border);border-radius:4px;padding:3px 6px;font-size:12px;text-align:center;background:var(--field-bg)" />
+        </div>
+      </div>
+
+      <!-- Burros/silletas -->
+      <div style="border-top:1px solid var(--gray-border);padding-top:10px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;margin-bottom:8px">
+          <input type="checkbox" [ngModel]="burros()" (ngModelChange)="burros.set($event)"
+            style="width:16px;height:16px;accent-color:var(--brand)" />
+          Incluir burros / silletas separadoras
+        </label>
+        <div *ngIf="burros()" style="display:flex;flex-direction:column;gap:8px">
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">∅ burro</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button *ngFor="let d of diams" class="vbtn" [class.sel]="dBurro()===d" (click)="dBurro.set(d)">{{labelDiam(d)}}</button>
+            </div>
+          </div>
+          <div class="row2" style="gap:8px">
+            <div class="f"><label>Sep. X (cm)</label><input type="number" step="10" [ngModel]="sBurroX()" (ngModelChange)="sBurroX.set(+$event)" /></div>
+            <div class="f"><label>Sep. Y (cm)</label><input type="number" step="10" [ngModel]="sBurroY()" (ngModelChange)="sBurroY.set(+$event)" /></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Metrics -->
+  <div class="metrics-row">
+    <div class="metric">
+      <div class="m-lbl">Área Neta</div>
+      <div class="m-val">{{ areaNeta() | number:'1.1-1' }}</div>
+      <div class="m-unit">m²</div>
+    </div>
+    <div class="metric">
+      <div class="m-lbl">Vol. Neto</div>
+      <div class="m-val">{{ volNeto() | number:'1.2-2' }}</div>
+      <div class="m-unit">m³</div>
+    </div>
+    <div class="metric" style="grid-column:span 2;border-color:var(--brand);background:var(--brand-light)">
+      <div class="m-lbl" style="color:var(--brand-dark)">Vol. Presupuestado</div>
+      <div class="m-val" style="font-size:36px;color:var(--brand-dark)">{{ volPres() | number:'1.3-3' }}</div>
+      <div class="m-unit" style="color:var(--brand)">m³</div>
+    </div>
+    <div class="metric">
+      <div class="m-lbl">Acero Total</div>
+      <div class="m-val">{{ kgTotal() | number:'1.0-0' }}</div>
+      <div class="m-unit">kg</div>
+    </div>
+  </div>
+
+</div>

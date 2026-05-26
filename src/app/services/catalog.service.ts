@@ -1,5 +1,6 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { SupabaseService } from './supabase.service';
+import { showError } from '../utils/alert.util';
 
 export interface CatalogMaterial {
   id: string;
@@ -185,7 +186,7 @@ export class CatalogService {
 
     if (error) {
       console.error('Error creating material:', error);
-      alert('Error creating material: ' + error.message);
+      showError(error.message, 'Error al crear material');
       return null;
     }
     
@@ -213,7 +214,7 @@ export class CatalogService {
 
     if (error) {
       console.error('Error creating labor:', error);
-      alert('Error creating labor: ' + error.message);
+      showError(error.message, 'Error al crear mano de obra');
       return null;
     }
     
@@ -241,7 +242,7 @@ export class CatalogService {
 
     if (error) {
       console.error('Error creating equipment:', error);
-      alert('Error creating equipment: ' + error.message);
+      showError(error.message, 'Error al crear equipo');
       return null;
     }
     
@@ -258,7 +259,7 @@ export class CatalogService {
 
     if (error) {
       console.error(`Error updating ${type}:`, error);
-      alert(`Error updating item: ${error.message}`);
+      showError(error.message, 'Error al actualizar');
       return false;
     }
 
@@ -281,7 +282,7 @@ export class CatalogService {
 
     if (error) {
       console.error(`Error deleting ${type}:`, error);
-      alert(`Error deleting item: ${error.message}`);
+      showError(error.message, 'Error al eliminar');
       return false;
     }
 

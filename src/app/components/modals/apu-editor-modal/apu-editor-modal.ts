@@ -32,7 +32,11 @@ export class ApuEditorModal {
   getItems(type: 'material' | 'labor_activity' | 'equipment'): ApuItem[] {
     const apu = this.activeApu();
     if (!apu || !apu.items) return [];
-    return apu.items.filter(i => i.resource_type === type);
+    const groupName = type === 'material' ? 'materials' : type === 'labor_activity' ? 'labor' : 'equipment';
+    return apu.items.filter(i =>
+      i.resource_type === type ||
+      (i.resource_type === 'free' && i.group_name === groupName)
+    );
   }
 
   getSubtotal(type: 'material' | 'labor_activity' | 'equipment'): number {
@@ -41,22 +45,31 @@ export class ApuEditorModal {
 
   async updateItemQuantity(item: ApuItem) {
       if (!item.quantity || item.quantity < 0) item.quantity = 0;
-      
       try {
           const { error } = await this.apuService.supabase.client
               .from('apu_items')
               .update({ quantity: item.quantity })
               .eq('id', item.id);
-          
           if (error) throw error;
-          
-          // Actualizamos total local
           const apuId = this.uiState.activeApuId();
-          if (apuId) {
-              this.apuService.recalculateApuTotal(apuId);
-          }
+          if (apuId) this.apuService.recalculateApuTotal(apuId);
       } catch (err) {
-          console.error("Error updating item quantity:", err);
+          console.error('Error updating item quantity:', err);
+      }
+  }
+
+  async updateItemPrice(item: ApuItem) {
+      if (item.unit_price == null || item.unit_price < 0) item.unit_price = 0;
+      try {
+          const { error } = await this.apuService.supabase.client
+              .from('apu_items')
+              .update({ unit_price: item.unit_price })
+              .eq('id', item.id);
+          if (error) throw error;
+          const apuId = this.uiState.activeApuId();
+          if (apuId) this.apuService.recalculateApuTotal(apuId);
+      } catch (err) {
+          console.error('Error updating item price:', err);
       }
   }
 

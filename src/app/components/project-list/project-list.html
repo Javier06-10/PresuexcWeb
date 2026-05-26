@@ -1,41 +1,314 @@
-<main class="flex-1 max-w-7xl w-full mx-auto p-6 md:p-8 overflow-y-auto h-[calc(100vh-113px)]" [class.hidden]="uiState.activeView() !== 'projects'">
-        <div class="flex items-center justify-between mb-6 border-b border-zinc-300 pb-2">
-            <h2 class="text-base font-bold text-presuOscuro uppercase tracking-wide flex items-center gap-2">
-                <i class="ph ph-folder text-xl text-presuOxido"></i> Mis Presupuestos
-            </h2>
-            <span id="contador-proyectos-badge" class="text-xs bg-presuOscuro text-white font-bold px-3 py-1 rounded-md shadow-sm">{{ projectService.listadoProyectos().length }} Proyecto(s)</span>
+<div [style.display]="uiState.activeView() === 'projects' ? 'flex' : 'none'"
+     style="height:calc(100vh - 50px);background:#F2F2F2;overflow:hidden">
+
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="pl-sidebar" [class.pl-sidebar--collapsed]="sidebarCollapsed()">
+
+    <!-- Header: logo + toggle -->
+    <div class="pl-sb-header">
+      <div *ngIf="!sidebarCollapsed()" class="pl-sb-brand">
+        <i class="ph ph-buildings" style="font-size:16px;color:#8C4F2B"></i>
+        <span>PresuXcel</span>
+      </div>
+      <button class="pl-sb-toggle" (click)="sidebarCollapsed.update(v => !v)"
+              [title]="sidebarCollapsed() ? 'Expandir menú' : 'Colapsar menú'">
+        <i class="ph" [class.ph-sidebar-simple]="!sidebarCollapsed()" [class.ph-list]="sidebarCollapsed()"></i>
+      </button>
+    </div>
+
+    <!-- Primary Navigation -->
+    <nav class="pl-sb-nav">
+      <div *ngIf="!sidebarCollapsed()" class="pl-sb-section-label">Navegación</div>
+
+      <button class="pl-sb-item"
+              (click)="uiState.activeView.set('projects')"
+              [class.pl-sb-item--active]="uiState.activeView()==='projects' || uiState.activeView()==='budget'"
+              title="Mis Presupuestos">
+        <i class="ph ph-folders pl-sb-icon"></i>
+        <span *ngIf="!sidebarCollapsed()" class="pl-sb-label">Mis Presupuestos</span>
+        <span *ngIf="!sidebarCollapsed()" class="pl-sb-badge">{{ projectService.listadoProyectos().length }}</span>
+      </button>
+
+      <button class="pl-sb-item"
+              (click)="uiState.activeView.set('catalogs')"
+              [class.pl-sb-item--active]="uiState.activeView()==='catalogs'"
+              title="Catálogo APU">
+        <i class="ph ph-books pl-sb-icon"></i>
+        <span *ngIf="!sidebarCollapsed()" class="pl-sb-label">Catálogo APU</span>
+      </button>
+
+      <button class="pl-sb-item"
+              (click)="uiState.activeView.set('prices')"
+              [class.pl-sb-item--active]="uiState.activeView()==='prices'"
+              title="Base de Precios">
+        <i class="ph ph-currency-dollar pl-sb-icon"></i>
+        <span *ngIf="!sidebarCollapsed()" class="pl-sb-label">Base de Precios</span>
+      </button>
+
+      <button class="pl-sb-item"
+              (click)="uiState.isConcreteModalOpen.set(true)"
+              title="Dosificación de hormigón">
+        <i class="ph ph-cylinder pl-sb-icon"></i>
+        <span *ngIf="!sidebarCollapsed()" class="pl-sb-label">Dosif. Hormigón</span>
+      </button>
+
+      <button class="pl-sb-item"
+              (click)="uiState.isSteelModalOpen.set(true)"
+              title="Tabla de acero / Varillas">
+        <i class="ph ph-line-segments pl-sb-icon"></i>
+        <span *ngIf="!sidebarCollapsed()" class="pl-sb-label">Tabla de Acero</span>
+      </button>
+    </nav>
+
+    <!-- Divider -->
+    <div class="pl-sb-divider"></div>
+
+    <!-- Search (only expanded) -->
+    <div *ngIf="!sidebarCollapsed()" style="padding:8px 10px">
+      <div style="position:relative">
+        <i class="ph ph-magnifying-glass" style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:#909090;font-size:12px;pointer-events:none"></i>
+        <input type="text" placeholder="Buscar proyecto..."
+               [value]="searchQuery()"
+               (input)="searchQuery.set($any($event.target).value)"
+               style="width:100%;border:1px solid #D2D2D2;border-radius:6px;padding:6px 8px 6px 26px;font-size:11px;background:#F2F2F2;color:#3A3838;outline:none;box-sizing:border-box"
+               onfocus="this.style.borderColor='#8C4F2B';this.style.background='#fff'"
+               onblur="this.style.borderColor='#D2D2D2';this.style.background='#F2F2F2'" />
+      </div>
+    </div>
+
+    <!-- Vista filters (expanded only) -->
+    <div *ngIf="!sidebarCollapsed()" style="padding:4px 0">
+      <div class="pl-sb-section-label">Vista</div>
+
+      <button (click)="setFilter('all')"
+              class="pl-sb-item"
+              [class.pl-sb-item--active]="activeFilter()==='all' && !selectedClientId()">
+        <i class="ph ph-folder pl-sb-icon"></i>
+        <span class="pl-sb-label">Todos</span>
+        <span class="pl-sb-badge">{{ projectService.listadoProyectos().length }}</span>
+      </button>
+
+      <button (click)="setFilter('active')"
+              class="pl-sb-item"
+              [class.pl-sb-item--active]="activeFilter()==='active'">
+        <i class="ph ph-check-circle pl-sb-icon"></i>
+        <span class="pl-sb-label">Activos</span>
+        <span class="pl-sb-badge pl-sb-badge--green">{{ activeCount() }}</span>
+      </button>
+
+      <button (click)="setFilter('archived')"
+              class="pl-sb-item"
+              [class.pl-sb-item--active]="activeFilter()==='archived'">
+        <i class="ph ph-archive pl-sb-icon"></i>
+        <span class="pl-sb-label">Archivados</span>
+        <span *ngIf="archivedCount() > 0" class="pl-sb-badge">{{ archivedCount() }}</span>
+      </button>
+    </div>
+
+    <!-- Clients (expanded only) -->
+    <div *ngIf="!sidebarCollapsed()" style="padding:4px 0;border-top:1px solid #EBEBEB">
+      <div class="pl-sb-section-label" style="display:flex;align-items:center;justify-content:space-between;padding-right:10px">
+        <span>Clientes</span>
+        <button (click)="uiState.isNewClientModalOpen.set(true)"
+                style="background:none;border:none;color:#8C4F2B;cursor:pointer;font-size:14px;padding:0;display:flex;align-items:center"
+                title="Nuevo cliente">
+          <i class="ph ph-plus-circle"></i>
+        </button>
+      </div>
+
+      <button *ngIf="noClientCount() > 0"
+              (click)="setClientFilter('none')"
+              class="pl-sb-item"
+              [class.pl-sb-item--active]="selectedClientId()==='none'">
+        <i class="ph ph-user-slash pl-sb-icon" style="color:#bbb"></i>
+        <span class="pl-sb-label">Sin cliente</span>
+        <span class="pl-sb-badge">{{ noClientCount() }}</span>
+      </button>
+
+      <button *ngFor="let cl of clientsWithProjects()"
+              (click)="setClientFilter(cl.id)"
+              class="pl-sb-item"
+              [class.pl-sb-item--active]="selectedClientId()===cl.id">
+        <i class="ph ph-user-circle pl-sb-icon" style="color:#bbb"></i>
+        <span class="pl-sb-label" style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ cl.name }}</span>
+        <span class="pl-sb-badge">{{ cl.count }}</span>
+      </button>
+
+      <div *ngIf="clientsWithProjects().length === 0 && noClientCount() === 0"
+           style="padding:6px 14px;font-size:11px;color:#aaa;font-style:italic">
+        Sin clientes
+      </div>
+    </div>
+
+    <!-- Spacer -->
+    <div style="flex:1"></div>
+
+    <!-- Stats (expanded only) -->
+    <div *ngIf="!sidebarCollapsed()" class="pl-sb-stats">
+      <div style="font-size:10px;font-weight:700;color:#909090;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Resumen</div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div style="display:flex;justify-content:space-between;font-size:12px">
+          <span style="color:#555">Proyectos</span>
+          <span style="font-weight:700;color:#3A3838">{{ projectService.listadoProyectos().length }}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12px">
+          <span style="color:#555">Activos</span>
+          <span style="font-weight:700;color:#1A7A30">{{ activeCount() }}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12px">
+          <span style="color:#555">Clientes</span>
+          <span style="font-weight:700;color:#3A3838">{{ clientService.clients().length }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom: Config + New Client -->
+    <div class="pl-sb-bottom">
+      <button class="pl-sb-item pl-sb-item--bottom"
+              (click)="uiState.isNewClientModalOpen.set(true)"
+              title="Nuevo cliente">
+        <i class="ph ph-user-plus pl-sb-icon"></i>
+        <span *ngIf="!sidebarCollapsed()" class="pl-sb-label">Nuevo Cliente</span>
+      </button>
+
+      <button class="pl-sb-item pl-sb-item--bottom"
+              (click)="uiState.isConfigModalOpen.set(true)"
+              title="Configuración">
+        <i class="ph ph-gear pl-sb-icon"></i>
+        <span *ngIf="!sidebarCollapsed()" class="pl-sb-label">Configuración</span>
+      </button>
+
+      <button class="pl-sb-item pl-sb-item--bottom"
+              (click)="uiState.isProfileModalOpen.set(true)"
+              title="Mi perfil">
+        <i class="ph ph-user-circle pl-sb-icon"></i>
+        <span *ngIf="!sidebarCollapsed()" class="pl-sb-label">Mi Perfil</span>
+      </button>
+    </div>
+
+  </aside>
+
+  <!-- ══ MAIN CONTENT ══ -->
+  <div style="flex:1;overflow-y:auto;padding:22px 28px;min-width:0">
+
+    <!-- Header row -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;border-bottom:1px solid #D2D2D2;padding-bottom:10px">
+      <h2 style="font-size:13px;font-weight:700;color:#3A3838;text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;gap:8px">
+        <i class="ph ph-folder" style="font-size:18px;color:#8C4F2B"></i>
+        <span *ngIf="activeFilter()==='all' && !selectedClientId()">Mis Presupuestos</span>
+        <span *ngIf="activeFilter()==='active'">Proyectos Activos</span>
+        <span *ngIf="activeFilter()==='archived'">Proyectos Archivados</span>
+        <span *ngIf="selectedClientId() === 'none'">Sin cliente asignado</span>
+        <span *ngIf="selectedClientId() && selectedClientId() !== 'none'">
+          Cliente: {{ clientService.getClientName(selectedClientId()!) }}
+        </span>
+      </h2>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:11px;font-weight:700;background:#3A3838;color:#fff;padding:3px 10px;border-radius:5px">
+          {{ filteredProjects().length }} Proyecto(s)
+        </span>
+        <button (click)="openNewProjectModal()"
+                style="background:#8C4F2B;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px">
+          <i class="ph ph-plus"></i> Nuevo
+        </button>
+      </div>
+    </div>
+
+    <!-- Active filter chips -->
+    <div *ngIf="selectedClientId() || activeFilter() !== 'all' || searchQuery()"
+         style="display:flex;align-items:center;gap:6px;margin-bottom:14px;flex-wrap:wrap">
+      <span style="font-size:11px;color:#909090;font-weight:600">Filtros:</span>
+
+      <span *ngIf="activeFilter() !== 'all'"
+            style="background:#FDF3EC;color:#8C4F2B;border:1px solid #C0704044;border-radius:12px;padding:2px 10px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:4px">
+        {{ activeFilter() === 'active' ? 'Activos' : 'Archivados' }}
+        <button (click)="setFilter('all')" style="background:none;border:none;cursor:pointer;color:#8C4F2B;font-size:12px;padding:0;line-height:1;display:flex">
+          <i class="ph ph-x"></i>
+        </button>
+      </span>
+
+      <span *ngIf="selectedClientId()"
+            style="background:#FDF3EC;color:#8C4F2B;border:1px solid #C0704044;border-radius:12px;padding:2px 10px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:4px">
+        <i class="ph ph-user" style="font-size:11px"></i>
+        {{ selectedClientId() === 'none' ? 'Sin cliente' : clientService.getClientName(selectedClientId()!) }}
+        <button (click)="setClientFilter(null)" style="background:none;border:none;cursor:pointer;color:#8C4F2B;font-size:12px;padding:0;line-height:1;display:flex">
+          <i class="ph ph-x"></i>
+        </button>
+      </span>
+
+      <span *ngIf="searchQuery()"
+            style="background:#FDF3EC;color:#8C4F2B;border:1px solid #C0704044;border-radius:12px;padding:2px 10px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:4px">
+        <i class="ph ph-magnifying-glass" style="font-size:11px"></i>
+        "{{ searchQuery() }}"
+        <button (click)="searchQuery.set('')" style="background:none;border:none;cursor:pointer;color:#8C4F2B;font-size:12px;padding:0;line-height:1;display:flex">
+          <i class="ph ph-x"></i>
+        </button>
+      </span>
+    </div>
+
+    <!-- Project grid -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px">
+
+      <!-- New project card -->
+      <div (click)="openNewProjectModal()"
+           class="pl-new-card"
+           style="border:2px dashed #bbb;border-radius:12px;padding:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:175px;cursor:pointer;background:#fff;transition:all .2s">
+        <div style="width:42px;height:42px;border-radius:10px;background:#F2F2F2;display:flex;align-items:center;justify-content:center;margin-bottom:10px">
+          <i class="ph ph-plus" style="font-size:20px;color:#3A3838"></i>
+        </div>
+        <div style="font-weight:700;color:#3A3838;font-size:12px;text-transform:uppercase;letter-spacing:.05em">Nuevo Presupuesto</div>
+        <p style="font-size:11px;color:#909090;margin-top:4px;text-align:center">Iniciar desde cero</p>
+      </div>
+
+      <!-- Project cards -->
+      <div *ngFor="let proy of filteredProjects()"
+           (click)="openBudget(proy)"
+           class="pl-project-card"
+           style="background:#fff;border:1px solid #D2D2D2;border-radius:12px;padding:16px;min-height:175px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;position:relative;transition:border-color .18s,box-shadow .18s">
+
+        <button (click)="deleteProject($event, proy)"
+                class="pl-delete-btn"
+                style="position:absolute;top:10px;right:10px;background:none;border:none;color:#ccc;cursor:pointer;padding:4px 5px;border-radius:5px;font-size:15px;display:flex;align-items:center;transition:all .15s"
+                title="Eliminar">
+          <i class="ph ph-trash"></i>
+        </button>
+
+        <div style="padding-right:26px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <span style="background:#FEF3C7;color:#92400E;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;border:1px solid #FDE68A;text-transform:uppercase;letter-spacing:.04em">
+              PROY #{{ proy.code || '---' }}
+            </span>
+            <span style="font-size:9px;background:#F2F2F2;color:#555;font-weight:600;padding:2px 6px;border-radius:4px;border:1px solid #D2D2D2">
+              <i class="ph ph-calendar" style="color:#8C4F2B"></i> {{ proy.created_at | date:'dd/MM/yy' }}
+            </span>
+          </div>
+          <h3 style="font-size:15px;font-weight:800;color:#3A3838;margin-bottom:8px;line-height:1.2">{{ proy.name }}</h3>
+          <div style="display:flex;flex-direction:column;gap:3px">
+            <p style="font-size:11px;color:#555;font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin:0">
+              <i class="ph ph-user" style="color:#8C4F2B"></i>
+              <span style="color:#3A3838;font-weight:700"> {{ clientService.getClientName(proy.client_id) }}</span>
+            </p>
+            <p style="font-size:11px;color:#555;font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin:0">
+              <i class="ph ph-hard-hat" style="color:#8C4F2B"></i>
+              <span style="color:#3A3838;font-weight:700"> {{ proy.status }}</span>
+            </p>
+          </div>
         </div>
 
-        <div id="contenedor-proyectos" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            <div (click)="openNewProjectModal()" class="border-2 border-dashed border-zinc-400 hover:border-presuOxido bg-white hover:bg-orange-50/20 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer group transition duration-300 min-h-[180px] shadow-sm">
-                <div class="w-12 h-12 rounded-xl bg-presuFondo group-hover:bg-amber-100 flex items-center justify-center mb-3 transition shadow-inner">
-                    <i class="ph ph-plus text-xl text-presuOscuro group-hover:text-presuOxido font-bold"></i>
-                </div>
-                <div class="font-bold text-presuOscuro group-hover:text-presuOxido transition text-sm uppercase tracking-wide">Nuevo Presupuesto</div>
-                <p class="text-xs text-zinc-400 mt-1">Iniciar un proyecto desde cero</p>
-            </div>
-
-            <!-- Loop para cada proyecto en el estado -->
-            <div *ngFor="let proy of projectService.listadoProyectos()" (click)="openBudget(proy)" class="bg-white border border-zinc-300 rounded-xl p-5 shadow-sm min-h-[190px] flex flex-col justify-between hover:border-presuOxido transition cursor-pointer relative group">
-                <button (click)="deleteProject($event, proy)" class="absolute top-4 right-4 text-zinc-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition duration-200 p-1.5 rounded-md hover:bg-red-50 z-10" title="Eliminar Proyecto">
-                    <i class="ph ph-trash text-lg"></i>
-                </button>
-                
-                <div class="pr-8">
-                    <div class="flex items-center justify-between">
-                        <span class="bg-amber-100 text-amber-800 text-[10px] font-black uppercase px-2 py-0.5 rounded border border-amber-200 tracking-wider">PROY #{{ proy.code || '---' }}</span>
-                        <span class="text-[9px] bg-zinc-100 text-zinc-500 font-bold px-1.5 py-0.5 rounded border border-zinc-200"><i class="ph ph-calendar text-presuOxido"></i> {{ proy.created_at | date:'dd/MM/yyyy' }}</span>
-                    </div>
-                    <h3 class="font-black text-presuOscuro text-base tracking-wide mt-3 leading-tight">{{ proy.name }}</h3>
-                    <div class="space-y-0.5 mt-2">
-                        <p class="text-[11px] text-zinc-500 uppercase font-bold tracking-wider"><i class="ph ph-user text-presuOxido"></i> Cliente: <span class="text-presuOscuro font-black">{{ clientService.getClientName(proy.client_id) }}</span></p>
-                        <p class="text-[11px] text-zinc-500 uppercase font-bold tracking-wider"><i class="ph ph-hard-hat text-presuOxido"></i> Estado: <span class="text-presuOscuro font-black">{{ proy.status }}</span></p>
-                    </div>
-                </div>
-                <div class="border-t border-zinc-200 pt-3 mt-4 flex items-center justify-between">
-                    <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wide">Niveles</span>
-                    <span class="font-black text-presuOscuro text-sm">{{ proy.number_of_levels }}</span>
-                </div>
-            </div>
+        <div style="border-top:1px solid #E8E8E8;padding-top:10px;margin-top:12px;display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:10px;font-weight:700;color:#909090;text-transform:uppercase;letter-spacing:.04em">Niveles</span>
+          <span style="font-size:13px;font-weight:800;color:#3A3838">{{ proy.number_of_levels }}</span>
         </div>
-    </main>
+      </div>
+    </div>
+
+    <!-- Empty state when filters active -->
+    <div *ngIf="filteredProjects().length === 0 && (activeFilter() !== 'all' || selectedClientId() || searchQuery())"
+         style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px;color:#909090;text-align:center">
+      <i class="ph ph-folder-open" style="font-size:52px;margin-bottom:14px;opacity:.3"></i>
+      <div style="font-size:14px;font-weight:700;color:#555;margin-bottom:4px">Sin resultados</div>
+      <div style="font-size:12px">No hay proyectos que coincidan con los filtros aplicados.</div>
+    </div>
+
+  </div>
+</div>

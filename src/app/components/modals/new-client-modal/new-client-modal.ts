@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UiState } from '../../../services/ui-state';
 import { ClientService } from '../../../services/client.service';
+import { showError, showWarning } from '../../../utils/alert.util';
 
 @Component({
   selector: 'app-new-client-modal',
@@ -27,7 +28,7 @@ export class NewClientModal {
 
   async save() {
     if (!this.name.trim()) {
-      alert("Por favor, ingresa el nombre del cliente.");
+      showWarning("Por favor, ingresa el nombre del cliente.");
       return;
     }
 
@@ -42,11 +43,11 @@ export class NewClientModal {
       if (result) {
         this.closeModal();
       } else {
-        alert("Error al crear el cliente.");
+        showError("Error al crear el cliente.");
       }
     } catch (err: any) {
       console.error(err);
-      alert("Ocurrió un error: " + err.message);
+      showError(err.message, 'Ocurrió un error');
     } finally {
       this.isSaving = false;
     }

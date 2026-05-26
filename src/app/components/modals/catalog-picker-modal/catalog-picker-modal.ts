@@ -6,6 +6,7 @@ import { UiState } from '../../../services/ui-state';
 import { ProjectService } from '../../../services/project';
 import { SupabaseService } from '../../../services/supabase.service';
 import { ApuService } from '../../../services/apu.service';
+import { showError, showWarning } from '../../../utils/alert.util';
 
 @Component({
   selector: 'app-catalog-picker-modal',
@@ -118,7 +119,7 @@ export class CatalogPickerModal {
     const activeApuId = this.uiState.activeApuId();
     if (activeApuId) {
         if (type === 'apu') {
-            alert("No se pueden anidar APUs todavía.");
+            showWarning("No se pueden anidar APUs todavía.");
             return;
         }
         
@@ -154,7 +155,7 @@ export class CatalogPickerModal {
     // Caso 2: Insertando en un Presupuesto normal
     const chapter = this.uiState.activeChapterForPicker();
     if (!chapter) {
-      alert("No hay un capítulo activo para insertar el insumo.");
+      showWarning("No hay un capítulo activo para insertar el insumo.");
       return;
     }
 
@@ -213,7 +214,7 @@ export class CatalogPickerModal {
             if (closeAfter) this.closeModal();
         } catch (err) {
             console.error("Error updating catalog item:", err);
-            alert("Error al actualizar en la base de datos.");
+            showError("Error al actualizar en la base de datos.");
         }
     } else {
         const newItem = {
@@ -271,7 +272,7 @@ export class CatalogPickerModal {
             if (closeAfter) this.closeModal();
         } catch (err) {
             console.error("Error inserting catalog item:", err);
-            alert("Error al insertar en la base de datos.");
+            showError("Error al insertar en la base de datos.");
         }
     }
   }
