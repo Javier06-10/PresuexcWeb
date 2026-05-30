@@ -14,7 +14,7 @@ interface TramoPiso {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './apu-piso-flotante.html',
-  styles: [``]
+
 })
 export class ApuPisoFlotante implements OnInit, OnChanges {
   @Input() apuParameters: any;
@@ -38,11 +38,9 @@ export class ApuPisoFlotante implements OnInit, OnChanges {
     this.areaNeta() * (1 + (this.desperdicio()||0) / 100)
   );
 
-  private _firstEmit = false;
-
   constructor() {
     effect(() => {
-      const params = {
+      this.parametersChange.emit({
         tramos: this.tramos(),
         tipoMaterial: this.tipoMaterial(),
         acabado: this.acabado(),
@@ -50,9 +48,7 @@ export class ApuPisoFlotante implements OnInit, OnChanges {
         con_subpiso: this.con_subpiso(),
         con_rodapie: this.con_rodapie(),
         cantidad_calculada: +this.areaPresupuestada().toFixed(2),
-      };
-      if (!this._firstEmit) { this._firstEmit = true; return; }
-      this.parametersChange.emit(params);
+      });
     });
   }
 

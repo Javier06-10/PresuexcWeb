@@ -14,7 +14,7 @@ interface TramoDesbanque {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './apu-desbanque.html',
-  styles: [``]
+
 })
 export class ApuDesbanque implements OnInit, OnChanges {
   @Input() apuParameters: any;
@@ -42,11 +42,9 @@ export class ApuDesbanque implements OnInit, OnChanges {
     this.areaNeta() * (1 + (this.desperdicio()||0) / 100)
   );
 
-  private _firstEmit = false;
-
   constructor() {
     effect(() => {
-      const params = {
+      this.parametersChange.emit({
         tramos: this.tramos(),
         profundidadMedia: this.profundidadMedia(),
         tipoSuelo: this.tipoSuelo(),
@@ -54,9 +52,7 @@ export class ApuDesbanque implements OnInit, OnChanges {
         incluye_compactacion: this.incluye_compactacion(),
         desperdicio: this.desperdicio(),
         cantidad_calculada: +this.areaPresupuestada().toFixed(2),
-      };
-      if (!this._firstEmit) { this._firstEmit = true; return; }
-      this.parametersChange.emit(params);
+      });
     });
   }
 

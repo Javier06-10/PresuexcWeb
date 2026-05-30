@@ -2,12 +2,6 @@ import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChange
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-export interface ZonaFumigacion {
-  descripcion: string;
-  largo: number;
-  ancho: number;
-}
-
 @Component({
   selector: 'app-apu-fumigacion',
   standalone: true,
@@ -19,53 +13,129 @@ export class ApuFumigacionComponent implements OnInit, OnChanges {
   @Input() apuParameters: any = {};
   @Output() parametersChange = new EventEmitter<any>();
 
-  zonas           = signal<ZonaFumigacion[]>([]);
-  tipoTratamiento = signal<string>('Termitida preventiva');
-  producto        = signal<string>('Clorpirifos emulsionable');
-  dosis           = signal<number>(0.05);
-  dilusion        = signal<number>(100);
-  fumigadores     = signal<number>(2);
-  ayudantes       = signal<number>(1);
+  // Área
+  modoArea    = signal<'dim' | 'm2'>('dim');
+  largo       = signal<number>(12);
+  ancho       = signal<number>(10);
+  areaDirecta = signal<number>(120);
+  unidadCobro = signal<string>('m2'); // m2 | pa | pie2
 
-  areaTotal       = computed(() => this.zonas().reduce((s, z) => s + (z.largo||0)*(z.ancho||0), 0));
-  volumenProducto = computed(() => this.areaTotal() * (this.dosis()||0));
-  volumenDiluido  = computed(() => this.volumenProducto() * (this.dilusion()||1));
+  // Producto
+  tipoProducto  = signal<string>('frasco'); // frasco | litro | galon
+  nFrascos      = signal<number>(1);
+  litros        = signal<number>(4);
+  galones       = signal<number>(1);
+  factorDilucion = signal<number>(4);
+
+  // Bomba
+  tipoBomba = signal<string>('manual4');
+  capBomba  = signal<number>(15);
+  rendBomba = signal<number>(40);
+
+  // MO
+  fumigadores = signal<number>(1);
+  ayudantes   = signal<number>(1);
+  impMO       = signal<number>(5);
+  impMat      = signal<number>(5);
+
+  imp = signal<number>(5);
+  pu  = signal<number>(0);
+
+  setPu(e: Event) {
+    const v = +(e.target as HTMLInputElement).value;
+    if (!isNaN(v)) this.pu.set(v);
+  }
+
+  // ── Computeds ─────────────────────────────────────────────────────────────
+
+  areaTotal = computed(() => {
+    if (this.modoArea() === 'm2') return this.areaDirecta() || 0;
+    return (this.largo() || 0) * (this.ancho() || 0);
+  });
+
+  nBombas = computed(() => {
+    const r = this.rendBomba();
+    return r > 0 ? Math.ceil(this.areaTotal() / r) : 0;
+  });
+
+  productLitros = computed(() => {
+    const tp = this.tipoProducto();
+    if (tp === 'litro')  return this.litros() || 0;
+    if (tp === 'galon')  return (this.galones() || 0) * 3.785;
+    return this.nFrascos() || 0; // 1 frasco ≈ 1 L of concentrate
+  });
+
+  solucionTotal = computed(() => this.productLitros() * (1 + (this.factorDilucion() || 1)));
+
+  cantidad = computed(() => {
+    const u = this.unidadCobro();
+    if (u === 'pie2') return this.areaTotal() * 10.764;
+    if (u === 'pa')   return 1;
+    return this.areaTotal();
+  });
+
+  unidDisplay = computed(() => {
+    const u = this.unidadCobro();
+    if (u === 'pie2') return 'pie²';
+    if (u === 'pa')   return 'P.A.';
+    return 'm²';
+  });
+
+  nombre_presupuesto = computed(() => 'Fumigación anticomején y control de plagas');
+
+  totalFinal = computed(() => this.pu() * this.cantidad() * (1 + this.imp() / 100));
 
   constructor() {
     effect(() => {
       this.parametersChange.emit({
         ...this.apuParameters,
-        zonas: this.zonas(), tipoTratamiento: this.tipoTratamiento(),
-        producto: this.producto(), dosis: this.dosis(), dilusion: this.dilusion(),
+        modoArea: this.modoArea(), largo: this.largo(), ancho: this.ancho(),
+        areaDirecta: this.areaDirecta(), unidadCobro: this.unidadCobro(),
+        tipoProducto: this.tipoProducto(), nFrascos: this.nFrascos(),
+        litros: this.litros(), galones: this.galones(), factorDilucion: this.factorDilucion(),
+        tipoBomba: this.tipoBomba(), capBomba: this.capBomba(), rendBomba: this.rendBomba(),
         fumigadores: this.fumigadores(), ayudantes: this.ayudantes(),
-        cantidad_calculada: this.areaTotal(),
+        impMO: this.impMO(), impMat: this.impMat(), imp: this.imp(), pu: this.pu(),
+        cantidad_calculada: this.cantidad(),
+        nombre_presupuesto: this.nombre_presupuesto(),
       });
     });
   }
 
-  private _loadFromParams() {
+  private _load() {
     const p = this.apuParameters;
-    if (p?.zonas?.length) this.zonas.set(p.zonas);
-    else this.zonas.set([{ descripcion: 'Área de tratamiento', largo: 0, ancho: 0 }]);
-    if (p?.tipoTratamiento)       this.tipoTratamiento.set(p.tipoTratamiento);
-    if (p?.producto)              this.producto.set(p.producto);
-    if (p?.dosis       != null)   this.dosis.set(p.dosis);
-    if (p?.dilusion    != null)   this.dilusion.set(p.dilusion);
-    if (p?.fumigadores != null)   this.fumigadores.set(p.fumigadores);
-    if (p?.ayudantes   != null)   this.ayudantes.set(p.ayudantes);
+    if (!p) return;
+    if (p.modoArea)           this.modoArea.set(p.modoArea);
+    if (p.largo       != null) this.largo.set(p.largo);
+    if (p.ancho       != null) this.ancho.set(p.ancho);
+    if (p.areaDirecta != null) this.areaDirecta.set(p.areaDirecta);
+    if (p.unidadCobro)        this.unidadCobro.set(p.unidadCobro);
+    if (p.tipoProducto)       this.tipoProducto.set(p.tipoProducto);
+    if (p.nFrascos    != null) this.nFrascos.set(p.nFrascos);
+    if (p.litros      != null) this.litros.set(p.litros);
+    if (p.galones     != null) this.galones.set(p.galones);
+    if (p.factorDilucion != null) this.factorDilucion.set(p.factorDilucion);
+    if (p.tipoBomba)          this.tipoBomba.set(p.tipoBomba);
+    if (p.capBomba    != null) this.capBomba.set(p.capBomba);
+    if (p.rendBomba   != null) this.rendBomba.set(p.rendBomba);
+    if (p.fumigadores != null) this.fumigadores.set(p.fumigadores);
+    if (p.ayudantes   != null) this.ayudantes.set(p.ayudantes);
+    if (p.impMO       != null) this.impMO.set(p.impMO);
+    if (p.impMat      != null) this.impMat.set(p.impMat);
+    if (p.imp         != null) this.imp.set(p.imp);
+    if (p.pu          != null) this.pu.set(p.pu);
   }
 
-  ngOnInit() { this._loadFromParams(); }
-
+  ngOnInit()    { this._load(); }
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['apuParameters'] && !changes['apuParameters'].firstChange) {
-      this._loadFromParams();
-    }
+    if (changes['apuParameters'] && !changes['apuParameters'].firstChange) this._load();
   }
 
-  addZona()              { this.zonas.update(z => [...z, { descripcion:'', largo:0, ancho:0 }]); }
-  removeZona(i: number)  { this.zonas.update(z => z.filter((_,idx) => idx !== i)); }
-  updateZona(i: number, field: keyof ZonaFumigacion, val: any) {
-    this.zonas.update(z => { const c=[...z]; (c[i] as any)[field]=val; return c; });
+  onTipoBombaChange() {
+    const presets: Record<string, number> = {
+      manual2: 7.5, manual3: 11, manual4: 15, manual5: 19, mochila20: 20, motorizada: 37
+    };
+    const cap = presets[this.tipoBomba()];
+    if (cap) this.capBomba.set(cap);
   }
 }

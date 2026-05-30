@@ -41,11 +41,11 @@
 
         <div class="flex flex-col gap-3" *ngIf="isSelectingTemplateMode">
             <div class="text-left">
-                <label class="text-xs font-bold text-zinc-500 uppercase">Categoría</label>
+                <label class="text-xs font-bold text-zinc-500 uppercase">Plantilla Base</label>
                 <div class="relative mt-1">
-                    <select [(ngModel)]="selectedCategoryId" (change)="onCategoryChange()" class="w-full bg-white border border-zinc-300 rounded px-3 py-2 text-sm focus:border-presuOxido focus:ring-1 focus:ring-presuOxido outline-none font-bold text-presuOscuro appearance-none cursor-pointer">
-                        <option value="" disabled>Seleccione Categoría...</option>
-                        <option *ngFor="let cat of templateCategories" [value]="cat.id">{{ cat.name }}</option>
+                    <select [(ngModel)]="selectedTemplateId" (change)="onTemplateFlatChange()" class="w-full bg-white border border-zinc-300 rounded px-3 py-2 text-sm focus:border-presuOxido focus:ring-1 focus:ring-presuOxido outline-none font-bold text-presuOscuro appearance-none cursor-pointer">
+                        <option value="" disabled>Seleccione Plantilla...</option>
+                        <option *ngFor="let tpl of allTemplatesFlat" [value]="tpl.id">{{ tpl.name }}</option>
                     </select>
                     <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-zinc-500">
                         <i class="ph ph-caret-down"></i>
@@ -53,34 +53,13 @@
                 </div>
             </div>
 
-            <div class="text-left" *ngIf="selectedCategoryId">
-                <label class="text-xs font-bold text-zinc-500 uppercase">Elemento</label>
-                <div class="relative mt-1">
-                    <select [(ngModel)]="selectedGroupId" (change)="onGroupChange()" class="w-full bg-white border border-zinc-300 rounded px-3 py-2 text-sm focus:border-presuOxido focus:ring-1 focus:ring-presuOxido outline-none font-bold text-presuOscuro appearance-none cursor-pointer">
-                        <option value="" disabled>Seleccione Elemento...</option>
-                        <option *ngFor="let group of availableGroups" [value]="group.id">{{ group.name }}</option>
-                    </select>
-                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-zinc-500">
-                        <i class="ph ph-caret-down"></i>
-                    </div>
-                </div>
+            <div class="text-left" *ngIf="selectedTemplateId">
+                <label class="text-xs font-bold text-zinc-500 uppercase">Nombre del APU a crear</label>
+                <input type="text" [(ngModel)]="newApuName" class="w-full bg-white border border-zinc-300 rounded px-3 py-2 text-sm mt-1 focus:border-presuOxido focus:ring-1 focus:ring-presuOxido outline-none font-bold text-presuOscuro">
             </div>
 
-            <div class="text-left" *ngIf="selectedGroupId && availableTemplates.length > 0">
-                <label class="text-xs font-bold text-zinc-500 uppercase">Tipo Específico</label>
-                <div class="relative mt-1">
-                    <select [(ngModel)]="selectedTemplateId" class="w-full bg-white border border-zinc-300 rounded px-3 py-2 text-sm focus:border-presuOxido focus:ring-1 focus:ring-presuOxido outline-none font-bold text-presuOscuro appearance-none cursor-pointer">
-                        <option value="" disabled>Seleccione Tipo...</option>
-                        <option *ngFor="let tpl of availableTemplates" [value]="tpl.id">{{ tpl.name }}</option>
-                    </select>
-                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-zinc-500">
-                        <i class="ph ph-caret-down"></i>
-                    </div>
-                </div>
-            </div>
-
-            <button (click)="confirmUseTemplate()" [disabled]="!selectedTemplateId" class="w-full bg-presuOscuro text-white font-bold text-sm py-3 mt-2 rounded-lg hover:bg-zinc-800 transition shadow-md flex justify-center items-center gap-2 disabled:opacity-50">
-                <i class="ph ph-check font-bold"></i> Usar Plantilla
+            <button (click)="confirmUseTemplate()" [disabled]="!selectedTemplateId || !newApuName.trim()" class="w-full bg-presuOscuro text-white font-bold text-sm py-3 mt-2 rounded-lg hover:bg-zinc-800 transition shadow-md flex justify-center items-center gap-2 disabled:opacity-50">
+                <i class="ph ph-check font-bold"></i> Crear con Plantilla
             </button>
         </div>
         

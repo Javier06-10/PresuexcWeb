@@ -1,6 +1,28 @@
 import { Component, inject, signal, computed, effect } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+
+const APU_SVG: Record<string, string> = {
+  'desbanque':       `<svg viewBox="0 0 28 22" width="28" height="22" fill="currentColor"><path d="M2 14 Q6 7 13 5 Q20 5 26 11 L26 14Z" opacity=".45"/><line x1="0" y1="14" x2="28" y2="14" stroke="currentColor" stroke-width="2" fill="none"/><line x1="6" y1="14" x2="9" y2="8" stroke="currentColor" stroke-width="1.5" opacity=".6" fill="none"/><line x1="15" y1="14" x2="15" y2="6" stroke="currentColor" stroke-width="1.5" opacity=".6" fill="none"/></svg>`,
+  'capa-vegetal':    `<svg viewBox="0 0 28 22" width="28" height="22" fill="currentColor"><rect x="0" y="14" width="28" height="8" opacity=".3"/><rect x="0" y="11" width="28" height="3" opacity=".7"/><line x1="5" y1="11" x2="4" y2="5" stroke="currentColor" stroke-width="1.5" opacity=".85" fill="none"/><line x1="11" y1="11" x2="12" y2="4" stroke="currentColor" stroke-width="1.5" opacity=".85" fill="none"/><line x1="18" y1="11" x2="17" y2="5" stroke="currentColor" stroke-width="1.5" opacity=".85" fill="none"/><line x1="24" y1="11" x2="25" y2="4" stroke="currentColor" stroke-width="1.5" opacity=".85" fill="none"/></svg>`,
+  'exc-cielo':       `<svg viewBox="0 0 28 22" width="28" height="22" fill="currentColor"><line x1="0" y1="6" x2="28" y2="6" stroke="currentColor" stroke-width="2" fill="none"/><path d="M4 6 L5 21 L23 21 L24 6Z" opacity=".35"/><path d="M4 6 L5 21 L23 21 L24 6" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>`,
+  'exc-cimientos':   `<svg viewBox="0 0 28 22" width="28" height="22" fill="currentColor"><line x1="0" y1="7" x2="28" y2="7" stroke="currentColor" stroke-width="2" fill="none"/><path d="M8 7 L10 20 L18 20 L20 7Z" opacity=".4"/><path d="M8 7 L10 20 L18 20 L20 7" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>`,
+  'relleno':         `<svg viewBox="0 0 28 22" width="28" height="22" fill="currentColor"><rect x="2" y="3" width="24" height="5" rx="1" opacity=".8"/><rect x="2" y="10" width="24" height="4" rx="1" opacity=".6"/><rect x="2" y="16" width="24" height="4" rx="1" opacity=".4"/></svg>`,
+  'charrancha':      `<svg viewBox="0 0 28 22" width="28" height="22" fill="currentColor"><line x1="14" y1="2" x2="14" y2="20" stroke="currentColor" stroke-width="2" fill="none"/><line x1="0" y1="11" x2="28" y2="11" stroke="currentColor" stroke-width="1.5" opacity=".45" fill="none"/><line x1="2" y1="3" x2="26" y2="19" stroke="currentColor" stroke-width="1" opacity=".3" fill="none"/><line x1="2" y1="19" x2="26" y2="3" stroke="currentColor" stroke-width="1" opacity=".3" fill="none"/><circle cx="14" cy="11" r="3"/></svg>`,
+  'fumigacion':      `<svg viewBox="0 0 28 22" width="28" height="22" fill="currentColor"><path d="M4 21 Q9 14 14 11 Q19 14 24 21" stroke="currentColor" stroke-width="1.5" fill="none" opacity=".35"/><path d="M7 21 Q11 16 14 13 Q17 16 21 21" stroke="currentColor" stroke-width="1.5" fill="none" opacity=".6"/><path d="M10 21 Q12 17 14 15 Q16 17 18 21" stroke="currentColor" stroke-width="1.5" fill="none" opacity=".9"/><circle cx="14" cy="15" r="2.5"/></svg>`,
+  'barrera-vapor':   `<svg viewBox="0 0 28 22" width="28" height="22" fill="currentColor"><rect x="0" y="15" width="28" height="7" opacity=".25"/><path d="M0 13 L2.5 11 L5 13 L7.5 11 L10 13 L12.5 11 L15 13 L17.5 11 L20 13 L22.5 11 L25 13 L27.5 11 L28 12 L28 15 L0 15Z" opacity=".75"/></svg>`,
+  'zapata':          `<svg viewBox="0 0 28 22" width="28" height="22" fill="currentColor"><rect x="2" y="13" width="24" height="7" rx="1" opacity=".85"/><rect x="8" y="5" width="12" height="8" opacity=".6"/></svg>`,
+  'zapata-muro':     `<svg viewBox="0 0 28 22" width="28" height="22" fill="currentColor"><rect x="1" y="13" width="26" height="7" rx="1" opacity=".85"/><rect x="9" y="4" width="10" height="9" opacity=".6"/></svg>`,
+  'zapata-columna':  `<svg viewBox="0 0 28 22" width="28" height="22" fill="currentColor"><rect x="4" y="13" width="20" height="7" rx="1" opacity=".85"/><rect x="11" y="4" width="6" height="9" opacity=".6"/></svg>`,
+  'losa-fundacion':  `<svg viewBox="0 0 28 22" width="28" height="22" fill="currentColor"><rect x="1" y="8" width="26" height="8" rx="1" opacity=".8"/><line x1="1" y1="12" x2="27" y2="12" stroke="#fff" stroke-width="1" opacity=".5" fill="none"/><line x1="7" y1="8" x2="7" y2="16" stroke="#fff" stroke-width="1" opacity=".35" fill="none"/><line x1="14" y1="8" x2="14" y2="16" stroke="#fff" stroke-width="1" opacity=".35" fill="none"/><line x1="21" y1="8" x2="21" y2="16" stroke="#fff" stroke-width="1" opacity=".35" fill="none"/></svg>`,
+  'pilotes':         `<svg viewBox="0 0 28 22" width="28" height="22" fill="currentColor"><rect x="4" y="2" width="20" height="4" rx="1" opacity=".8"/><rect x="10" y="6" width="8" height="15" rx="2" opacity=".65"/></svg>`,
+  'columna':         `<svg viewBox="0 0 28 22" width="28" height="22" fill="currentColor"><rect x="9" y="1" width="10" height="20" rx="1" opacity=".8"/><line x1="9" y1="5" x2="19" y2="5" stroke="#fff" stroke-width="1" opacity=".5" fill="none"/><line x1="9" y1="10" x2="19" y2="10" stroke="#fff" stroke-width="1" opacity=".5" fill="none"/><line x1="9" y1="15" x2="19" y2="15" stroke="#fff" stroke-width="1" opacity=".5" fill="none"/></svg>`,
+  'viga':            `<svg viewBox="0 0 28 22" width="28" height="22" fill="currentColor"><rect x="1" y="7" width="26" height="11" rx="1" opacity=".8"/><line x1="6" y1="7" x2="6" y2="18" stroke="#fff" stroke-width="1" opacity=".5" fill="none"/><line x1="22" y1="7" x2="22" y2="18" stroke="#fff" stroke-width="1" opacity=".5" fill="none"/><line x1="1" y1="12" x2="27" y2="12" stroke="#fff" stroke-width="1" opacity=".4" fill="none"/></svg>`,
+  'losa':            `<svg viewBox="0 0 28 22" width="28" height="22" fill="currentColor"><rect x="1" y="9" width="26" height="6" rx="1" opacity=".8"/><rect x="1" y="2" width="5" height="7" opacity=".5"/><rect x="22" y="2" width="5" height="7" opacity=".5"/><line x1="1" y1="12" x2="27" y2="12" stroke="#fff" stroke-width="1" opacity=".5" fill="none"/></svg>`,
+  'mamposteria':     `<svg viewBox="0 0 28 22" width="28" height="22" fill="currentColor"><rect x="1" y="2" width="12" height="7" rx="1" opacity=".8"/><rect x="15" y="2" width="12" height="7" rx="1" opacity=".8"/><rect x="7" y="12" width="14" height="7" rx="1" opacity=".65"/></svg>`,
+  'contrapiso':      `<svg viewBox="0 0 28 22" width="28" height="22" fill="currentColor"><rect x="1" y="13" width="26" height="4" rx="1" opacity=".8"/><rect x="1" y="17" width="26" height="4" rx="1" opacity=".5"/><line x1="1" y1="11" x2="27" y2="11" stroke="currentColor" stroke-width="1.5" fill="none" opacity=".7"/></svg>`,
+};
 import { UiState } from '../../services/ui-state';
 import { ProjectService } from '../../services/project';
 import { ConfigService } from '../../services/config';
@@ -9,6 +31,7 @@ import { ClientService } from '../../services/client.service';
 import { ApuService } from '../../services/apu.service';
 import { ExportService } from '../../services/export.service';
 import { ShareService } from '../../services/share.service';
+import { SupabaseService } from '../../services/supabase.service';
 import { QuickCalcCanvasComponent } from '../quick-calc-canvas/quick-calc-canvas';
 import { ApuCapaVegetalComponent } from '../apu-capa-vegetal/apu-capa-vegetal';
 import { ApuExcavacionCieloComponent } from '../apu-excavacion-cielo/apu-excavacion-cielo';
@@ -18,8 +41,7 @@ import { ApuCharranchaComponent } from '../apu-charrancha/apu-charrancha';
 import { ApuFumigacionComponent } from '../apu-fumigacion/apu-fumigacion';
 import { ApuBarreraVaporComponent } from '../apu-barrera-vapor/apu-barrera-vapor';
 import { ApuHormigonZapataComponent } from '../apu-hormigon-zapata/apu-hormigon-zapata';
-import { ApuHormigonColumnaComponent } from '../apu-hormigon-columna/apu-hormigon-columna';
-import { ApuHormigonVigaComponent } from '../apu-hormigon-viga/apu-hormigon-viga';
+import { ApuHormigonColvigaComponent } from '../apu-hormigon-colviga/apu-hormigon-colviga';
 import { ApuHormigonLosaComponent } from '../apu-hormigon-losa/apu-hormigon-losa';
 import { ApuMamposteriaComponent } from '../apu-mamposteria/apu-mamposteria';
 import { ApuContrapisoComponent } from '../apu-contrapiso/apu-contrapiso';
@@ -64,8 +86,7 @@ import { ApuPilotes } from '../apu-pilotes/apu-pilotes';
     ApuFumigacionComponent,
     ApuBarreraVaporComponent,
     ApuHormigonZapataComponent,
-    ApuHormigonColumnaComponent,
-    ApuHormigonVigaComponent,
+    ApuHormigonColvigaComponent,
     ApuHormigonLosaComponent,
     ApuMamposteriaComponent,
     ApuContrapisoComponent,
@@ -111,7 +132,15 @@ export class BudgetView {
   apuService = inject(ApuService);
   exportService = inject(ExportService);
   shareService = inject(ShareService);
+  supabaseService = inject(SupabaseService);
   datePipe = inject(DatePipe);
+  private sanitizer = inject(DomSanitizer);
+
+  apuDiagram(key: string): SafeHtml | null {
+    const svg = APU_SVG[key];
+    if (!svg) return null;
+    return this.sanitizer.bypassSecurityTrustHtml(svg);
+  }
 
   showShareModal = signal(false);
 
@@ -159,6 +188,7 @@ export class BudgetView {
     this.apuParameters.set(item.apu_parameters || item.parameters || {});
     this.activeSidebarTabValue.set('item');
     this._firstApuEmitReceived = false;
+    this.showApuTypeSelector.set(false);
     // If item already has an APU, go straight to the form; otherwise show selector
     this.viewingApuDetails.set(!!item.apu_template_id);
     if (this.apuService.apus().length === 0 && !this.apuService.isLoading()) {
@@ -218,6 +248,10 @@ export class BudgetView {
       return; // initialization emission — don't mark dirty
     }
     this.hasUnsavedApuChanges.set(true);
+    if (params['nombre_presupuesto']) {
+      const item = this.selectedBudgetItem();
+      if (item) item.description = params['nombre_presupuesto'];
+    }
   }
 
   getDropdownOptions(paramKey: string) {
@@ -264,7 +298,18 @@ export class BudgetView {
     }
   }
 
+  // Controls whether the APU type card grid is shown in the selector
+  showApuTypeSelector = signal<boolean>(false);
+
   openNewApuForCurrentItem() {
+    this.showApuTypeSelector.set(true);
+  }
+
+  closeApuTypeSelector() {
+    this.showApuTypeSelector.set(false);
+  }
+
+  openOtherApuOptions() {
     const item = this.selectedBudgetItem();
     if (!item) return;
     this.uiState.activeBudgetItemForOptions.set(item);
@@ -273,6 +318,52 @@ export class BudgetView {
       .find((c: any) => (c.items || []).some((i: any) => i.id === item.id));
     this.uiState.activeChapterForPicker.set(chapter || null);
     this.uiState.isItemOptionsModalOpen.set(true);
+    this.showApuTypeSelector.set(false);
+  }
+
+  apuTypeUnitDisplay(key: string): string {
+    const u = this.quickCalcUnit(key);
+    const map: Record<string, string> = { 'm²': 'M2', 'm³': 'M3', 'ml': 'ML', 'm': 'ML', 'uds': 'UND', 'puntos': 'PTO' };
+    return map[u] || (u ? u.toUpperCase() : 'UND');
+  }
+
+  async createParametricApu(key: string, displayName: string, unit: string = 'UND') {
+    const item = this.selectedBudgetItem();
+    if (!item) return;
+    this.showApuTypeSelector.set(false);
+    this.projectService.isSaving.set(true);
+    const created = await this.apuService.createApu(displayName, unit);
+    this.projectService.isSaving.set(false);
+    if (!created) return;
+
+    item.description = created.name;
+    item.unit = created.unit;
+    item.unit_price = 0;
+    item.total = 0;
+    item.apu_template_id = created.id;
+    this.projectService.updateTotal();
+
+    this.supabaseService.client.from('budget_items').update({
+      description: item.description,
+      unit: item.unit,
+      unit_price: item.unit_price,
+      apu_template_id: item.apu_template_id
+    }).eq('id', item.id).then(async () => {
+      await this.supabaseService.client.rpc('recalculate_budget_item', { p_item_id: item.id });
+      const { data: updatedDbItem } = await this.supabaseService.client
+        .from('budget_items').select('*').eq('id', item.id).single();
+      if (updatedDbItem) {
+        item.unit_price = updatedDbItem.unit_price;
+        item.total = updatedDbItem.total;
+        item.apu_snapshot = updatedDbItem.apu_snapshot;
+        this.projectService.updateTotal();
+      }
+    });
+
+    this.uiState.activeApuId.set(created.id);
+    this._firstApuEmitReceived = false;
+    this.apuParameters.set({});
+    this.viewingApuDetails.set(true);
   }
 
   totalApuItem() {
@@ -301,21 +392,19 @@ export class BudgetView {
     {
       id: '02', name: 'Fundaciones', icon: 'ph-wall',
       items: [
-        { key: 'zapata',         name: 'Hormigón en Zapata' },
-        { key: 'zapata-muro',    name: 'Zapata corrida / De muro' },
-        { key: 'zapata-columna', name: 'Zapata aislada / De columna' },
-        { key: 'losa-fundacion', name: 'Losa de fundación / Platea' },
+        { key: 'zapata-muro',    name: 'Zapata de muros' },
+        { key: 'zapata-columna', name: 'Zapata de columna / aislada' },
+        { key: 'losa-fundacion', name: 'Losa de fundación / platea' },
         { key: 'pilotes',        name: 'Pilotes' },
-        { key: 'columna',        name: 'Hormigón en Columna / Castillo' },
-        { key: 'viga',           name: 'Hormigón en Viga / Nervio' },
-        { key: 'losa',           name: 'Hormigón en Losa / Entrepiso' },
       ]
     },
     {
-      id: '03', name: 'Mampostería', icon: 'ph-bricks',
+      id: '03', name: 'Estructura', icon: 'ph-buildings',
       items: [
-        { key: 'mamposteria', name: 'Mampostería de bloque' },
-        { key: 'contrapiso',  name: 'Contrapiso' },
+        { key: 'colviga',     name: 'Columnas y vigas' },
+        { key: 'losa',        name: 'Losas' },
+        { key: 'mamposteria', name: 'Muros' },
+        { key: 'contrapiso',  name: 'Firme de concreto' },
       ]
     },
     {
@@ -412,7 +501,7 @@ export class BudgetView {
       'capa-vegetal': 'm²', 'exc-cielo': 'm³', 'exc-cimientos': 'm³',
       'relleno': 'm³', 'charrancha': 'm²', 'fumigacion': 'm²', 'barrera-vapor': 'm²',
       'zapata': 'm³', 'zapata-muro': 'm³', 'zapata-columna': 'm³', 'losa-fundacion': 'm³', 'pilotes': 'ml',
-      'columna': 'm³', 'viga': 'm³', 'losa': 'm³',
+      'colviga': 'm³', 'columna': 'm³', 'viga': 'm³', 'losa': 'm³',
       'mamposteria': 'm²', 'contrapiso': 'm²',
       'enlucido': 'm²', 'ceramica': 'm²', 'pintura': 'm²',
       'cubierta': 'm²', 'cielo-raso': 'm²', 'impermeabilizacion': 'm²',

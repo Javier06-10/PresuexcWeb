@@ -1,30 +1,75 @@
+<div class="page-header">
+  <div style="display:flex;flex-direction:column;gap:5px;flex:1;min-width:0">
+    <div class="page-title">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8B4513" stroke-width="2">
+        <line x1="12" y1="2" x2="12" y2="22"/><line x1="6" y1="6" x2="18" y2="6"/>
+        <ellipse cx="12" cy="20" rx="5" ry="2"/>
+      </svg>
+      Pilotes de Hormigón
+    </div>
+    <div style="display:flex;align-items:center;gap:7px;max-width:560px">
+      <label style="font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">Nombre en presupuesto</label>
+      <input type="text" [ngModel]="nombre()" (ngModelChange)="nombre.set($event)"
+        style="flex:1;border:1px solid var(--gray-border);border-radius:5px;padding:4px 9px;font-size:12px;font-weight:500;color:var(--gray-text);background:var(--field-bg);height:28px"/>
+    </div>
+  </div>
+</div>
+
 <div style="display:flex;flex-direction:column;gap:10px">
 
-  <!-- Tipo de pilote -->
+  <!-- Card: Tipo de pilote -->
   <div class="card">
     <div class="card-title">
       <i class="ph ph-arrow-fat-lines-down" style="font-size:13px;color:var(--brand)"></i>
       Tipo de Pilote
     </div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
-      <button *ngFor="let t of tipos" class="tipo-btn" [class.sel]="tipo()===t" (click)="tipo.set(t)">
+    <div class="seg-row" style="flex-wrap:wrap;margin-bottom:10px">
+      <button *ngFor="let t of tipos" class="seg" [class.active]="tipo()===t" (click)="tipo.set(t)">
         {{ labelTipo(t) }}
       </button>
     </div>
-    <div style="font-size:11px;color:var(--gray-muted)">
-      <ng-container *ngIf="tipo()==='perforado'">Pilote de hormigón vaciado in situ con perforación rotatoria.</ng-container>
-      <ng-container *ngIf="tipo()==='helice'">Pilote de hélice continua (CFA) – extracción simultánea.</ng-container>
-      <ng-container *ngIf="tipo()==='franki'">Pilote Franki – bulbo de ensanche en la punta.</ng-container>
-      <ng-container *ngIf="tipo()==='micropilote'">Micropilote – diámetros pequeños, alta densidad de refuerzo.</ng-container>
-      <ng-container *ngIf="tipo()==='prefab'">Pilote prefabricado de hormigón hincado.</ng-container>
-      <ng-container *ngIf="tipo()==='acero'">Perfil de acero tipo H o tubular hincado.</ng-container>
+    <div style="background:var(--brand-light);border:0.5px solid var(--brand);border-radius:6px;padding:8px 12px;font-size:11px;color:var(--brand-dark)">
+      <ng-container *ngIf="tipo()==='perforado'">
+        <strong>Pilote perforado</strong> — Hormigón vaciado in situ con perforación rotatoria. Puede estabilizarse en seco, con camisa o con lodo.
+      </ng-container>
+      <ng-container *ngIf="tipo()==='helice'">
+        <strong>Hélice continua (CFA)</strong> — Extracción simultánea de tierra y vaciado de hormigón por el eje hueco. Alta productividad.
+      </ng-container>
+      <ng-container *ngIf="tipo()==='franki'">
+        <strong>Pilote Franki</strong> — Bulbo de ensanche en la punta, mejora capacidad portante en suelos sueltos.
+      </ng-container>
+      <ng-container *ngIf="tipo()==='micropilote'">
+        <strong>Micropilote</strong> — Diámetros pequeños (100–300 mm), alta densidad de refuerzo, para espacios restringidos.
+      </ng-container>
+      <ng-container *ngIf="tipo()==='prefab'">
+        <strong>Pilote prefabricado</strong> — Hormigón armado prefabricado, hincado en obra. Control de calidad en planta.
+      </ng-container>
+      <ng-container *ngIf="tipo()==='acero'">
+        <strong>Perfil de acero</strong> — Tubo o perfil H hincado. Alta capacidad con longitudes exactas.
+      </ng-container>
     </div>
   </div>
 
-  <div class="row2">
-    <!-- Parámetros generales -->
-    <div class="card" style="margin-bottom:0">
-      <div class="card-title"><i class="ph ph-sliders" style="font-size:13px;color:var(--brand)"></i> Parámetros</div>
+  <!-- Selector unidad APU -->
+  <div class="card">
+    <div class="card-title">
+      <i class="ph ph-ruler" style="font-size:13px;color:var(--brand)"></i>
+      Unidad de análisis APU
+    </div>
+    <div class="seg-row">
+      <button class="seg" [class.active]="apuUnit()==='ml'" (click)="apuUnit.set('ml')">ml (metro lineal)</button>
+      <button class="seg" [class.active]="apuUnit()==='und'" (click)="apuUnit.set('und')">und (por pilote)</button>
+      <button class="seg" [class.active]="apuUnit()==='m3'" (click)="apuUnit.set('m3')">m³ (volumen)</button>
+    </div>
+  </div>
+
+  <!-- Card: Geometría -->
+  <div class="card">
+    <div class="card-title">
+      <i class="ph ph-circles-three" style="font-size:13px;color:var(--brand)"></i>
+      Geometría
+    </div>
+    <div class="row4">
       <div class="f">
         <label>Diámetro D (m)</label>
         <input type="number" step="0.05" min="0.10" [ngModel]="D()" (ngModelChange)="D.set(+$event)" />
@@ -45,115 +90,165 @@
           <option [value]="350">350</option>
         </select>
       </div>
+    </div>
+    <div class="row4" style="margin-top:4px">
+      <div class="f">
+        <label>Vol. teórico unit. (m³)</label>
+        <input type="text" readonly [ngModel]="volTeoUnit() | number:'1.3-3'" style="font-weight:700;color:var(--brand)" />
+      </div>
+      <div class="f">
+        <label>Factor desperdicio</label>
+        <input type="text" readonly [ngModel]="'× ' + (wasteFactor() | number:'1.2-2')" style="font-weight:700" />
+      </div>
+      <div class="f">
+        <label>Vol. presup. unit. (m³)</label>
+        <input type="text" readonly [ngModel]="volPresUnit() | number:'1.3-3'" style="font-weight:700;color:var(--brand)" />
+      </div>
+      <div class="f">
+        <label>Long. total (ml)</label>
+        <input type="text" readonly [ngModel]="longTotal() | number:'1.2-2'" style="font-weight:700;color:var(--brand)" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Card: Método de estabilización (solo in situ) -->
+  <div *ngIf="isInsitu()" class="card">
+    <div class="card-title">
+      <i class="ph ph-waves" style="font-size:13px;color:var(--brand)"></i>
+      Método de Estabilización
+    </div>
+    <div class="seg-row" style="margin-bottom:10px">
+      <button *ngFor="let m of metodos" class="seg" [class.active]="metodo()===m.key" (click)="metodo.set(m.key)">
+        {{ m.label }}
+      </button>
+    </div>
+
+    <!-- Camisa: campos adicionales -->
+    <div *ngIf="metodo()==='cam_rec' || metodo()==='cam_perd'" class="row4" style="margin-top:8px">
+      <div class="f">
+        <label>Longitud camisa (m)</label>
+        <input type="text" readonly [ngModel]="camisaMl() | number:'1.2-2'" style="font-weight:700;color:var(--brand)" />
+      </div>
       <div class="f">
         <label>Sobrelongitud (m)</label>
         <input type="number" step="0.05" [ngModel]="sobre()" (ngModelChange)="sobre.set(+$event)" />
       </div>
+      <div class="f"></div>
+      <div class="f"></div>
+    </div>
+
+    <!-- Lodo: bentonita -->
+    <div *ngIf="metodo()==='lodo'" class="row4" style="margin-top:8px">
+      <div class="f">
+        <label>Agua de lodo (m³)</label>
+        <input type="text" readonly [ngModel]="aguaLodo() | number:'1.2-2'" style="font-weight:700;color:var(--brand)" />
+      </div>
+      <div class="f">
+        <label>Bentonita (kg)</label>
+        <input type="text" readonly [ngModel]="bentonitaKg() | number:'1.0-0'" style="font-weight:700;color:var(--brand)" />
+      </div>
+      <div class="f"></div>
+      <div class="f"></div>
+    </div>
+  </div>
+
+  <!-- Card: Jaula de refuerzo (solo si aplica) -->
+  <div *ngIf="isJaula()" class="card">
+    <div class="card-title">
+      <i class="ph ph-cylinder" style="font-size:13px;color:var(--brand)"></i>
+      Jaula de Refuerzo
+    </div>
+
+    <div class="row4" style="margin-bottom:10px">
       <div class="f">
         <label>Recubrimiento (cm)</label>
         <input type="number" step="1" [ngModel]="rec()" (ngModelChange)="rec.set(+$event)" />
       </div>
+      <div class="f">
+        <label>Long. jaula (m)</label>
+        <input type="number" step="0.5" [ngModel]="ljaula()" (ngModelChange)="ljaula.set(+$event)" />
+      </div>
+      <div class="f">
+        <label>Anclaje en cabezal (m)</label>
+        <input type="number" step="0.05" [ngModel]="anclaje()" (ngModelChange)="anclaje.set(+$event)" />
+      </div>
+      <div class="f">
+        <label>Long. total de barra (m)</label>
+        <input type="text" readonly [ngModel]="(L() + anclaje()) | number:'1.2-2'" style="font-weight:700;color:var(--brand)" />
+      </div>
     </div>
 
-    <!-- Estabilización y cómputo -->
-    <div class="card" style="margin-bottom:0">
-      <div class="card-title"><i class="ph ph-calculator" style="font-size:13px;color:var(--brand)"></i> Estabilización y Cómputo</div>
-      <div class="f" style="margin-bottom:10px">
-        <label>Método estabilización</label>
-        <select [ngModel]="metodo()" (ngModelChange)="metodo.set($event)">
-          <option *ngFor="let m of metodos" [value]="m.key">{{ m.label }}</option>
-        </select>
+    <!-- Acero longitudinal -->
+    <div style="margin-bottom:10px">
+      <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Varillas longitudinales</div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <button *ngFor="let d of diams" class="vbtn" [class.sel]="along()===d" (click)="along.set(d)">{{labelDiam(d)}}</button>
+        <span style="font-size:11px;color:var(--gray-muted);margin-left:10px">Cantidad:</span>
+        <input type="number" step="1" min="3" [ngModel]="nLong()" (ngModelChange)="nLong.set(+$event)"
+          style="width:52px;border:1px solid var(--gray-border);border-radius:4px;padding:3px 6px;font-size:12px;text-align:center;background:var(--field-bg)" />
+        <span style="font-size:11px;color:var(--brand);font-weight:700;margin-left:6px">{{ kgLong() | number:'1.1-1' }} kg/pilote</span>
       </div>
-      <div style="display:flex;flex-direction:column;gap:6px;font-size:12px;margin-top:8px">
-        <div style="display:flex;justify-content:space-between">
-          <span style="color:var(--gray-muted)">Vol. teórico unit.:</span>
-          <span style="font-weight:700">{{ volTeoUnit() | number:'1.3-3' }} m³</span>
+    </div>
+
+    <!-- Zuncho helicoidal -->
+    <div>
+      <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Zuncho helicoidal</div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <button *ngFor="let d of diams" class="vbtn" [class.sel]="azun()===d" (click)="azun.set(d)">{{labelDiam(d)}}</button>
+        <span style="font-size:11px;color:var(--gray-muted);margin-left:10px">Paso (cm):</span>
+        <input type="number" step="5" [ngModel]="paso()" (ngModelChange)="paso.set(+$event)"
+          style="width:60px;border:1px solid var(--gray-border);border-radius:4px;padding:3px 6px;font-size:12px;text-align:center;background:var(--field-bg)" />
+        <span style="font-size:11px;color:var(--brand);font-weight:700;margin-left:6px">{{ kgZun() | number:'1.1-1' }} kg/pilote</span>
+      </div>
+      <div style="margin-top:6px;font-size:11px;color:var(--gray-muted)">
+        Núcleo = {{ nucleo() | number:'1.3-3' }} m &nbsp;·&nbsp; Vueltas = {{ vueltas() | number:'1.0-0' }}
+      </div>
+    </div>
+
+    <!-- Sección transversal SVG -->
+    <div style="display:flex;justify-content:center;margin-top:16px">
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--gray-muted);text-transform:uppercase;text-align:center;margin-bottom:6px">
+          Sección Transversal
         </div>
-        <div style="display:flex;justify-content:space-between">
-          <span style="color:var(--gray-muted)">Factor desperdicio:</span>
-          <span style="font-weight:700">× {{ wasteFactor() | number:'1.2-2' }}</span>
+        <div (wheel)="onSvgWheel($event)" style="cursor:zoom-in;display:inline-block;touch-action:none">
+          <svg [attr.width]="160 * svgZoom()" [attr.height]="160 * svgZoom()" viewBox="0 0 160 160"
+               style="display:block;border-radius:50%;background:#f5f3f0;border:2px solid #c8b89a">
+            <!-- Hormigón -->
+            <circle [attr.cx]="sectionDiagram().cx" [attr.cy]="sectionDiagram().cy"
+                    [attr.r]="sectionDiagram().r" fill="#ddd5c8" stroke="#7a6550" stroke-width="3"/>
+            <!-- Línea de recubrimiento -->
+            <circle [attr.cx]="sectionDiagram().cx" [attr.cy]="sectionDiagram().cy"
+                    [attr.r]="sectionDiagram().ir" fill="none" stroke="#bbb" stroke-width="1" stroke-dasharray="4 3"/>
+            <!-- Varillas longitudinales -->
+            <circle *ngFor="let b of sectionDiagram().bars"
+                    [attr.cx]="b.x" [attr.cy]="b.y" r="5" fill="#2a2a2a" stroke="#666" stroke-width="1"/>
+            <!-- Etiqueta diámetro -->
+            <text [attr.x]="sectionDiagram().cx" [attr.y]="sectionDiagram().cy + 4"
+                  text-anchor="middle" font-size="12" fill="#555" font-weight="bold" font-family="monospace">
+              {{ sectionDiagram().labelD }}
+            </text>
+            <text [attr.x]="sectionDiagram().cx" [attr.y]="sectionDiagram().cy + 18"
+                  text-anchor="middle" font-size="9" fill="#888">
+              {{ sectionDiagram().labelRec }}
+            </text>
+          </svg>
         </div>
-        <div style="display:flex;justify-content:space-between">
-          <span style="color:var(--gray-muted)">Vol. presup. unit.:</span>
-          <span style="font-weight:700">{{ volPresUnit() | number:'1.3-3' }} m³</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;border-top:1px solid var(--gray-border);padding-top:6px">
-          <span style="color:var(--brand);font-weight:700">Vol. total (×{{ cant() }}):</span>
-          <span style="font-weight:800;color:var(--brand);font-size:14px">{{ volTotal() | number:'1.3-3' }} m³</span>
-        </div>
-        <div style="margin-top:6px;border-top:1px solid var(--gray-border);padding-top:6px">
-          <div style="display:flex;justify-content:space-between">
-            <span style="color:var(--gray-muted)">Acero long.:</span>
-            <span style="font-weight:700">{{ kgLong() | number:'1.1-1' }} kg/pilote</span>
-          </div>
-          <div style="display:flex;justify-content:space-between">
-            <span style="color:var(--gray-muted)">Zuncho helic. ({{ vueltas() | number:'1.0-0' }} vueltas):</span>
-            <span style="font-weight:700">{{ kgZun() | number:'1.1-1' }} kg/pilote</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;margin-top:4px">
-            <span style="color:var(--brand);font-weight:700">Total acero:</span>
-            <span style="font-weight:800;color:var(--brand)">{{ kgTotal() | number:'1.0-0' }} kg</span>
-          </div>
-        </div>
-        <div style="margin-top:6px;border-top:1px solid var(--gray-border);padding-top:6px">
-          <div style="display:flex;justify-content:space-between">
-            <span style="color:var(--brand-dark);font-weight:700">Longitud total:</span>
-            <span style="font-weight:800;color:var(--brand-dark);font-size:13px">{{ longTotal() | number:'1.2-2' }} ml</span>
-          </div>
+        <div style="font-size:9px;color:var(--gray-muted);text-align:center;margin-top:4px">
+          {{ nLong() }} varillas ∅{{ labelDiam(along()) }} · Scroll = zoom
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Jaula de refuerzo -->
+  <!-- Card: Partidas complementarias -->
   <div class="card">
-    <div class="card-title"><i class="ph ph-cylinder" style="font-size:13px;color:var(--brand)"></i> Jaula de Refuerzo</div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <div class="row2" style="gap:8px">
-        <div class="f">
-          <label>Long. jaula (m)</label>
-          <input type="number" step="0.5" [ngModel]="ljaula()" (ngModelChange)="ljaula.set(+$event)" />
-        </div>
-        <div class="f">
-          <label>Anclaje en cabezal (m)</label>
-          <input type="number" step="0.05" [ngModel]="anclaje()" (ngModelChange)="anclaje.set(+$event)" />
-        </div>
-      </div>
-
-      <!-- Acero longitudinal -->
-      <div>
-        <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Varillas longitudinales</div>
-        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-          <button *ngFor="let d of diams" class="vbtn" [class.sel]="along()===d" (click)="along.set(d)">{{labelDiam(d)}}</button>
-          <span style="font-size:11px;color:var(--gray-muted);margin-left:10px">Cant.:</span>
-          <input type="number" step="1" min="3" [ngModel]="nLong()" (ngModelChange)="nLong.set(+$event)"
-            style="width:52px;border:1px solid var(--gray-border);border-radius:4px;padding:3px 6px;font-size:12px;text-align:center;background:var(--field-bg)" />
-          <span style="font-size:11px;color:var(--brand);font-weight:700;margin-left:4px">{{ kgLong() | number:'1.1-1' }} kg/pilote</span>
-        </div>
-      </div>
-
-      <!-- Zuncho helicoidal -->
-      <div>
-        <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Zuncho helicoidal</div>
-        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-          <button *ngFor="let d of diams" class="vbtn" [class.sel]="azun()===d" (click)="azun.set(d)">{{labelDiam(d)}}</button>
-          <span style="font-size:11px;color:var(--gray-muted);margin-left:10px">Paso:</span>
-          <input type="number" step="5" [ngModel]="paso()" (ngModelChange)="paso.set(+$event)"
-            style="width:60px;border:1px solid var(--gray-border);border-radius:4px;padding:3px 6px;font-size:12px;text-align:center;background:var(--field-bg)" />
-          <span style="font-size:11px;color:var(--gray-muted)">cm</span>
-          <span style="font-size:11px;color:var(--brand);font-weight:700;margin-left:4px">{{ kgZun() | number:'1.1-1' }} kg/pilote</span>
-        </div>
-        <div style="margin-top:6px;font-size:11px;color:var(--gray-muted)">
-          Núcleo = {{ nucleo() | number:'1.3-3' }} m · Vueltas = {{ vueltas() | number:'1.0-0' }}
-        </div>
-      </div>
+    <div class="card-title">
+      <i class="ph ph-plus-circle" style="font-size:13px;color:var(--brand)"></i>
+      Partidas Complementarias
     </div>
-  </div>
-
-  <!-- Complementarias -->
-  <div class="card">
-    <div class="card-title"><i class="ph ph-plus-circle" style="font-size:13px;color:var(--brand)"></i> Actividades Complementarias</div>
     <div style="display:flex;flex-direction:column;gap:10px">
+
       <!-- Descabezado -->
       <div style="border:1px solid var(--gray-border);border-radius:6px;padding:10px">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;margin-bottom:8px">
@@ -166,6 +261,7 @@
           <input type="number" step="1" min="1" [ngModel]="descCant()" (ngModelChange)="descCant.set(+$event)" />
         </div>
       </div>
+
       <!-- Prueba de carga -->
       <div style="border:1px solid var(--gray-border);border-radius:6px;padding:10px">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;margin-bottom:8px">
@@ -188,6 +284,7 @@
           </div>
         </div>
       </div>
+
       <!-- Movilización -->
       <div style="border:1px solid var(--gray-border);border-radius:6px;padding:10px">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;margin-bottom:8px">
@@ -203,7 +300,46 @@
     </div>
   </div>
 
-  <!-- Metrics -->
+  <!-- Card: Opciones avanzadas (cuadrilla) — colapsable -->
+  <div class="card">
+    <button (click)="cuadrillaOn.set(!cuadrillaOn())"
+      style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:0;font-size:11px;font-weight:700;color:var(--gray-muted);text-transform:uppercase;letter-spacing:.05em;width:100%">
+      <i class="ph ph-users" style="font-size:14px"></i>
+      Opciones avanzadas — cuadrilla
+      <i class="ph" [class.ph-caret-down]="!cuadrillaOn()" [class.ph-caret-up]="cuadrillaOn()" style="margin-left:auto;font-size:13px"></i>
+    </button>
+    <div *ngIf="cuadrillaOn()" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--gray-border)">
+      <div class="row4">
+        <div class="f">
+          <label>Rendimiento (ml/día)</label>
+          <input type="number" step="1" [ngModel]="rend()" (ngModelChange)="rend.set(+$event)" />
+        </div>
+        <div class="f">
+          <label>Operador (jornales)</label>
+          <input type="number" step="1" min="0" [ngModel]="qOperador()" (ngModelChange)="qOperador.set(+$event)" />
+        </div>
+        <div class="f">
+          <label>Ayudantes (jornales)</label>
+          <input type="number" step="1" min="0" [ngModel]="qAyudante()" (ngModelChange)="qAyudante.set(+$event)" />
+        </div>
+        <div class="f">
+          <label>Fierrero (jornales)</label>
+          <input type="number" step="1" min="0" [ngModel]="qFierrero()" (ngModelChange)="qFierrero.set(+$event)" />
+        </div>
+      </div>
+      <div class="row4" style="margin-top:4px">
+        <div class="f">
+          <label>Capataz (jornales)</label>
+          <input type="number" step="1" min="0" [ngModel]="qCapataz()" (ngModelChange)="qCapataz.set(+$event)" />
+        </div>
+        <div class="f"></div>
+        <div class="f"></div>
+        <div class="f"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Métricas -->
   <div class="metrics-row">
     <div class="metric">
       <div class="m-lbl">Pilotes</div>
@@ -225,6 +361,233 @@
       <div class="m-val">{{ kgTotal() | number:'1.0-0' }}</div>
       <div class="m-unit">kg</div>
     </div>
+  </div>
+
+  <!-- Card: Precios de insumos -->
+  <div class="card">
+    <div class="card-title">
+      <i class="ph ph-currency-dollar" style="font-size:13px;color:var(--brand)"></i>
+      Precios de insumos
+      <span style="font-size:10px;font-weight:400;color:var(--gray-muted);margin-left:6px">(para cálculo APU)</span>
+    </div>
+    <div class="row4">
+      <div class="f">
+        <label>Jornal M.O. ($/jornal)</label>
+        <input type="number" step="10" min="0" [value]="precios()['mo_jornal']" (change)="setPrecio('mo_jornal', $event)" />
+      </div>
+      <div class="f">
+        <label>Equipo perforación ($/hr)</label>
+        <input type="number" step="50" min="0" [value]="precios()['equipo_perforacion']" (change)="setPrecio('equipo_perforacion', $event)" />
+      </div>
+      <div class="f">
+        <label>Grúa de servicio ($/hr)</label>
+        <input type="number" step="50" min="0" [value]="precios()['grua']" (change)="setPrecio('grua', $event)" />
+      </div>
+      <div class="f">
+        <label>Imprevistos (%)</label>
+        <input type="number" step="1" min="0" [ngModel]="imp()" (ngModelChange)="imp.set(+$event)" />
+      </div>
+    </div>
+    <div class="row4" style="margin-top:6px">
+      <ng-container *ngIf="isInsitu()">
+        <div class="f">
+          <label>Hormigón f'c {{ fc() }} ($/m³)</label>
+          <input type="number" step="10" min="0" [value]="precios()['hormigon']" (change)="setPrecio('hormigon', $event)" />
+        </div>
+      </ng-container>
+      <ng-container *ngIf="tipo()==='prefab'">
+        <div class="f">
+          <label>Pilote prefabricado ($/und)</label>
+          <input type="number" step="100" min="0" [value]="precios()['prefab']" (change)="setPrecio('prefab', $event)" />
+        </div>
+      </ng-container>
+      <ng-container *ngIf="tipo()==='acero'">
+        <div class="f">
+          <label>Tubo / perfil acero ($/ml)</label>
+          <input type="number" step="100" min="0" [value]="precios()['acero_tubular']" (change)="setPrecio('acero_tubular', $event)" />
+        </div>
+      </ng-container>
+      <ng-container *ngIf="isJaula()">
+        <div class="f">
+          <label>Acero de jaula ($/kg)</label>
+          <input type="number" step="1" min="0" [value]="precios()['acero']" (change)="setPrecio('acero', $event)" />
+        </div>
+        <div class="f">
+          <label>Alambre amarre ($/kg)</label>
+          <input type="number" step="1" min="0" [value]="precios()['alambre']" (change)="setPrecio('alambre', $event)" />
+        </div>
+      </ng-container>
+      <ng-container *ngIf="isInsitu() && metodo()==='cam_perd'">
+        <div class="f">
+          <label>Camisa metálica ($/ml)</label>
+          <input type="number" step="10" min="0" [value]="precios()['camisa']" (change)="setPrecio('camisa', $event)" />
+        </div>
+      </ng-container>
+      <ng-container *ngIf="isInsitu() && metodo()==='lodo'">
+        <div class="f">
+          <label>Bentonita ($/kg)</label>
+          <input type="number" step="1" min="0" [value]="precios()['bentonita']" (change)="setPrecio('bentonita', $event)" />
+        </div>
+        <div class="f">
+          <label>Agua para lodo ($/m³)</label>
+          <input type="number" step="1" min="0" [value]="precios()['agua']" (change)="setPrecio('agua', $event)" />
+        </div>
+      </ng-container>
+      <ng-container *ngIf="tipo()==='helice'">
+        <div class="f">
+          <label>Bomba hormigón ($/hr)</label>
+          <input type="number" step="50" min="0" [value]="precios()['bomba_hormigon']" (change)="setPrecio('bomba_hormigon', $event)" />
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- TABLA APU INTEGRADA -->
+  <div class="card" style="padding:0;overflow:hidden">
+    <div style="background:#3A3A3A;color:#fff;padding:8px 12px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:8px">
+      <i class="ph ph-list-numbers"></i> Análisis de Precio Unitario (APU)
+      <span style="margin-left:6px;background:var(--brand);color:#fff;border-radius:4px;padding:2px 8px;font-size:10px">
+        por 1 {{ apuUnit() === 'ml' ? 'ml' : apuUnit() === 'und' ? 'und' : 'm³' }}
+      </span>
+    </div>
+    <div style="padding:10px;overflow-x:auto">
+      <table class="sum-table" style="min-width:600px">
+        <thead>
+          <tr>
+            <th style="width:4%">No.</th>
+            <th style="width:33%;text-align:left">Descripción</th>
+            <th style="width:11%;text-align:right">Cantidad</th>
+            <th style="width:8%;text-align:left">Unid.</th>
+            <th style="width:8%;text-align:right">Factor</th>
+            <th style="width:12%;text-align:right">P.U. ($)</th>
+            <th style="width:10%;text-align:left">Fuente</th>
+            <th style="width:14%;text-align:right">Costo ($)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- I - Suministro -->
+          <tr style="background:var(--gray-3)">
+            <td colspan="7" style="padding:4px 10px;font-weight:700;font-size:10px;color:var(--brand);text-transform:uppercase">I - Suministro</td>
+          </tr>
+          <ng-container *ngFor="let r of apuData().sec1">
+            <tr>
+              <td style="padding:6px 10px">{{ r.no }}</td>
+              <td style="padding:6px 10px">{{ r.desc }}</td>
+              <td style="padding:6px 10px;text-align:right">{{ r.qty | number:'1.3-3' }}</td>
+              <td style="padding:6px 10px">{{ r.unit }}</td>
+              <td style="padding:6px 10px;text-align:right">{{ r.factor }}</td>
+              <td style="padding:6px 10px;text-align:right">{{ precios()[r.puKey] | number:'1.2-0' }}</td>
+              <td style="padding:6px 10px">{{ r.fuente }}</td>
+              <td style="padding:6px 10px;text-align:right;font-weight:600">{{ r.costo | number:'1.2-0' }}</td>
+            </tr>
+          </ng-container>
+          <tr style="background:var(--gray-3)">
+            <td colspan="7" style="padding:5px 10px;text-align:right;font-size:11px;font-weight:700;color:var(--gray-muted);text-transform:uppercase">Subtotal I — Suministro</td>
+            <td style="padding:5px 10px;text-align:right;font-weight:700;color:var(--brand)">{{ apuData().subI | number:'1.2-0' }}</td>
+          </tr>
+
+          <!-- II - Mano de Obra -->
+          <tr style="background:var(--gray-3)">
+            <td colspan="7" style="padding:4px 10px;font-weight:700;font-size:10px;color:var(--brand);text-transform:uppercase">II - Mano de Obra</td>
+          </tr>
+          <ng-container *ngFor="let r of apuData().sec2">
+            <tr>
+              <td style="padding:6px 10px">{{ r.no }}</td>
+              <td style="padding:6px 10px">{{ r.desc }}</td>
+              <td style="padding:6px 10px;text-align:right">{{ r.qty | number:'1.3-3' }}</td>
+              <td style="padding:6px 10px">{{ r.unit }}</td>
+              <td style="padding:6px 10px;text-align:right">{{ r.factor }}</td>
+              <td style="padding:6px 10px;text-align:right">{{ precios()[r.puKey] | number:'1.2-0' }}</td>
+              <td style="padding:6px 10px">{{ r.fuente }}</td>
+              <td style="padding:6px 10px;text-align:right;font-weight:600">{{ r.costo | number:'1.2-0' }}</td>
+            </tr>
+          </ng-container>
+          <tr style="background:var(--gray-3)">
+            <td colspan="7" style="padding:5px 10px;text-align:right;font-size:11px;font-weight:700;color:var(--gray-muted);text-transform:uppercase">Subtotal II — Mano de Obra</td>
+            <td style="padding:5px 10px;text-align:right;font-weight:700;color:var(--brand)">{{ apuData().subII | number:'1.2-0' }}</td>
+          </tr>
+
+          <!-- III - Equipos -->
+          <tr style="background:var(--gray-3)">
+            <td colspan="7" style="padding:4px 10px;font-weight:700;font-size:10px;color:var(--brand);text-transform:uppercase">III - Equipos</td>
+          </tr>
+          <ng-container *ngFor="let r of apuData().sec3">
+            <tr>
+              <td style="padding:6px 10px">{{ r.no }}</td>
+              <td style="padding:6px 10px">{{ r.desc }}</td>
+              <td style="padding:6px 10px;text-align:right">{{ r.qty | number:'1.3-3' }}</td>
+              <td style="padding:6px 10px">{{ r.unit }}</td>
+              <td style="padding:6px 10px;text-align:right">{{ r.factor }}</td>
+              <td style="padding:6px 10px;text-align:right">{{ precios()[r.puKey] | number:'1.2-0' }}</td>
+              <td style="padding:6px 10px">{{ r.fuente }}</td>
+              <td style="padding:6px 10px;text-align:right;font-weight:600">{{ r.costo | number:'1.2-0' }}</td>
+            </tr>
+          </ng-container>
+          <tr style="background:var(--gray-3)">
+            <td colspan="7" style="padding:5px 10px;text-align:right;font-size:11px;font-weight:700;color:var(--gray-muted);text-transform:uppercase">Subtotal III — Equipos</td>
+            <td style="padding:5px 10px;text-align:right;font-weight:700;color:var(--brand)">{{ apuData().subIII | number:'1.2-0' }}</td>
+          </tr>
+          <!-- Totales -->
+          <tr style="border-top:2px solid var(--gray-border)">
+            <td colspan="7" style="padding:6px 10px;text-align:right;font-size:12px;font-weight:600">Total base</td>
+            <td style="padding:6px 10px;text-align:right;font-weight:700">{{ apuData().totalBase | number:'1.2-0' }}</td>
+          </tr>
+          <tr>
+            <td colspan="7" style="padding:5px 10px;text-align:right;font-size:11px;color:var(--gray-muted)">Imprevistos ({{ imp() }}%)</td>
+            <td style="padding:5px 10px;text-align:right;color:var(--gray-muted)">{{ (apuData().totalFinal - apuData().totalBase) | number:'1.2-0' }}</td>
+          </tr>
+          <tr style="background:var(--brand-light)">
+            <td colspan="7" style="padding:8px 10px;text-align:right;font-size:13px;font-weight:700;color:var(--brand-dark)">TOTAL FINAL por 1 {{ apuUnit() === 'ml' ? 'ml' : apuUnit() === 'und' ? 'pilote' : 'm³' }}</td>
+            <td style="padding:8px 10px;text-align:right;font-size:15px;font-weight:700;color:var(--brand-dark)">{{ apuData().totalFinal | number:'1.2-0' }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="font-size:10px;color:#909090;margin-top:8px;font-style:italic;padding:0 10px">
+        * Análisis por 1 {{ apuUnit() === 'ml' ? 'ml de pilote' : apuUnit() === 'und' ? 'pilote' : 'm³ de hormigón' }}.
+      </p>
+    </div>
+  </div>
+
+  <!-- Resumen de partidas complementarias -->
+  <div class="card" *ngIf="descOn() || pruebaOn() || movilizaOn()">
+    <div class="card-title">
+      <i class="ph ph-table" style="font-size:13px;color:var(--brand)"></i>
+      Resumen — Partidas Complementarias
+    </div>
+    <table class="sum-table">
+      <thead>
+        <tr>
+          <th style="width:44%">Descripción</th>
+          <th style="width:14%">Unid.</th>
+          <th style="width:14%">Cantidad</th>
+          <th style="width:14%">P.U. (RD$)</th>
+          <th style="width:14%">Total (RD$)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="descOn()">
+          <td>Descabezado de pilotes</td>
+          <td>und</td>
+          <td>{{ descCant() }}</td>
+          <td>—</td>
+          <td>—</td>
+        </tr>
+        <tr *ngIf="pruebaOn()">
+          <td>Prueba de carga ({{ pruebaTipo() }})</td>
+          <td>und</td>
+          <td>{{ pruebaCant() }}</td>
+          <td>—</td>
+          <td>—</td>
+        </tr>
+        <tr *ngIf="movilizaOn()">
+          <td>Movilización de equipo</td>
+          <td>global</td>
+          <td>{{ movilizaCant() }}</td>
+          <td>—</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
 </div>

@@ -44,8 +44,12 @@ export class ApuLosaFundacion implements OnInit, OnChanges {
   sBurroX = signal(80);
   sBurroY = signal(80);
 
+  // Hormigón
+  tipoVaciado = signal<'insitu' | 'premez'>('insitu');
+
   // Encofrado perimetral
   encOn = signal(true);
+  encMetodoLf = signal<'madera' | 'tierra'>('madera');
 
   areaNeta  = computed(() => this.tramos().reduce((s, t) => s + (t.largo || 0) * (t.ancho || 0) * (t.cant || 1), 0));
   perimetro = computed(() => this.tramos().reduce((s, t) => s + 2 * ((t.largo || 0) + (t.ancho || 0)) * (t.cant || 1), 0));
@@ -81,6 +85,8 @@ export class ApuLosaFundacion implements OnInit, OnChanges {
         dxs: this.dxs(), sxs: this.sxs(), dys: this.dys(), sys: this.sys(),
         burros: this.burros(), dBurro: this.dBurro(), sBurroX: this.sBurroX(), sBurroY: this.sBurroY(),
         encOn: this.encOn(),
+        tipoVaciado: this.tipoVaciado(),
+        encMetodoLf: this.encMetodoLf(),
         cantidad_calculada: +this.volPres().toFixed(3),
       };
       if (!this._firstEmit) { this._firstEmit = true; return; }
@@ -94,20 +100,24 @@ export class ApuLosaFundacion implements OnInit, OnChanges {
   private _load() {
     const p = this.apuParameters; if (!p) return;
     if (p.tramos)  this.tramos.set(p.tramos);
-    if (p.espesor != null) this.espesor.set(p.espesor);
+    if (p.espesor != null) this.espesor.set(+p.espesor);
     if (p.fc      != null) this.fc.set(p.fc);
     if (p.rec     != null) this.rec.set(p.rec);
     if (p.desp    != null) this.desp.set(p.desp);
-    if (p.dxi != null) this.dxi.set(p.dxi); if (p.sxi != null) this.sxi.set(p.sxi);
-    if (p.dyi != null) this.dyi.set(p.dyi); if (p.syi != null) this.syi.set(p.syi);
-    if (p.doble != null) this.doble.set(p.doble);
-    if (p.dxs != null) this.dxs.set(p.dxs); if (p.sxs != null) this.sxs.set(p.sxs);
-    if (p.dys != null) this.dys.set(p.dys); if (p.sys != null) this.sys.set(p.sys);
-    if (p.burros  != null) this.burros.set(p.burros);
-    if (p.dBurro  != null) this.dBurro.set(p.dBurro);
-    if (p.sBurroX != null) this.sBurroX.set(p.sBurroX);
-    if (p.sBurroY != null) this.sBurroY.set(p.sBurroY);
-    if (p.encOn   != null) this.encOn.set(p.encOn);
+    if (p.dxi != null) this.dxi.set(+p.dxi); if (p.sxi != null) this.sxi.set(+p.sxi);
+    if (p.dyi != null) this.dyi.set(+p.dyi); if (p.syi != null) this.syi.set(+p.syi);
+    if (p.doble != null) this.doble.set(p.doble === true || p.doble === 'true');
+    if (p.dxs != null) this.dxs.set(+p.dxs); if (p.sxs != null) this.sxs.set(+p.sxs);
+    if (p.dys != null) this.dys.set(+p.dys); if (p.sys != null) this.sys.set(+p.sys);
+    if (p.burros  != null) this.burros.set(p.burros === true || p.burros === 'true');
+    if (p.dBurro  != null) this.dBurro.set(+p.dBurro);
+    if (p.sBurroX != null) this.sBurroX.set(+p.sBurroX);
+    if (p.sBurroY != null) this.sBurroY.set(+p.sBurroY);
+    
+    
+    if (p.encOn       != null) this.encOn.set(p.encOn === true || p.encOn === 'true');
+    if (p.tipoVaciado) this.tipoVaciado.set(p.tipoVaciado);
+    if (p.encMetodoLf) this.encMetodoLf.set(p.encMetodoLf);
   }
 
   addTramo() { this.tramos.update(t => [...t, { descripcion: 'Zona', largo: 0, ancho: 0, cant: 1 }]); }

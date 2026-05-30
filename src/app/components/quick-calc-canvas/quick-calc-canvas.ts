@@ -671,6 +671,197 @@ function drawEnlucido(ctx: CanvasRenderingContext2D, cw: number, ch: number, p: 
   titleLbl(ctx, cw, `ENLUCIDO · ${fd(W)} × ${fd(H)}`);
 }
 
+function drawCharrancha(ctx: CanvasRenderingContext2D, cw: number, ch: number, p: any) {
+  const W = +(p.tramos?.[0]?.largo || p.areaTotal || 10);
+  const H = +(p.tramos?.[0]?.ancho || W);
+  bg(ctx, cw, ch);
+  const pad = 32;
+  const sw = Math.min(cw - pad * 2, ch - pad * 2), sh = sw;
+  const ox = (cw - sw) / 2, oy = (ch - sh) / 2;
+  ctx.fillStyle = '#F5F0E0'; ctx.fillRect(ox, oy, sw, sh);
+  // Grid replanteo
+  ctx.strokeStyle = '#C8B880'; ctx.lineWidth = 0.7;
+  const gn = 6;
+  for (let i = 0; i <= gn; i++) {
+    ctx.beginPath(); ctx.moveTo(ox + i * sw / gn, oy); ctx.lineTo(ox + i * sw / gn, oy + sh); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ox, oy + i * sh / gn); ctx.lineTo(ox + sw, oy + i * sh / gn); ctx.stroke();
+  }
+  // Axes
+  ctx.strokeStyle = '#8B4513'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(ox + sw / 2, oy + 6); ctx.lineTo(ox + sw / 2, oy + sh - 6); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ox + 6, oy + sh / 2); ctx.lineTo(ox + sw - 6, oy + sh / 2); ctx.stroke();
+  // Center cross
+  ctx.beginPath(); ctx.arc(ox + sw / 2, oy + sh / 2, 5, 0, Math.PI * 2);
+  ctx.fillStyle = '#8B4513'; ctx.fill();
+  lbl(ctx, fd(W), ox + sw / 2, oy + sh + 13); lbl(ctx, fd(H), ox - 16, oy + sh / 2);
+  titleLbl(ctx, cw, `REPLANTEO · ${fd(W)} × ${fd(H)}`);
+}
+
+function drawFumigacion(ctx: CanvasRenderingContext2D, cw: number, ch: number, p: any) {
+  const W = +(p.tramos?.[0]?.largo || 6), H = +(p.tramos?.[0]?.ancho || 5);
+  bg(ctx, cw, ch);
+  const pad = 28;
+  const sw = Math.min(cw - pad * 2, (ch - 52) * (W / H)), sh = sw * (H / W);
+  const ox = (cw - sw) / 2, oy = (ch - sh) / 2 + 4;
+  ctx.fillStyle = '#E8F4E0'; ctx.fillRect(ox, oy, sw, sh);
+  // Spray arcs
+  ctx.strokeStyle = '#4A9040'; ctx.lineWidth = 1.2;
+  for (let i = 0; i < 5; i++) {
+    const cx2 = ox + (i + 0.5) * sw / 5;
+    const cy2 = oy + sh - 4;
+    for (let r2 = 8; r2 <= 24; r2 += 8) {
+      ctx.beginPath(); ctx.arc(cx2, cy2, r2, -Math.PI * 0.85, -Math.PI * 0.15); ctx.stroke();
+    }
+    ctx.beginPath(); ctx.moveTo(cx2, cy2); ctx.lineTo(cx2, cy2 - 6); ctx.stroke();
+  }
+  ctx.strokeStyle = '#2A6028'; ctx.lineWidth = 1; ctx.strokeRect(ox, oy, sw, sh);
+  lbl(ctx, fd(W), ox + sw / 2, oy + sh + 13); lbl(ctx, fd(H), ox - 16, oy + sh / 2);
+  titleLbl(ctx, cw, `FUMIGACIÓN · ${fd(W)} × ${fd(H)}`);
+}
+
+function drawBarreraVapor(ctx: CanvasRenderingContext2D, cw: number, ch: number, p: any) {
+  const W = +(p.tramos?.[0]?.largo || 5), H = +(p.tramos?.[0]?.ancho || 4);
+  bg(ctx, cw, ch);
+  const pad = 28;
+  const sw = Math.min(cw - pad * 2, (ch - 52) * (W / H)), sh = sw * (H / W);
+  const ox = (cw - sw) / 2, oy = (ch - sh) / 2 + 4;
+  ctx.fillStyle = '#F2F8F0'; ctx.fillRect(ox, oy, sw, sh);
+  // Wavy membrane lines
+  ctx.strokeStyle = '#4080C0'; ctx.lineWidth = 1.5;
+  for (let row = 0; row < 5; row++) {
+    const y2 = oy + (row + 1) * sh / 6;
+    ctx.beginPath(); ctx.moveTo(ox, y2);
+    const seg = 20;
+    for (let x2 = ox; x2 <= ox + sw; x2 += seg) {
+      ctx.lineTo(x2 + seg / 2, y2 - 5);
+      ctx.lineTo(x2 + seg, y2);
+    }
+    ctx.stroke();
+  }
+  ctx.strokeStyle = '#2060A0'; ctx.lineWidth = 2; ctx.strokeRect(ox, oy, sw, sh);
+  lbl(ctx, fd(W), ox + sw / 2, oy + sh + 13); lbl(ctx, fd(H), ox - 16, oy + sh / 2);
+  titleLbl(ctx, cw, `BARRERA DE VAPOR · ${fd(W)} × ${fd(H)}`);
+}
+
+function drawInstalacionElectrica(ctx: CanvasRenderingContext2D, cw: number, ch: number, p: any) {
+  const puntos = +(p.cantidad || p.cant || 1);
+  bg(ctx, cw, ch);
+  const cx2 = cw / 2, cy2 = ch / 2;
+  // Room outline
+  const rw = 160, rh = 120;
+  ctx.strokeStyle = '#C0C0C0'; ctx.lineWidth = 1.5;
+  ctx.strokeRect(cx2 - rw / 2, cy2 - rh / 2, rw, rh);
+  // Conduit lines
+  ctx.strokeStyle = '#FFAA00'; ctx.lineWidth = 1.2; ctx.setLineDash([4, 3]);
+  ctx.beginPath(); ctx.moveTo(cx2 - rw / 2 + 10, cy2 - rh / 2); ctx.lineTo(cx2 - rw / 2 + 10, cy2); ctx.lineTo(cx2, cy2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx2, cy2 - rh / 2); ctx.lineTo(cx2, cy2); ctx.lineTo(cx2 + rw / 2 - 10, cy2); ctx.stroke();
+  ctx.setLineDash([]);
+  // Outlet symbol
+  const drawOutlet = (x: number, y: number) => {
+    ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2);
+    ctx.strokeStyle = '#1A5FAA'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.fillStyle = '#E8F0FF'; ctx.fill();
+    ctx.fillStyle = '#1A5FAA'; ctx.fillRect(x - 1.5, y - 4, 3, 3); ctx.fillRect(x - 1.5, y + 1, 3, 3);
+  };
+  drawOutlet(cx2 - rw / 2 + 10, cy2);
+  drawOutlet(cx2, cy2 - rh / 2);
+  drawOutlet(cx2 + rw / 2 - 10, cy2);
+  // Label puntos
+  ctx.fillStyle = '#333'; ctx.font = 'bold 10px "Segoe UI",sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText(`${puntos} punto${puntos !== 1 ? 's' : ''}`, cx2, cy2 + rh / 2 + 14);
+  titleLbl(ctx, cw, 'INSTALACIÓN ELÉCTRICA');
+}
+
+function drawInstalacionSanitaria(ctx: CanvasRenderingContext2D, cw: number, ch: number, p: any) {
+  const W = +(p.tramos?.[0]?.largo || p.largoPrincipal || 6);
+  bg(ctx, cw, ch);
+  const cx2 = cw / 2, cy2 = ch / 2;
+  // Pipe network
+  ctx.strokeStyle = '#4090C0'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(cx2 - 80, cy2); ctx.lineTo(cx2 + 80, cy2); ctx.stroke();
+  ctx.strokeStyle = '#2070A0'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(cx2 - 40, cy2); ctx.lineTo(cx2 - 40, cy2 - 40); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx2, cy2); ctx.lineTo(cx2, cy2 - 50); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx2 + 40, cy2); ctx.lineTo(cx2 + 40, cy2 + 40); ctx.stroke();
+  // Arrow flow
+  ctx.fillStyle = '#2070A0';
+  ctx.beginPath(); ctx.moveTo(cx2 + 80, cy2 - 5); ctx.lineTo(cx2 + 90, cy2); ctx.lineTo(cx2 + 80, cy2 + 5); ctx.fill();
+  // Tee joints
+  [cx2 - 40, cx2, cx2 + 40].forEach(x => {
+    ctx.beginPath(); ctx.arc(x, cy2, 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#4090C0'; ctx.fill();
+  });
+  ctx.fillStyle = '#333'; ctx.font = 'bold 10px "Segoe UI",sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText(fd(W) + ' ml', cx2, cy2 + 60);
+  titleLbl(ctx, cw, 'INSTALACIÓN SANITARIA');
+}
+
+function drawInstalacionGas(ctx: CanvasRenderingContext2D, cw: number, ch: number, p: any) {
+  const W = +(p.tramos?.[0]?.largo || p.largo || 5);
+  bg(ctx, cw, ch);
+  const cx2 = cw / 2, cy2 = ch / 2;
+  // Yellow gas pipe
+  ctx.strokeStyle = '#E8B800'; ctx.lineWidth = 4; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(cx2 - 90, cy2); ctx.lineTo(cx2 + 90, cy2); ctx.stroke();
+  ctx.strokeStyle = '#B89000'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(cx2 - 40, cy2); ctx.lineTo(cx2 - 40, cy2 - 45); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx2 + 30, cy2); ctx.lineTo(cx2 + 30, cy2 - 40); ctx.stroke();
+  // Valve symbol
+  const valve = (x: number, y: number) => {
+    ctx.fillStyle = '#E8B800';
+    ctx.beginPath(); ctx.moveTo(x - 8, y); ctx.lineTo(x, y - 10); ctx.lineTo(x + 8, y); ctx.lineTo(x, y + 10); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#806000'; ctx.lineWidth = 1; ctx.stroke();
+  };
+  valve(cx2 - 40, cy2 - 45); valve(cx2 + 30, cy2 - 40);
+  ctx.fillStyle = '#555'; ctx.font = 'bold 10px "Segoe UI",sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText(fd(W) + ' ml', cx2, cy2 + 45);
+  titleLbl(ctx, cw, 'INSTALACIÓN DE GAS');
+}
+
+function drawAparatoSanitario(ctx: CanvasRenderingContext2D, cw: number, ch: number, p: any) {
+  bg(ctx, cw, ch);
+  const cx2 = cw / 2, cy2 = ch / 2 + 10;
+  // Toilet silhouette (top view)
+  ctx.fillStyle = '#E8E4DC'; ctx.strokeStyle = '#808080'; ctx.lineWidth = 1.5;
+  // Tank
+  ctx.beginPath(); ctx.roundRect(cx2 - 22, cy2 - 48, 44, 22, 3); ctx.fill(); ctx.stroke();
+  // Bowl
+  ctx.beginPath(); ctx.ellipse(cx2, cy2 - 10, 24, 32, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#C8C0B4';
+  ctx.beginPath(); ctx.ellipse(cx2, cy2 - 8, 16, 22, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#555'; ctx.font = 'bold 10px "Segoe UI",sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('UND', cx2, cy2 + 40);
+  titleLbl(ctx, cw, 'APARATOS SANITARIOS');
+}
+
+function drawJardineria(ctx: CanvasRenderingContext2D, cw: number, ch: number, p: any) {
+  const W = +(p.tramos?.[0]?.largo || 6), H = +(p.tramos?.[0]?.ancho || 4);
+  bg(ctx, cw, ch);
+  const pad = 28;
+  const sw = Math.min(cw - pad * 2, (ch - 52) * (W / H)), sh = sw * (H / W);
+  const ox = (cw - sw) / 2, oy = (ch - sh) / 2 + 4;
+  ctx.fillStyle = '#9ACD50'; ctx.fillRect(ox, oy, sw, sh);
+  // Grass stipple
+  for (let i = 0; i < 80; i++) {
+    const gx = ox + 4 + jitter(i * 11, sw / 2 - 8) + sw / 2 - sw / 2 + (i % 8) * sw / 8;
+    const gy = oy + 4 + jitter(i * 7, sh / 2 - 8) + sh / 2 - sh / 2 + (Math.floor(i / 8)) * sh / 10;
+    ctx.strokeStyle = '#3A7A10'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx - 2, gy - 6); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx + 2, gy - 6); ctx.stroke();
+  }
+  // Trees
+  const tree = (x: number, y: number) => {
+    ctx.fillStyle = '#2A6010';
+    ctx.beginPath(); ctx.arc(x, y, 10, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#3A8020';
+    ctx.beginPath(); ctx.arc(x - 3, y - 3, 7, 0, Math.PI * 2); ctx.fill();
+  };
+  tree(ox + 20, oy + 20); tree(ox + sw - 20, oy + 20); tree(ox + 20, oy + sh - 20);
+  ctx.strokeStyle = '#2A6010'; ctx.lineWidth = 1.5; ctx.strokeRect(ox, oy, sw, sh);
+  lbl(ctx, fd(W), ox + sw / 2, oy + sh + 13); lbl(ctx, fd(H), ox - 16, oy + sh / 2);
+  titleLbl(ctx, cw, `JARDINERÍA · ${fd(W)} × ${fd(H)}`);
+}
+
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function drawForKey(ctx: CanvasRenderingContext2D, cw: number, ch: number, qKey: string, params: any) {
   switch (qKey) {
@@ -698,6 +889,14 @@ function drawForKey(ctx: CanvasRenderingContext2D, cw: number, ch: number, qKey:
     case 'acera':                drawArea2D(ctx, cw, ch, params, 'ACERA', '#D8D8C8'); break;
     case 'piso-flotante':        drawArea2D(ctx, cw, ch, params, 'PISO FLOTANTE', '#D8C8A0'); break;
     case 'closet':               drawArea2D(ctx, cw, ch, params, 'CLOSET', '#ECD8B8'); break;
+    case 'charrancha':           drawCharrancha(ctx, cw, ch, params); break;
+    case 'fumigacion':           drawFumigacion(ctx, cw, ch, params); break;
+    case 'barrera-vapor':        drawBarreraVapor(ctx, cw, ch, params); break;
+    case 'instalacion-electrica': drawInstalacionElectrica(ctx, cw, ch, params); break;
+    case 'instalacion-sanitaria': drawInstalacionSanitaria(ctx, cw, ch, params); break;
+    case 'instalacion-gas':      drawInstalacionGas(ctx, cw, ch, params); break;
+    case 'aparato-sanitario':    drawAparatoSanitario(ctx, cw, ch, params); break;
+    case 'jardineria':           drawJardineria(ctx, cw, ch, params); break;
     default: {
       ctx.clearRect(0,0,cw,ch); ctx.fillStyle='#FAFAF8'; ctx.fillRect(0,0,cw,ch);
       ctx.save(); ctx.font='bold 11px "Segoe UI",sans-serif'; ctx.fillStyle='#BBBBBB';
@@ -718,7 +917,10 @@ function drawForKey(ctx: CanvasRenderingContext2D, cw: number, ch: number, qKey:
          (mousemove)="onMouseMove($event)"
          (mouseup)="onMouseUp()"
          (mouseleave)="onMouseUp()"
-         [style.cursor]="isDragging ? 'grabbing' : 'grab'">
+         (wheel)="onWheel($event)"
+         (dblclick)="redrawPublic()"
+         [style.cursor]="isDragging ? 'grabbing' : 'grab'"
+         title="Arrastra para rotar · Scroll para zoom · Doble clic: restaurar">
       <canvas #canvas style="display:block;width:100%;height:100%"></canvas>
     </div>
   `,
@@ -730,8 +932,11 @@ export class QuickCalcCanvasComponent implements OnChanges, AfterViewInit, OnDes
   @ViewChild('canvas')  canvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('wrapper') wrapperRef!: ElementRef<HTMLDivElement>;
 
-  azimuth   = 225 * Math.PI / 180;
-  elevation = 30  * Math.PI / 180;
+  azimuth    = 225 * Math.PI / 180;
+  elevation  = 30  * Math.PI / 180;
+  zoomFactor = 1.3;
+  panX = 0;
+  panY = 0;
   isDragging = false;
   private lastMx = 0;
   private lastMy = 0;
@@ -765,6 +970,26 @@ export class QuickCalcCanvasComponent implements OnChanges, AfterViewInit, OnDes
 
   onMouseUp() { this.isDragging = false; }
 
+  onWheel(e: WheelEvent) {
+    e.preventDefault();
+    const wrapper = this.wrapperRef?.nativeElement;
+    if (!wrapper) return;
+    const rect = wrapper.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const w = wrapper.clientWidth  || 280;
+    const h = wrapper.clientHeight || 340;
+    const oldZoom = this.zoomFactor;
+    const newZoom = Math.min(5, Math.max(0.25, oldZoom - e.deltaY * 0.001));
+    const ratio = newZoom / oldZoom;
+    this.panX = (mx - w / 2) * (1 - ratio) + this.panX * ratio;
+    this.panY = (my - h / 2) * (1 - ratio) + this.panY * ratio;
+    this.zoomFactor = newZoom;
+    this.redraw();
+  }
+
+  redrawPublic() { this.panX = 0; this.panY = 0; this.zoomFactor = 1.3; this.redraw(); }
+
   private redraw() {
     const canvas  = this.canvasRef?.nativeElement;
     const wrapper = this.wrapperRef?.nativeElement;
@@ -776,6 +1001,15 @@ export class QuickCalcCanvasComponent implements OnChanges, AfterViewInit, OnDes
     if (!ctx) return;
     _az = this.azimuth;
     _el = this.elevation;
+    // Pre-fill edges (visible when zoomed out)
+    ctx.fillStyle = '#FAFAF8';
+    ctx.fillRect(0, 0, w, h);
+    // Apply zoom centered at mouse (panX/panY shift the zoom pivot)
+    ctx.save();
+    ctx.translate(w / 2 + this.panX, h / 2 + this.panY);
+    ctx.scale(this.zoomFactor, this.zoomFactor);
+    ctx.translate(-w / 2, -h / 2);
     drawForKey(ctx, w, h, this.qKey, this.params);
+    ctx.restore();
   }
 }

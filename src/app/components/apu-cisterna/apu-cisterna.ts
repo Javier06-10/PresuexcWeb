@@ -15,7 +15,7 @@ interface UnidadCisterna {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './apu-cisterna.html',
-  styles: [``]
+
 })
 export class ApuCisterna implements OnInit, OnChanges {
   @Input() apuParameters: any;
@@ -38,20 +38,16 @@ export class ApuCisterna implements OnInit, OnChanges {
     this.cisternas().reduce((s, c) => s + (c.cant||1), 0)
   );
 
-  private _firstEmit = false;
-
   constructor() {
     effect(() => {
-      const params = {
+      this.parametersChange.emit({
         cisternas: this.cisternas(),
         tipoMaterial: this.tipoMaterial(),
         con_tapa: this.con_tapa(),
         con_impermeabilizacion: this.con_impermeabilizacion(),
         con_bomba: this.con_bomba(),
         cantidad_calculada: +this.volumenTotal().toFixed(3),
-      };
-      if (!this._firstEmit) { this._firstEmit = true; return; }
-      this.parametersChange.emit(params);
+      });
     });
   }
 

@@ -14,7 +14,7 @@ interface TramoMuro {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './apu-muro-perimetral.html',
-  styles: [``]
+
 })
 export class ApuMuroPerimetral implements OnInit, OnChanges {
   @Input() apuParameters: any;
@@ -42,11 +42,9 @@ export class ApuMuroPerimetral implements OnInit, OnChanges {
     this.areaTotal() * (1 + (this.desperdicio()||0) / 100)
   );
 
-  private _firstEmit = false;
-
   constructor() {
     effect(() => {
-      const params = {
+      this.parametersChange.emit({
         tramos: this.tramos(),
         tipoMaterial: this.tipoMaterial(),
         espesor: this.espesor(),
@@ -54,9 +52,7 @@ export class ApuMuroPerimetral implements OnInit, OnChanges {
         con_acabado: this.con_acabado(),
         desperdicio: this.desperdicio(),
         cantidad_calculada: +this.metrosLineales().toFixed(2),
-      };
-      if (!this._firstEmit) { this._firstEmit = true; return; }
-      this.parametersChange.emit(params);
+      });
     });
   }
 

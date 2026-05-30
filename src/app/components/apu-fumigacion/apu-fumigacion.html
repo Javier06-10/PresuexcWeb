@@ -1,131 +1,198 @@
 <div style="display:flex;flex-direction:column;gap:10px">
 
-  <!-- ÁREAS DE TRATAMIENTO -->
+  <!-- ÁREA -->
   <div class="card">
     <div class="card-title">
-      <i class="ph ph-spray-bottle" style="font-size:13px;color:var(--brand)"></i>
-      Áreas de Tratamiento
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8B4513" stroke-width="2"><path d="M21 3H3v18h18V3z"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+      Área a fumigar
     </div>
-    <table style="width:100%;border-collapse:collapse;font-size:12px">
-      <thead>
-        <tr style="background:var(--gray-3)">
-          <th style="padding:6px 8px;text-align:left;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--gray-border)">Descripción</th>
-          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:110px">Largo (m)</th>
-          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:110px">Ancho (m)</th>
-          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:100px">Área (m²)</th>
-          <th style="width:36px;border-bottom:1px solid var(--gray-border)"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let zona of zonas(); let i = index" style="border-bottom:1px solid var(--gray-3)">
-          <td style="padding:5px 8px">
-            <input type="text" [ngModel]="zona.descripcion" (ngModelChange)="updateZona(i,'descripcion',$event)"
-              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 8px;font-size:12px;background:var(--field-bg);width:100%"
-              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
-              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'" />
-          </td>
-          <td style="padding:5px 6px"><input type="number" step="any" [ngModel]="zona.largo" (ngModelChange)="updateZona(i,'largo',+$event)"
-            style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 6px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
-            onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
-            onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
-          <td style="padding:5px 6px"><input type="number" step="any" [ngModel]="zona.ancho" (ngModelChange)="updateZona(i,'ancho',+$event)"
-            style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 6px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
-            onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
-            onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
-          <td style="padding:5px 8px;text-align:center;font-weight:700;font-size:13px;color:var(--brand)">
-            {{ (zona.largo||0)*(zona.ancho||0) | number:'1.2-2' }}
-          </td>
-          <td style="padding:5px 4px;text-align:center">
-            <button *ngIf="zonas().length > 1" (click)="removeZona(i)"
-              style="background:var(--red);color:#fff;border:none;border-radius:4px;padding:4px 7px;cursor:pointer;font-size:12px;line-height:1;display:flex;align-items:center">
-              <i class="ph ph-trash"></i>
-            </button>
-          </td>
-        </tr>
-      </tbody>
-      <tfoot>
-        <tr style="background:var(--brand-light)">
-          <td colspan="3" style="padding:7px 8px;font-size:11px;font-weight:700;color:var(--brand);text-transform:uppercase;text-align:right">Área Total</td>
-          <td style="padding:7px 8px;text-align:center;font-size:15px;font-weight:800;color:var(--brand)">{{ areaTotal() | number:'1.2-2' }}</td>
-          <td></td>
-        </tr>
-      </tfoot>
-    </table>
-    <button (click)="addZona()" style="margin-top:10px;background:var(--gray-3);color:var(--gray-muted);border:1px dashed var(--gray-border);border-radius:6px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px">
-      <i class="ph ph-plus"></i> Añadir Zona
-    </button>
+    <div style="background:#EAF0F8;border:0.5px solid #B5D4F4;border-radius:5px;padding:7px 12px;font-size:11px;color:#185FA5;margin-bottom:10px">
+      Se aplica al suelo antes de colocar losa o relleno. Corresponde al área de la planta baja de la vivienda.
+    </div>
+    <div class="row4">
+      <div class="f"><label>Método de medición</label>
+        <select [ngModel]="modoArea()" (ngModelChange)="modoArea.set($event)">
+          <option value="dim">Por dimensiones (L × A)</option>
+          <option value="m2">Área directa (m²)</option>
+        </select>
+      </div>
+      <div class="f" *ngIf="modoArea()==='dim'">
+        <label>Largo (m)</label>
+        <input type="number" step="0.01" [ngModel]="largo()" (ngModelChange)="largo.set(+$event)" onfocus="this.select()" />
+      </div>
+      <div class="f" *ngIf="modoArea()==='dim'">
+        <label>Ancho (m)</label>
+        <input type="number" step="0.01" [ngModel]="ancho()" (ngModelChange)="ancho.set(+$event)" onfocus="this.select()" />
+      </div>
+      <div class="f" *ngIf="modoArea()==='m2'">
+        <label>Área total (m²)</label>
+        <input type="number" step="0.01" [ngModel]="areaDirecta()" (ngModelChange)="areaDirecta.set(+$event)" onfocus="this.select()" />
+      </div>
+      <div class="f"><label>Unidad de cobro</label>
+        <select [ngModel]="unidadCobro()" (ngModelChange)="unidadCobro.set($event)">
+          <option value="m2">Por m²</option>
+          <option value="pa">P.A. (Precio Acordado)</option>
+          <option value="pie2">Por pie²</option>
+        </select>
+      </div>
+      <div class="f" *ngIf="modoArea()==='m2'"></div>
+    </div>
   </div>
 
-  <!-- PARÁMETROS + PERSONAL -->
-  <div class="row2">
-    <div class="card" style="margin-bottom:0">
-      <div class="card-title"><i class="ph ph-sliders" style="font-size:13px;color:var(--brand)"></i> Parámetros del Tratamiento</div>
-      <div class="f" style="margin-bottom:8px">
-        <label>Tipo de Tratamiento</label>
-        <select [ngModel]="tipoTratamiento()" (ngModelChange)="tipoTratamiento.set($event)">
-          <option>Termitida preventiva</option>
-          <option>Desratización</option>
-          <option>Control de insectos rastreros</option>
-          <option>Fumigación general</option>
+  <!-- PRODUCTO -->
+  <div class="card">
+    <div class="card-title">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8B4513" stroke-width="2"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
+      Producto insecticida
+    </div>
+    <div class="row4">
+      <div class="f"><label>Tipo de producto</label>
+        <select [ngModel]="tipoProducto()" (ngModelChange)="tipoProducto.set($event)">
+          <option value="frasco">Frasco / concentrado</option>
+          <option value="litro">Por litros</option>
+          <option value="galon">Por galones</option>
         </select>
       </div>
-      <div class="f" style="margin-bottom:8px">
-        <label>Producto Químico</label>
-        <select [ngModel]="producto()" (ngModelChange)="producto.set($event)">
-          <option>Clorpirifos emulsionable</option>
-          <option>Bifentrina al 10%</option>
-          <option>Fipronil al 0.5%</option>
-          <option>Imidacloprid al 2.15%</option>
+      <div class="f" *ngIf="tipoProducto()==='frasco'">
+        <label>N° frascos</label>
+        <input type="number" step="1" min="1" [ngModel]="nFrascos()" (ngModelChange)="nFrascos.set(+$event)" onfocus="this.select()" />
+        <span class="hint">Frascos de concentrado</span>
+      </div>
+      <div class="f" *ngIf="tipoProducto()==='litro'">
+        <label>Litros de producto</label>
+        <input type="number" step="0.1" min="0.1" [ngModel]="litros()" (ngModelChange)="litros.set(+$event)" onfocus="this.select()" />
+      </div>
+      <div class="f" *ngIf="tipoProducto()==='galon'">
+        <label>Galones de producto</label>
+        <input type="number" step="0.1" min="0.1" [ngModel]="galones()" (ngModelChange)="galones.set(+$event)" onfocus="this.select()" />
+        <span class="hint">1 galón ≈ 3.785 L</span>
+      </div>
+      <div class="f"><label>Factor dilución (agua/producto)</label>
+        <input type="number" step="0.5" min="1" [ngModel]="factorDilucion()" (ngModelChange)="factorDilucion.set(+$event)" onfocus="this.select()" />
+        <span class="hint">Litros de agua por litro de producto</span>
+      </div>
+      <div class="f" *ngIf="tipoProducto()!=='frasco'"></div>
+    </div>
+  </div>
+
+  <!-- BOMBA -->
+  <div class="card">
+    <div class="card-title">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8B4513" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+      Bomba de aplicación
+    </div>
+    <div class="row4">
+      <div class="f"><label>Tipo de bomba</label>
+        <select [ngModel]="tipoBomba()" (ngModelChange)="tipoBomba.set($event);onTipoBombaChange()">
+          <option value="manual4">Bomba manual 4 gl (≈ 15 L) — más usada</option>
+          <option value="manual2">Bomba manual 2 gl (≈ 7.5 L)</option>
+          <option value="manual3">Bomba manual 3 gl (≈ 11 L)</option>
+          <option value="manual5">Bomba manual 5 gl (≈ 19 L)</option>
+          <option value="mochila20">Mochila 20 L</option>
+          <option value="motorizada">Bomba motorizada 25–50 L</option>
+          <option value="otro">Otra / especificar</option>
         </select>
       </div>
-      <div class="row2">
-        <div class="f"><label>Dosis (L/m²)</label>
-          <input type="number" step="0.001" [ngModel]="dosis()" (ngModelChange)="dosis.set(+$event)" /></div>
-        <div class="f"><label>Dilución (factor)</label>
-          <input type="number" step="1" [ngModel]="dilusion()" (ngModelChange)="dilusion.set(+$event)" /></div>
+      <div class="f"><label>Capacidad bomba (litros)</label>
+        <input type="number" step="0.5" [ngModel]="capBomba()" (ngModelChange)="capBomba.set(+$event)" onfocus="this.select()" />
+      </div>
+      <div class="f"><label>Rendimiento (m²/bomba)</label>
+        <input type="number" step="5" [ngModel]="rendBomba()" (ngModelChange)="rendBomba.set(+$event)" onfocus="this.select()" />
+        <span class="hint">Aplicación alta/mojada recomendada: 40 m²</span>
+      </div>
+      <div class="f"><label>N° bombas necesarias</label>
+        <input type="text" readonly [value]="nBombas() > 0 ? nBombas() : '—'"
+          style="background:#f0f0f0;color:var(--gray-muted);font-weight:600;cursor:default" />
       </div>
     </div>
-    <div class="card" style="margin-bottom:0">
-      <div class="card-title"><i class="ph ph-users" style="font-size:13px;color:var(--brand)"></i> Personal Especializado</div>
-      <div class="row2" style="margin-bottom:8px">
-        <div class="f"><label>Fumigadores</label>
-          <input type="number" step="1" [ngModel]="fumigadores()" (ngModelChange)="fumigadores.set(+$event)" /></div>
-        <div class="f"><label>Ayudantes</label>
-          <input type="number" step="1" [ngModel]="ayudantes()" (ngModelChange)="ayudantes.set(+$event)" /></div>
+  </div>
+
+  <!-- MANO DE OBRA -->
+  <div class="card">
+    <div class="card-title">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8B4513" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Mano de obra y factores
+    </div>
+    <div class="row4">
+      <div class="f"><label>Fumigadores (jornales)</label>
+        <input type="number" step="1" min="1" [ngModel]="fumigadores()" (ngModelChange)="fumigadores.set(+$event)" onfocus="this.select()" />
+        <span class="hint">Aplican el producto</span>
       </div>
-      <div style="margin-top:12px;padding:10px;background:var(--gray-3);border-radius:6px">
-        <div style="font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Cantidades de producto</div>
-        <div style="display:flex;flex-direction:column;gap:5px;font-size:12px">
-          <div style="display:flex;justify-content:space-between">
-            <span style="color:var(--gray-muted)">Producto concentrado:</span>
-            <span style="font-weight:700;color:var(--gray-text)">{{ volumenProducto() | number:'1.3-3' }} L</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;border-top:1px solid var(--gray-border);padding-top:4px">
-            <span style="color:var(--brand);font-weight:700">Solución diluida:</span>
-            <span style="font-weight:800;color:var(--brand)">{{ volumenDiluido() | number:'1.2-2' }} L</span>
-          </div>
-        </div>
+      <div class="f"><label>Ayudantes (jornales)</label>
+        <input type="number" step="1" min="0" [ngModel]="ayudantes()" (ngModelChange)="ayudantes.set(+$event)" onfocus="this.select()" />
+        <span class="hint">Mezclan y preparan solución</span>
+      </div>
+      <div class="f"><label>Factor imprevisto MO (%)</label>
+        <input type="number" step="1" [ngModel]="impMO()" (ngModelChange)="impMO.set(+$event)" onfocus="this.select()" />
+      </div>
+      <div class="f"><label>Factor imprevisto material (%)</label>
+        <input type="number" step="1" [ngModel]="impMat()" (ngModelChange)="impMat.set(+$event)" onfocus="this.select()" />
       </div>
     </div>
   </div>
 
   <!-- MÉTRICAS -->
-  <div class="metrics-row">
-    <div class="metric" style="grid-column:span 2;border-color:var(--brand);background:var(--brand-light)">
-      <div class="m-lbl" style="color:var(--brand-dark)">Área Total a Tratar</div>
-      <div class="m-val" style="font-size:28px;color:var(--brand-dark)">{{ areaTotal() | number:'1.2-2' }}</div>
-      <div class="m-unit" style="color:var(--brand)">m²</div>
+  <div class="metrics-row" style="grid-template-columns:repeat(4,1fr)">
+    <div class="metric">
+      <div class="m-lbl">Área total</div>
+      <div class="m-val">{{ areaTotal() | number:'1.2-2' }}</div>
+      <div class="m-unit">m²</div>
     </div>
     <div class="metric">
-      <div class="m-lbl">Producto concentrado</div>
-      <div class="m-val">{{ volumenProducto() | number:'1.3-3' }}</div>
-      <div class="m-unit">Litros</div>
+      <div class="m-lbl">N° bombas necesarias</div>
+      <div class="m-val">{{ nBombas() > 0 ? nBombas() : '—' }}</div>
+      <div class="m-unit">bombas de aplicación</div>
     </div>
     <div class="metric">
       <div class="m-lbl">Solución total</div>
-      <div class="m-val">{{ volumenDiluido() | number:'1.2-2' }}</div>
-      <div class="m-unit">Litros</div>
+      <div class="m-val">{{ solucionTotal() | number:'1.1-1' }}</div>
+      <div class="m-unit">litros preparados</div>
     </div>
+    <div class="metric" style="border-color:var(--brand);background:var(--brand-light)">
+      <div class="m-lbl" style="color:var(--brand-dark)">Cantidad presupuesto</div>
+      <div class="m-val" style="color:var(--brand-dark)">{{ cantidad() | number:'1.2-2' }}</div>
+      <div class="m-unit" style="color:var(--brand)">{{ unidDisplay() }}</div>
+    </div>
+  </div>
+
+  <!-- RESUMEN -->
+  <div class="card">
+    <div class="card-title">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8B4513" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      Resumen de partida → presupuesto
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--gray-3)">
+      <span style="font-size:10px;font-weight:700;color:var(--gray-muted);text-transform:uppercase;white-space:nowrap">Imprevistos (%)</span>
+      <input type="number" step="1" min="0" [ngModel]="imp()" (ngModelChange)="imp.set(+$event)"
+        style="width:70px;border:1px solid var(--gray-border);border-radius:4px;padding:4px 7px;font-size:13px;background:var(--field-bg)" />
+    </div>
+    <table class="sum-table">
+      <thead>
+        <tr>
+          <th style="width:44%">Descripción</th>
+          <th style="width:8%">Unid.</th>
+          <th style="width:14%">Cantidad</th>
+          <th style="width:17%">P.U. (RD$)</th>
+          <th style="width:17%">Total (RD$)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Fumigación anticomején y control de plagas</td>
+          <td style="text-align:center;font-weight:700">{{ unidDisplay() }}</td>
+          <td style="text-align:center">{{ cantidad() | number:'1.2-2' }}</td>
+          <td style="padding:4px 8px">
+            <input type="number" step="any" min="0" [value]="pu() || ''" (change)="setPu($event)"
+              placeholder="← base precios"
+              style="width:100%;border:1px solid var(--gray-border);border-radius:3px;padding:3px 6px;font-size:12px;background:var(--field-bg);text-align:right" />
+          </td>
+          <td style="text-align:right;font-weight:700">
+            <span *ngIf="totalFinal() > 0">{{ totalFinal() | number:'1.2-2' }}</span>
+            <span *ngIf="totalFinal() === 0" style="color:var(--gray-hint)">—</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
 </div>

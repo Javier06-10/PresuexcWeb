@@ -1,130 +1,414 @@
 <div style="display:flex;flex-direction:column;gap:10px">
 
-  <!-- GEOMETRÍA -->
+  <!-- TIPO DE EXCAVACIÓN -->
   <div class="card">
     <div class="card-title">
-      <i class="ph ph-corners-out" style="font-size:13px;color:var(--brand)"></i>
-      Geometría — Cimientos a Excavar
+      <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="1" y="10" width="12" height="3" rx="1" fill="#8B4513"/><rect x="4" y="6" width="6" height="4" fill="#8B4513" opacity=".7"/><rect x="5.5" y="3" width="3" height="3" fill="#8B4513" opacity=".5"/></svg>
+      Tipo de excavación de cimiento
     </div>
-    <table style="width:100%;border-collapse:collapse;font-size:12px">
-      <thead>
-        <tr style="background:var(--gray-3)">
-          <th style="padding:6px 8px;text-align:left;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--gray-border)">Descripción</th>
+    <div class="seg-row" style="flex-wrap:wrap">
+      <button class="seg" [class.active]="tipoExcavacion()==='corrida'"    (click)="tipoExcavacion.set('corrida')">Zapata corrida</button>
+      <button class="seg" [class.active]="tipoExcavacion()==='rect'"       (click)="tipoExcavacion.set('rect')">Zapata aislada rect.</button>
+      <button class="seg" [class.active]="tipoExcavacion()==='circ'"       (click)="tipoExcavacion.set('circ')">Zapata aislada circ.</button>
+      <button class="seg" [class.active]="tipoExcavacion()==='platea'"     (click)="tipoExcavacion.set('platea')">Platea rectangular</button>
+      <button class="seg" [class.active]="tipoExcavacion()==='platea-circ'" (click)="tipoExcavacion.set('platea-circ')">Platea circular</button>
+    </div>
+
+    <!-- CORRIDA -->
+    <div *ngIf="tipoExcavacion()==='corrida'" style="min-width:0;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed">
+        <thead><tr style="background:var(--gray-3)">
+          <th style="padding:6px 8px;text-align:left;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border)">Descripción / Eje</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:90px">Largo (m)</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:90px">Ancho (m)</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:90px">Prof. (m)</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:90px">Vol. (m³)</th>
+          <th style="width:34px;border-bottom:1px solid var(--gray-border)"></th>
+        </tr></thead>
+        <tbody>
+          <tr *ngFor="let t of tramosCorrida(); let i = index" style="border-bottom:1px solid var(--gray-3)">
+            <td style="padding:5px 8px"><input type="text" [ngModel]="t.descripcion" (ngModelChange)="updateTramoCorrida(i,'descripcion',$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 8px;font-size:12px;background:var(--field-bg);width:100%"
+              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
+            <td style="padding:5px 4px"><input type="number" step="any" [ngModel]="t.largo" (ngModelChange)="updateTramoCorrida(i,'largo',+$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
+            <td style="padding:5px 4px"><input type="number" step="any" [ngModel]="t.ancho" (ngModelChange)="updateTramoCorrida(i,'ancho',+$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
+            <td style="padding:5px 4px"><input type="number" step="any" [ngModel]="t.profundidad" (ngModelChange)="updateTramoCorrida(i,'profundidad',+$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
+            <td style="padding:5px 4px;text-align:center;font-size:12px;color:var(--gray-muted)">{{ (t.largo||0)*(t.ancho||0)*(t.profundidad||0) | number:'1.2-2' }}</td>
+            <td style="padding:5px 4px;text-align:center"><button (click)="removeTramoCorrida(i)"
+              style="background:none;border:1px solid #E24B4A;color:#E24B4A;border-radius:4px;width:26px;height:26px;cursor:pointer;font-size:13px;line-height:1">✕</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
+        <button class="btn-add" (click)="addTramoCorrida()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Agregar eje / tramo
+        </button>
+        <div class="f" style="max-width:200px">
+          <label>Long. total acumulada</label>
+          <input type="text" readonly [value]="longtotalCorrida() | number:'1.2-2'" style="background:#DCDCDC;color:var(--gray-muted);font-weight:600"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- AISLADA RECT -->
+    <div *ngIf="tipoExcavacion()==='rect'" style="min-width:0;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed">
+        <thead><tr style="background:var(--gray-3)">
+          <th style="padding:6px 8px;text-align:left;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border)">Descripción</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:70px">Cant.</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:85px">Largo (m)</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:85px">Ancho (m)</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:85px">Prof. (m)</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:85px">Vol. (m³)</th>
+          <th style="width:34px;border-bottom:1px solid var(--gray-border)"></th>
+        </tr></thead>
+        <tbody>
+          <tr *ngFor="let z of zapatRects(); let i = index" style="border-bottom:1px solid var(--gray-3)">
+            <td style="padding:5px 8px"><input type="text" [ngModel]="z.descripcion" (ngModelChange)="updateZapataRect(i,'descripcion',$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 8px;font-size:12px;background:var(--field-bg);width:100%"
+              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
+            <td style="padding:5px 4px"><input type="number" step="1" min="1" [ngModel]="z.cantidad" (ngModelChange)="updateZapataRect(i,'cantidad',+$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
+            <td style="padding:5px 4px"><input type="number" step="any" [ngModel]="z.largo" (ngModelChange)="updateZapataRect(i,'largo',+$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
+            <td style="padding:5px 4px"><input type="number" step="any" [ngModel]="z.ancho" (ngModelChange)="updateZapataRect(i,'ancho',+$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
+            <td style="padding:5px 4px"><input type="number" step="any" [ngModel]="z.profundidad" (ngModelChange)="updateZapataRect(i,'profundidad',+$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
+            <td style="padding:5px 4px;text-align:center;font-size:12px;color:var(--gray-muted)">{{ (z.cantidad||0)*(z.largo||0)*(z.ancho||0)*(z.profundidad||0) | number:'1.2-2' }}</td>
+            <td style="padding:5px 4px;text-align:center"><button (click)="removeZapataRect(i)"
+              style="background:none;border:1px solid #E24B4A;color:#E24B4A;border-radius:4px;width:26px;height:26px;cursor:pointer;font-size:13px;line-height:1">✕</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <button class="btn-add" style="margin-top:8px" (click)="addZapataRect()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Agregar tipo de zapata
+      </button>
+    </div>
+
+    <!-- AISLADA CIRC -->
+    <div *ngIf="tipoExcavacion()==='circ'" style="min-width:0;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed">
+        <thead><tr style="background:var(--gray-3)">
+          <th style="padding:6px 8px;text-align:left;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border)">Descripción</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:70px">Cant.</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:110px">Diámetro (m)</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:95px">Prof. (m)</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:95px">Vol. (m³)</th>
+          <th style="width:34px;border-bottom:1px solid var(--gray-border)"></th>
+        </tr></thead>
+        <tbody>
+          <tr *ngFor="let z of zapatCircs(); let i = index" style="border-bottom:1px solid var(--gray-3)">
+            <td style="padding:5px 8px"><input type="text" [ngModel]="z.descripcion" (ngModelChange)="updateZapataCirc(i,'descripcion',$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 8px;font-size:12px;background:var(--field-bg);width:100%"
+              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
+            <td style="padding:5px 4px"><input type="number" step="1" min="1" [ngModel]="z.cantidad" (ngModelChange)="updateZapataCirc(i,'cantidad',+$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
+            <td style="padding:5px 4px"><input type="number" step="any" [ngModel]="z.diametro" (ngModelChange)="updateZapataCirc(i,'diametro',+$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
+            <td style="padding:5px 4px"><input type="number" step="any" [ngModel]="z.profundidad" (ngModelChange)="updateZapataCirc(i,'profundidad',+$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
+            <td style="padding:5px 4px;text-align:center;font-size:12px;color:var(--gray-muted)">{{ (z.cantidad||0)*3.14159*((z.diametro||0)/2)*((z.diametro||0)/2)*(z.profundidad||0) | number:'1.2-2' }}</td>
+            <td style="padding:5px 4px;text-align:center"><button (click)="removeZapataCirc(i)"
+              style="background:none;border:1px solid #E24B4A;color:#E24B4A;border-radius:4px;width:26px;height:26px;cursor:pointer;font-size:13px;line-height:1">✕</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <button class="btn-add" style="margin-top:8px" (click)="addZapataCirc()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Agregar zapata circular
+      </button>
+    </div>
+
+    <!-- PLATEA RECT -->
+    <div *ngIf="tipoExcavacion()==='platea'" style="min-width:0;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed">
+        <thead><tr style="background:var(--gray-3)">
+          <th style="padding:6px 8px;text-align:left;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border)">Descripción</th>
           <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:100px">Largo (m)</th>
           <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:100px">Ancho (m)</th>
           <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:100px">Prof. (m)</th>
           <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:100px">Vol. (m³)</th>
-          <th style="width:36px;border-bottom:1px solid var(--gray-border)"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let tramo of tramos(); let i = index" style="border-bottom:1px solid var(--gray-3)">
-          <td style="padding:5px 8px">
-            <input type="text" [ngModel]="tramo.descripcion" (ngModelChange)="updateTramo(i,'descripcion',$event)"
+          <th style="width:34px;border-bottom:1px solid var(--gray-border)"></th>
+        </tr></thead>
+        <tbody>
+          <tr *ngFor="let p of plateaRects(); let i = index" style="border-bottom:1px solid var(--gray-3)">
+            <td style="padding:5px 8px"><input type="text" [ngModel]="p.descripcion" (ngModelChange)="updatePlateaRect(i,'descripcion',$event)"
               style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 8px;font-size:12px;background:var(--field-bg);width:100%"
               onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
-              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'" />
-          </td>
-          <td style="padding:5px 6px"><input type="number" step="any" [ngModel]="tramo.largo" (ngModelChange)="updateTramo(i,'largo',+$event)"
-            style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 6px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
-            onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
-            onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
-          <td style="padding:5px 6px"><input type="number" step="any" [ngModel]="tramo.ancho" (ngModelChange)="updateTramo(i,'ancho',+$event)"
-            style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 6px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
-            onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
-            onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
-          <td style="padding:5px 6px"><input type="number" step="any" [ngModel]="tramo.profundidad" (ngModelChange)="updateTramo(i,'profundidad',+$event)"
-            style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 6px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
-            onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
-            onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
-          <td style="padding:5px 8px;text-align:center;font-weight:700;font-size:13px;color:var(--brand)">
-            {{ (tramo.largo||0)*(tramo.ancho||0)*(tramo.profundidad||0) | number:'1.2-2' }}
-          </td>
-          <td style="padding:5px 4px;text-align:center">
-            <button *ngIf="tramos().length > 1" (click)="removeTramo(i)"
-              style="background:var(--red);color:#fff;border:none;border-radius:4px;padding:4px 7px;cursor:pointer;font-size:12px;line-height:1;display:flex;align-items:center">
-              <i class="ph ph-trash"></i>
-            </button>
-          </td>
-        </tr>
-      </tbody>
-      <tfoot>
-        <tr style="background:var(--brand-light)">
-          <td colspan="4" style="padding:7px 8px;font-size:11px;font-weight:700;color:var(--brand);text-transform:uppercase;text-align:right">Volumen Neto Total</td>
-          <td style="padding:7px 8px;text-align:center;font-size:15px;font-weight:800;color:var(--brand)">{{ volumenNeto() | number:'1.2-2' }}</td>
-          <td></td>
-        </tr>
-      </tfoot>
-    </table>
-    <button (click)="addTramo()" style="margin-top:10px;background:var(--gray-3);color:var(--gray-muted);border:1px dashed var(--gray-border);border-radius:6px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px">
-      <i class="ph ph-plus"></i> Añadir Elemento
-    </button>
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
+            <td style="padding:5px 4px"><input type="number" step="any" [ngModel]="p.largo" (ngModelChange)="updatePlateaRect(i,'largo',+$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
+            <td style="padding:5px 4px"><input type="number" step="any" [ngModel]="p.ancho" (ngModelChange)="updatePlateaRect(i,'ancho',+$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
+            <td style="padding:5px 4px"><input type="number" step="any" [ngModel]="p.profundidad" (ngModelChange)="updatePlateaRect(i,'profundidad',+$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
+            <td style="padding:5px 4px;text-align:center;font-size:12px;color:var(--gray-muted)">{{ (p.largo||0)*(p.ancho||0)*(p.profundidad||0) | number:'1.2-2' }}</td>
+            <td style="padding:5px 4px;text-align:center"><button (click)="removePlateaRect(i)"
+              style="background:none;border:1px solid #E24B4A;color:#E24B4A;border-radius:4px;width:26px;height:26px;cursor:pointer;font-size:13px;line-height:1">✕</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <button class="btn-add" style="margin-top:8px" (click)="addPlateaRect()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Agregar tramo de platea
+      </button>
+    </div>
+
+    <!-- PLATEA CIRC -->
+    <div *ngIf="tipoExcavacion()==='platea-circ'" style="min-width:0;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed">
+        <thead><tr style="background:var(--gray-3)">
+          <th style="padding:6px 8px;text-align:left;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border)">Descripción</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:130px">Diámetro (m)</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:110px">Prof. (m)</th>
+          <th style="padding:6px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:110px">Vol. (m³)</th>
+          <th style="width:34px;border-bottom:1px solid var(--gray-border)"></th>
+        </tr></thead>
+        <tbody>
+          <tr *ngFor="let p of plateaCircs(); let i = index" style="border-bottom:1px solid var(--gray-3)">
+            <td style="padding:5px 8px"><input type="text" [ngModel]="p.descripcion" (ngModelChange)="updatePlateaCirc(i,'descripcion',$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 8px;font-size:12px;background:var(--field-bg);width:100%"
+              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
+            <td style="padding:5px 4px"><input type="number" step="any" [ngModel]="p.diametro" (ngModelChange)="updatePlateaCirc(i,'diametro',+$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
+            <td style="padding:5px 4px"><input type="number" step="any" [ngModel]="p.profundidad" (ngModelChange)="updatePlateaCirc(i,'profundidad',+$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'"/></td>
+            <td style="padding:5px 4px;text-align:center;font-size:12px;color:var(--gray-muted)">{{ 3.14159*((p.diametro||0)/2)*((p.diametro||0)/2)*(p.profundidad||0) | number:'1.2-2' }}</td>
+            <td style="padding:5px 4px;text-align:center"><button (click)="removePlateaCirc(i)"
+              style="background:none;border:1px solid #E24B4A;color:#E24B4A;border-radius:4px;width:26px;height:26px;cursor:pointer;font-size:13px;line-height:1">✕</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <button class="btn-add" style="margin-top:8px" (click)="addPlateaCirc()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Agregar platea circular
+      </button>
+    </div>
   </div>
 
-  <!-- PARÁMETROS + MANO DE OBRA -->
-  <div class="row2">
-    <div class="card" style="margin-bottom:0">
-      <div class="card-title"><i class="ph ph-sliders" style="font-size:13px;color:var(--brand)"></i> Parámetros Técnicos</div>
-      <div class="row2" style="margin-bottom:8px">
-        <div class="f"><label>Esponjamiento</label>
-          <input type="number" step="0.01" [ngModel]="esponjamiento()" (ngModelChange)="esponjamiento.set(+$event)" /></div>
-        <div class="f"><label>Desperdicio (%)</label>
-          <input type="number" step="0.1" [ngModel]="desperdicio()" (ngModelChange)="desperdicio.set(+$event)" /></div>
-      </div>
-      <div class="f" style="margin-bottom:8px">
-        <label>Tipo de Suelo</label>
-        <select [ngModel]="tipoSuelo()" (ngModelChange)="tipoSuelo.set($event)">
-          <option>Suelo natural suelto</option>
-          <option>Suelo arcilloso blando</option>
-          <option>Suelo arcilloso firme</option>
-          <option>Roca fragmentada</option>
-        </select>
-      </div>
-      <div class="f" style="margin-bottom:8px">
-        <label>Apuntalamiento</label>
-        <select [ngModel]="apuntalamiento()" (ngModelChange)="apuntalamiento.set($event)">
-          <option>No requerido</option>
-          <option>Entibado simple</option>
-          <option>Entibado doble</option>
-          <option>Tablestacado</option>
+  <!-- CONDICIONES DEL SITIO + VOLUMETRÍA -->
+  <div class="card">
+    <div class="card-title">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8B4513" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Condiciones del sitio
+    </div>
+    <div class="row3">
+      <div class="f">
+        <label>Clasificación del suelo</label>
+        <select [ngModel]="clasificacionSuelo()" (ngModelChange)="clasificacionSuelo.set($event)">
+          <option value="Blando — tierra suelta">Blando — tierra suelta</option>
+          <option value="Semiduro — arcilla / grava">Semiduro — arcilla / grava</option>
+          <option value="Duro — roca blanda">Duro — roca blanda</option>
+          <option value="Roca dura">Roca dura</option>
         </select>
       </div>
       <div class="f">
-        <label>Disposición del Material</label>
+        <label>Disposición del material</label>
         <select [ngModel]="disposicion()" (ngModelChange)="disposicion.set($event)">
-          <option>Desalojo al perímetro</option>
-          <option>Desalojo fuera del predio</option>
-          <option>Reutilizar como relleno</option>
+          <option value="acopio">Acopio en sitio</option>
+          <option value="transporte">Transporte a botadero</option>
+          <option value="reutilizar">Reutilizar como relleno</option>
+        </select>
+      </div>
+      <div class="f">
+        <label>Nivel freático</label>
+        <select [ngModel]="nivelFreatico()" (ngModelChange)="nivelFreatico.set($event)">
+          <option value="no">No presente</option>
+          <option value="si">Presente — incl. agotamiento</option>
         </select>
       </div>
     </div>
-    <div class="card" style="margin-bottom:0">
-      <div class="card-title"><i class="ph ph-users" style="font-size:13px;color:var(--brand)"></i> Mano de Obra</div>
-      <div class="row2" style="margin-bottom:8px">
-        <div class="f"><label>Rendimiento (m³/día)</label>
-          <input type="number" step="0.5" [ngModel]="rendimiento()" (ngModelChange)="rendimiento.set(+$event)" /></div>
-        <div class="f"><label>Peones</label>
-          <input type="number" step="1" [ngModel]="peones()" (ngModelChange)="peones.set(+$event)" /></div>
+
+    <!-- ALERTA ROCA -->
+    <div *ngIf="clasificacionSuelo()==='Roca dura'" style="background:#FDECEA;border:1px solid #E74C3C;border-radius:5px;padding:6px 10px;font-size:11px;color:#C0392B;margin-bottom:10px;display:flex;align-items:center;gap:6px">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+      Suelo duro / roca — rendimiento muy reducido. Verificar necesidad de demolición o voladuras.
+    </div>
+
+    <!-- CONFIGURACIÓN AVANZADA -->
+    <button (click)="showAvanzado.set(!showAvanzado())"
+      style="background:var(--gray-3);color:var(--gray-muted);border:1px solid var(--gray-border);border-radius:5px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;letter-spacing:.03em;margin-bottom:6px">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+      Configuración avanzada
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" [style.transform]="showAvanzado() ? 'rotate(180deg)' : 'none'" style="transition:transform .2s"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+
+    <div *ngIf="showAvanzado()" style="padding:12px;background:var(--gray-bg);border-radius:6px;border:1px solid var(--gray-border)">
+      <div class="row3" style="margin-bottom:12px">
+        <div class="f">
+          <label>Coef. esponjamiento</label>
+          <input type="number" step="0.01" [ngModel]="esponjamiento()" (ngModelChange)="esponjamiento.set(+$event)" onfocus="this.select()"/>
+          <span class="hint">Tierra: 1.20–1.30</span>
+        </div>
+        <div class="f">
+          <label>Desperdicio (%)</label>
+          <input type="number" step="1" [ngModel]="desperdicio()" (ngModelChange)="desperdicio.set(+$event)" onfocus="this.select()"/>
+        </div>
+        <div class="f">
+          <label>Método de ejecución</label>
+          <select [ngModel]="metodoEjec()" (ngModelChange)="metodoEjec.set($event)">
+            <option value="mano_obra">Mano de obra</option>
+            <option value="equipo">Equipo pesado</option>
+          </select>
+        </div>
       </div>
-      <div class="row2">
-        <div class="f"><label>Duración est. (días)</label>
-          <input type="number" readonly [ngModel]="duracionCalc()"
-            style="background:#DCDCDC;color:var(--gray-muted);cursor:default;font-weight:600" /></div>
-      </div>
-      <!-- Resumen compacto -->
-      <div style="margin-top:12px;padding:10px;background:var(--gray-3);border-radius:6px">
-        <div style="font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Volúmenes</div>
-        <div style="display:flex;flex-direction:column;gap:4px;font-size:12px">
-          <div style="display:flex;justify-content:space-between">
-            <span style="color:var(--gray-muted)">Vol. Esponjado:</span>
-            <span style="font-weight:700;color:var(--gray-text)">{{ volumenEsponjado() | number:'1.2-2' }} m³</span>
+
+      <!-- MANO DE OBRA -->
+      <div *ngIf="metodoEjec()==='mano_obra'">
+        <div style="font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Rendimientos — mano de obra</div>
+        <div class="row4">
+          <div class="f">
+            <label>Rendimiento peón (m³/día)</label>
+            <input type="number" step="0.5" [ngModel]="rendimientoPeon()" (ngModelChange)="rendimientoPeon.set(+$event)" onfocus="this.select()"/>
+            <span class="hint">Tierra: 3–6 · Arcilla: 2–4</span>
           </div>
-          <div style="display:flex;justify-content:space-between;border-top:1px solid var(--gray-border);padding-top:4px">
-            <span style="color:var(--brand);font-weight:700">Vol. Presupuestado:</span>
-            <span style="font-weight:800;color:var(--brand);font-size:14px">{{ volumenPresupuestado() | number:'1.2-2' }} m³</span>
+          <div class="f">
+            <label>Peones en cuadrilla</label>
+            <input type="number" step="1" min="1" [ngModel]="peones()" (ngModelChange)="peones.set(+$event)" onfocus="this.select()"/>
+          </div>
+          <div class="f">
+            <label>Ayudantes acarreo</label>
+            <input type="number" step="1" min="0" [ngModel]="ayudantesAcarreo()" (ngModelChange)="ayudantesAcarreo.set(+$event)" onfocus="this.select()"/>
+          </div>
+          <div class="f">
+            <label>Duración estimada</label>
+            <input type="text" readonly [value]="duracionCalc() > 0 ? duracionCalc() + ' días' : '—'" style="background:#DCDCDC;color:var(--gray-muted);font-weight:600"/>
           </div>
         </div>
       </div>
+
+      <!-- EQUIPO PESADO -->
+      <div *ngIf="metodoEjec()==='equipo'">
+        <div style="font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Rendimientos — equipo pesado</div>
+        <div class="row4" style="margin-bottom:8px">
+          <div class="f">
+            <label>Equipo seleccionado</label>
+            <select [ngModel]="equipoSel()" (ngModelChange)="onEquipoChange($event)">
+              <option value="retroexcavadora">Retroexcavadora JD 310</option>
+              <option value="excavadora">Excavadora CAT 320</option>
+              <option value="minicargador">Minicargador / Bobcat</option>
+              <option value="otro">Otro equipo</option>
+            </select>
+          </div>
+          <div class="f">
+            <label>Modo de cobro equipo</label>
+            <select [ngModel]="modoCobro()" (ngModelChange)="modoCobro.set($event)">
+              <option value="hora">Por hora de equipo (HR)</option>
+              <option value="m3">Por m³ excavado (M3E)</option>
+            </select>
+          </div>
+          <div class="f">
+            <label>Rendimiento (M3E/hr)</label>
+            <input type="number" step="1" [ngModel]="rendEquipo()" (ngModelChange)="rendEquipo.set(+$event)" onfocus="this.select()"/>
+            <span class="hint">{{ equipoHint() }}</span>
+          </div>
+          <div class="f">
+            <label>Horas efectivas/día</label>
+            <input type="number" step="0.5" min="4" max="12" [ngModel]="horasEfectivas()" (ngModelChange)="horasEfectivas.set(+$event)" onfocus="this.select()"/>
+          </div>
+        </div>
+        <div class="row4" style="margin-bottom:8px">
+          <div class="f">
+            <label>Duración estimada</label>
+            <input type="text" readonly [value]="duracionCalc() > 0 ? duracionCalc() + ' días' : '—'" style="background:#DCDCDC;color:var(--gray-muted);font-weight:600"/>
+          </div>
+          <div class="f">
+            <label>Operadores</label>
+            <input type="number" step="1" min="1" [ngModel]="operadores()" (ngModelChange)="operadores.set(+$event)" onfocus="this.select()"/>
+          </div>
+          <div class="f">
+            <label>Ayudantes en obra</label>
+            <input type="number" step="1" min="0" [ngModel]="ayudantesObra()" (ngModelChange)="ayudantesObra.set(+$event)" onfocus="this.select()"/>
+          </div>
+          <div class="f"></div>
+        </div>
+        <div class="transport-box">
+          <div class="transport-lbl">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8B4513" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            Transporte del equipo — ida y vuelta
+          </div>
+          <p class="transport-note">Cantidad: 1 UND · Precio desde base de precios del sistema</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MÉTRICAS -->
+  <div class="metrics-row">
+    <div class="metric"><div class="m-lbl">Vol. banco</div><div class="m-val">{{ volBanco() | number:'1.2-2' }}</div><div class="m-unit">m³ in situ</div></div>
+    <div class="metric"><div class="m-lbl">Vol. esponjado</div><div class="m-val">{{ volEsponjado() | number:'1.2-2' }}</div><div class="m-unit">M3E</div></div>
+    <div class="metric"><div class="m-lbl">Vol. presupuestado</div><div class="m-val">{{ volPresupuestado() | number:'1.2-2' }}</div><div class="m-unit">M3E c/desperdicio</div></div>
+    <div class="metric"><div class="m-lbl">Duración estimada</div><div class="m-val">{{ duracionCalc() > 0 ? duracionCalc() : '—' }}</div><div class="m-unit">días</div></div>
+  </div>
+
+  <!-- RESUMEN -->
+  <div class="card">
+    <div class="card-title">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8B4513" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      Resumen de partida → presupuesto
+    </div>
+    <table class="sum-table">
+      <thead><tr>
+        <th style="width:8%">ÍTEM</th>
+        <th style="width:36%">Descripción</th>
+        <th style="width:8%">Unid.</th>
+        <th style="width:14%">Cantidad</th>
+        <th style="width:17%">P.U. (RD$)</th>
+        <th style="width:17%">Total (RD$)</th>
+      </tr></thead>
+      <tbody><tr>
+        <td style="color:var(--gray-hint);font-weight:700">01.03</td>
+        <td>Excavación de cimientos</td>
+        <td>m³</td>
+        <td>{{ volPresupuestado() | number:'1.2-2' }}</td>
+        <td><input type="number" step="any" [value]="pu()" (change)="setPu($event)" style="border:1px solid var(--gray-border);border-radius:4px;padding:4px 6px;font-size:12px;background:var(--field-bg);width:100%;text-align:right" onfocus="this.select()"/></td>
+        <td style="font-weight:700">{{ pu() > 0 ? (totalFinal() | number:'1.2-2') : '—' }}</td>
+      </tr></tbody>
+    </table>
+    <div style="margin-top:8px">
+      <span style="font-size:10px;color:var(--gray-hint);font-weight:700;text-transform:uppercase;letter-spacing:.05em">Imprevistos</span>
+      <input type="number" step="1" [ngModel]="imp()" (ngModelChange)="imp.set(+$event)" style="width:70px;margin-left:8px;border:1px solid var(--gray-border);border-radius:4px;padding:4px 6px;font-size:12px;background:var(--field-bg)" onfocus="this.select()"/>
+      <span style="font-size:11px;color:var(--gray-muted);margin-left:4px">%</span>
     </div>
   </div>
 

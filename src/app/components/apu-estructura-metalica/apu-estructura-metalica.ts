@@ -14,7 +14,7 @@ interface TramoEstructura {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './apu-estructura-metalica.html',
-  styles: [``]
+
 })
 export class ApuEstructuraMetalica implements OnInit, OnChanges {
   @Input() apuParameters: any;
@@ -40,11 +40,9 @@ export class ApuEstructuraMetalica implements OnInit, OnChanges {
     return this.areaTotal() / Math.cos(angulo);
   });
 
-  private _firstEmit = false;
-
   constructor() {
     effect(() => {
-      const params = {
+      this.parametersChange.emit({
         tramos: this.tramos(),
         tipoEstructura: this.tipoEstructura(),
         perfil: this.perfil(),
@@ -53,9 +51,7 @@ export class ApuEstructuraMetalica implements OnInit, OnChanges {
         con_instalacion: this.con_instalacion(),
         pendiente: this.pendiente(),
         cantidad_calculada: +this.areaInclinada().toFixed(2),
-      };
-      if (!this._firstEmit) { this._firstEmit = true; return; }
-      this.parametersChange.emit(params);
+      });
     });
   }
 

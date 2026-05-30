@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { UiState } from '../../../services/ui-state';
 import { ConfigService } from '../../../services/config';
 import { CatalogService } from '../../../services/catalog.service';
+import { showDeleteConfirm } from '../../../utils/alert.util';
 
 type TabType = 'MAT' | 'MO' | 'JOR';
 const TABLE_MAP: Record<TabType, 'materials' | 'labor_activities' | 'equipment'> = {
@@ -71,7 +72,7 @@ export class PricesModal {
   }
 
   async deleteItem(item: any) {
-    if (!confirm(`¿Eliminar "${item.description}"?`)) return;
+    if (!await showDeleteConfirm(`¿Eliminar "${item.description}"?`)) return;
     await this.catalogService.deleteItem(TABLE_MAP[this.activeType()], item.id);
   }
 

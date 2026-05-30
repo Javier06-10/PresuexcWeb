@@ -1,0 +1,899 @@
+<div style="display:flex;flex-direction:column;gap:10px">
+
+  <!-- ============ VENTANA: ELECCIÓN DE FORMA ============ -->
+  <ng-container *ngIf="!isEditing()">
+    <div class="page-header">
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div class="page-title">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8B4513" stroke-width="2">
+            <rect x="4" y="3" width="16" height="18" rx="1"/>
+            <line x1="4" y1="9" x2="20" y2="9"/>
+          </svg>
+          Columnas y Vigas
+        </div>
+        <div style="font-size:12px;color:var(--gray-muted)">
+          Elige la <strong>forma de la sección</strong> del elemento de hormigón para empezar.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8B4513" stroke-width="2">
+          <path d="M3 3h7v7H3zM14 14h7v7h-7z"/>
+          <circle cx="17.5" cy="6.5" r="3.5"/>
+        </svg>
+        Formas de sección
+      </div>
+      <div class="cv-shape-grid">
+        <div class="cv-shape-card" (click)="cvPick('rect')">
+          <div class="cv-shape-ic">
+            <svg viewBox="0 0 80 80" width="74" height="74">
+              <rect x="22" y="14" width="36" height="52" rx="1.5" fill="#8B4513" fill-opacity="0.14" stroke="#8B4513" stroke-width="2.5"/>
+            </svg>
+          </div>
+          <div class="cv-shape-name">Rectangular / cuadrada</div>
+          <div class="cv-shape-sub">B × H</div>
+        </div>
+        <div class="cv-shape-card" (click)="cvPick('circ')">
+          <div class="cv-shape-ic">
+            <svg viewBox="0 0 80 80" width="74" height="74">
+              <circle cx="40" cy="40" r="26" fill="#8B4513" fill-opacity="0.14" stroke="#8B4513" stroke-width="2.5"/>
+            </svg>
+          </div>
+          <div class="cv-shape-name">Circular</div>
+          <div class="cv-shape-sub">Ø diámetro</div>
+        </div>
+      </div>
+
+      <!-- Sub-elección columna/viga -->
+      <div *ngIf="cvShape()" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--gray-border)">
+        <div style="font-size:11px;font-weight:700;color:var(--brand);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">
+          Tipo de elemento
+          <span style="color:var(--gray-muted);font-weight:500">({{ cvShape() === 'rect' ? 'rectangular' : 'circular' }})</span>
+        </div>
+        <div class="cv-shape-grid" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">
+          <div class="cv-shape-card" (click)="cvPickKind('columna')">
+            <div class="cv-shape-ic">
+              <svg viewBox="0 0 90 80" width="92" height="74">
+                <rect x="36" y="8" width="18" height="64" rx="1.5" fill="#8B4513" fill-opacity="0.14" stroke="#8B4513" stroke-width="2.5"/>
+                <path d="M30 72 H60" stroke="#8B4513" stroke-width="2.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="cv-shape-name">Columna</div>
+            <div class="cv-shape-sub">elemento vertical</div>
+          </div>
+          <div class="cv-shape-card" (click)="cvPickKind('viga')">
+            <div class="cv-shape-ic">
+              <svg viewBox="0 0 90 80" width="92" height="74">
+                <rect x="10" y="34" width="70" height="18" rx="1.5" fill="#8B4513" fill-opacity="0.14" stroke="#8B4513" stroke-width="2.5"/>
+                <path d="M16 30 V56 M74 30 V56" stroke="#8B4513" stroke-width="2.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="cv-shape-name">Viga</div>
+            <div class="cv-shape-sub">elemento horizontal · por tramos</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:#eaf0f8;border:0.5px solid #b5d4f4;border-radius:5px;padding:8px 12px;font-size:11px;color:#185fa5;margin-top:12px">
+        Columna y viga comparten el mismo análisis (elemento prismático: hormigón + acero longitudinal + estribos).
+        El APU se analiza por <strong>1 m³</strong> y la longitud × cantidad/tramos dan el total.
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ============ EDITOR DEL ELEMENTO ============ -->
+  <ng-container *ngIf="isEditing()">
+
+    <!-- Page header -->
+    <div class="page-header">
+      <div style="display:flex;flex-direction:column;gap:5px;flex:1;min-width:0">
+
+        <!-- Cambiar forma + título en la misma fila -->
+        <div style="display:flex;align-items:center;gap:10px">
+          <button (click)="cvBackToPick()" style="
+            display:flex;align-items:center;gap:6px;
+            background:#fff;
+            border:1.5px solid var(--gray-border);
+            border-radius:8px;
+            padding:5px 12px;
+            font-size:11px;font-weight:700;
+            color:var(--gray-muted);
+            cursor:pointer;
+            letter-spacing:.03em;
+            white-space:nowrap;
+            box-shadow:0 1px 3px rgba(0,0,0,.07)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="m15 18-6-6 6-6"/>
+            </svg>
+            Cambiar forma
+          </button>
+          <div class="page-title">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8B4513" stroke-width="2">
+              <rect x="4" y="3" width="16" height="18" rx="1"/>
+              <line x1="4" y1="9" x2="20" y2="9"/>
+            </svg>
+            {{ cvKind() === 'columna' ? 'Columna' : 'Viga' }} — {{ cvShape() === 'rect' ? 'Sección rectangular' : 'Sección circular' }}
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:7px;max-width:560px">
+          <label style="font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">Nombre en presupuesto</label>
+          <input type="text" [ngModel]="nombre()" (ngModelChange)="nombre.set($event)"
+            style="flex:1;border:1px solid var(--gray-border);border-radius:5px;padding:4px 9px;font-size:12px;font-weight:500;color:var(--gray-text);background:var(--field-bg);height:28px"/>
+        </div>
+      </div>
+      <div class="header-actions" style="gap:8px">
+
+        <!-- Simple / Avanzado pill -->
+        <div style="
+          display:flex;align-items:center;
+          background:var(--gray-3);
+          border:1.5px solid var(--gray-border);
+          border-radius:9px;
+          padding:3px;
+          gap:2px;
+          box-shadow:0 1px 3px rgba(0,0,0,.07)">
+          <button [class.active]="modoArmado()==='simple'" (click)="modoArmado.set('simple')" style="
+            border:none;border-radius:7px;padding:5px 16px;
+            font-size:11px;font-weight:700;letter-spacing:.03em;
+            cursor:pointer;transition:background .15s,color .15s,box-shadow .15s;"
+            [style.background]="modoArmado()==='simple' ? 'var(--brand)' : 'transparent'"
+            [style.color]="modoArmado()==='simple' ? '#fff' : 'var(--gray-muted)'"
+            [style.boxShadow]="modoArmado()==='simple' ? '0 2px 6px rgba(139,69,19,.28)' : 'none'">
+            Simple
+          </button>
+          <button [class.active]="modoArmado()==='tramos'" (click)="modoArmado.set('tramos')" style="
+            border:none;border-radius:7px;padding:5px 16px;
+            font-size:11px;font-weight:700;letter-spacing:.03em;
+            cursor:pointer;transition:background .15s,color .15s,box-shadow .15s;"
+            [style.background]="modoArmado()==='tramos' ? 'var(--brand)' : 'transparent'"
+            [style.color]="modoArmado()==='tramos' ? '#fff' : 'var(--gray-muted)'"
+            [style.boxShadow]="modoArmado()==='tramos' ? '0 2px 6px rgba(139,69,19,.28)' : 'none'">
+            Avanzado
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- GEOMETRÍA -->
+    <div class="card">
+      <div class="card-title">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8B4513" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="1"/>
+        </svg>
+        Geometría — {{ cvShape() === 'rect' ? 'Rectangular' : 'Circular' }}
+      </div>
+      <div class="row4">
+        <!-- Rectangular -->
+        <ng-container *ngIf="cvShape()==='rect'">
+          <div class="f">
+            <label>Base B (m)</label>
+            <input type="number" step="0.05" min="0.05" [ngModel]="B()" (ngModelChange)="B.set(+$event)" />
+          </div>
+          <div class="f">
+            <label>Altura H (m)</label>
+            <input type="number" step="0.05" min="0.05" [ngModel]="H()" (ngModelChange)="H.set(+$event)" />
+          </div>
+        </ng-container>
+        <!-- Circular -->
+        <ng-container *ngIf="cvShape()==='circ'">
+          <div class="f">
+            <label>Diámetro D (m)</label>
+            <input type="number" step="0.05" min="0.10" [ngModel]="D()" (ngModelChange)="D.set(+$event)" />
+          </div>
+          <div class="f"></div>
+        </ng-container>
+
+        <!-- Columna: longitud + cantidad -->
+        <ng-container *ngIf="cvKind()==='columna'">
+          <div class="f">
+            <label>Altura (m)</label>
+            <input type="number" step="0.10" [ngModel]="tramos()[0].largo" (ngModelChange)="updateTramo(0,'largo',+$event)" />
+          </div>
+          <div class="f">
+            <label>Cantidad (und)</label>
+            <input type="number" step="1" min="1" [ngModel]="tramos()[0].cant" (ngModelChange)="updateTramo(0,'cant',+$event)" />
+          </div>
+        </ng-container>
+
+        <!-- Viga: longitud total calculada -->
+        <ng-container *ngIf="cvKind()==='viga'">
+          <div class="f">
+            <label>Long. total (m)</label>
+            <input type="text" readonly [ngModel]="longTotal() | number:'1.2-2'" style="font-weight:700;color:var(--brand)" />
+          </div>
+          <div class="f">
+            <label>Área sección (m²)</label>
+            <input type="text" readonly [ngModel]="areaSec() | number:'1.4-4'" style="font-weight:700;color:var(--brand)" />
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- Vol total -->
+      <div class="row4" style="margin-top:4px" *ngIf="cvKind()==='columna'">
+        <div class="f">
+          <label>Área sección (m²)</label>
+          <input type="text" readonly [ngModel]="areaSec() | number:'1.4-4'" style="font-weight:700;color:var(--brand)" />
+        </div>
+        <div class="f">
+          <label>Vol. total neto (m³)</label>
+          <input type="text" readonly [ngModel]="volumenNeto() | number:'1.3-3'" style="font-weight:700;color:var(--brand)" />
+        </div>
+        <div class="f"></div>
+        <div class="f"></div>
+      </div>
+
+      <!-- VIGA: tabla de tramos -->
+      <div *ngIf="cvKind()==='viga'" style="margin-top:12px;padding-top:12px;border-top:1px dashed var(--gray-border)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <span style="font-size:10px;font-weight:700;color:var(--brand);text-transform:uppercase;letter-spacing:.05em">Tramos de la viga</span>
+          <button class="btn-add" (click)="addTramo()">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            Añadir tramo
+          </button>
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead>
+            <tr style="background:var(--gray-3)">
+              <th style="padding:5px 8px;text-align:left;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border)">Descripción</th>
+              <th style="padding:5px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:90px">Largo (m)</th>
+              <th style="padding:5px 8px;text-align:center;font-size:10px;font-weight:700;color:var(--gray-hint);text-transform:uppercase;border-bottom:1px solid var(--gray-border);width:70px">Cant.</th>
+              <th style="width:36px;border-bottom:1px solid var(--gray-border)"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let t of tramos(); let i = index" style="border-bottom:1px solid var(--gray-3)">
+              <td style="padding:5px 8px">
+                <input type="text" [ngModel]="t.descripcion" (ngModelChange)="updateTramo(i,'descripcion',$event)"
+                  style="border:1px solid var(--gray-border);border-radius:4px;padding:4px 8px;font-size:12px;background:var(--field-bg);width:100%"/>
+              </td>
+              <td style="padding:5px 4px">
+                <input type="number" step="0.1" [ngModel]="t.largo" (ngModelChange)="updateTramo(i,'largo',+$event)"
+                  style="border:1px solid var(--gray-border);border-radius:4px;padding:4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"/>
+              </td>
+              <td style="padding:5px 4px">
+                <input type="number" step="1" min="1" [ngModel]="t.cant" (ngModelChange)="updateTramo(i,'cant',+$event)"
+                  style="border:1px solid var(--gray-border);border-radius:4px;padding:4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"/>
+              </td>
+              <td style="padding:5px 4px;text-align:center">
+                <button *ngIf="tramos().length > 1" (click)="removeTramo(i)" class="btn-rm">
+                  <i class="ph ph-trash"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr style="background:var(--brand-light)">
+              <td colspan="2" style="padding:6px 8px;font-size:11px;font-weight:700;color:var(--brand);text-transform:uppercase;text-align:right">Long. total</td>
+              <td style="padding:6px 8px;text-align:center;font-size:14px;font-weight:800;color:var(--brand)">{{ longTotal() | number:'1.2-2' }} m</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- HORMIGÓN -->
+    <div class="card">
+      <div class="card-title">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8B4513" stroke-width="2">
+          <path d="M3 7l9-4 9 4-9 4-9-4z"/>
+          <path d="M3 7v10l9 4 9-4V7"/>
+        </svg>
+        Hormigón
+      </div>
+      <div class="seg-row" style="margin-bottom:10px">
+        <button class="seg" [class.active]="tipoVaciado()==='In situ 1:2:3'" (click)="tipoVaciado.set('In situ 1:2:3')">Preparado en obra</button>
+        <button class="seg" [class.active]="tipoVaciado()==='premez'" (click)="tipoVaciado.set('premez')">Premezclado</button>
+      </div>
+
+      <!-- f'c y desperdicio (ambos modos) -->
+      <div class="row4" style="margin-top:6px">
+        <div class="f">
+          <label>Resistencia f'c</label>
+          <select [ngModel]="fc()" (ngModelChange)="fc.set(+$event)">
+            <option *ngFor="let v of fcs" [value]="v">f'c {{ v }} kg/cm² ({{ fcPsi[v] || '' }} PSI)</option>
+          </select>
+        </div>
+        <div class="f">
+          <label>Desperdicio (%)</label>
+          <input type="number" step="1" [ngModel]="desperdicio()" (ngModelChange)="desperdicio.set(+$event)" />
+        </div>
+        <div class="f">
+          <label>Imprevistos (%)</label>
+          <input type="number" step="1" min="0" max="20" [ngModel]="imp()" (ngModelChange)="imp.set(+$event)" />
+        </div>
+        <div class="f"></div>
+      </div>
+
+      <!-- Dosificación in situ (readonly, basada en DOSIF) -->
+      <ng-container *ngIf="tipoVaciado().startsWith('In situ')">
+        <div style="display:inline-flex;align-items:center;gap:10px;background:var(--gray-3);border-radius:8px;padding:8px 14px;flex-wrap:nowrap;margin-top:10px">
+          <span style="font-size:10px;font-weight:700;color:var(--gray-muted);text-transform:uppercase;white-space:nowrap">Dosificación / m³</span>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <span style="font-size:9px;color:var(--gray-hint);text-transform:uppercase">Cemento</span>
+            <input type="text" readonly [ngModel]="dosifPorM3().cem"
+              style="width:52px;border:1px solid var(--gray-border);border-radius:5px;padding:3px;font-size:14px;font-weight:700;background:#fff;height:30px;text-align:center;color:var(--brand)" />
+            <span style="font-size:9px;color:var(--gray-hint)">sacos</span>
+          </div>
+          <span style="color:#999;font-weight:700;font-size:16px;margin-top:4px">·</span>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <span style="font-size:9px;color:var(--gray-hint);text-transform:uppercase">Arena</span>
+            <input type="text" readonly [ngModel]="dosifPorM3().arena | number:'1.2-2'"
+              style="width:52px;border:1px solid var(--gray-border);border-radius:5px;padding:3px;font-size:14px;font-weight:700;background:#fff;height:30px;text-align:center;color:var(--brand)" />
+            <span style="font-size:9px;color:var(--gray-hint)">m³</span>
+          </div>
+          <span style="color:#999;font-weight:700;font-size:16px;margin-top:4px">·</span>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <span style="font-size:9px;color:var(--gray-hint);text-transform:uppercase">Grava</span>
+            <input type="text" readonly [ngModel]="dosifPorM3().grava | number:'1.2-2'"
+              style="width:52px;border:1px solid var(--gray-border);border-radius:5px;padding:3px;font-size:14px;font-weight:700;background:#fff;height:30px;text-align:center;color:var(--brand)" />
+            <span style="font-size:9px;color:var(--gray-hint)">m³</span>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- ACERO LONGITUDINAL -->
+    <div class="card">
+      <div class="card-title">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8B4513" stroke-width="2">
+          <line x1="6" y1="3" x2="6" y2="21"/><line x1="12" y1="3" x2="12" y2="21"/><line x1="18" y1="3" x2="18" y2="21"/>
+        </svg>
+        Acero Longitudinal
+      </div>
+      <div class="row4" style="margin-bottom:10px">
+        <div class="f">
+          <label>Recubrimiento (cm)</label>
+          <input type="number" step="0.5" [ngModel]="rec()" (ngModelChange)="rec.set(+$event)" />
+        </div>
+        <div class="f">
+          <label>Gancho Lg (cm)</label>
+          <input type="number" step="1" [ngModel]="lg()" (ngModelChange)="lg.set(+$event)" />
+        </div>
+        <div class="f" style="grid-column:span 2">
+          <label>Longitud comercial de barra</label>
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            <button *ngFor="let lb of lbarras" class="vbtn" [class.sel]="lbarra()===lb" (click)="lbarra.set(lb)">
+              {{ lb === 6.10 ? '20 pies (6.10 m)' : lb === 9.15 ? '30 pies (9.15 m)' : '12 m' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grupo Superior -->
+      <div style="margin-bottom:10px">
+        <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Superior</div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <button *ngFor="let d of diams" class="vbtn" [class.sel]="al1()===d" (click)="al1.set(d)">{{labelDiam(d)}}</button>
+          <span style="font-size:11px;color:var(--gray-muted);margin-left:10px">Cant.:</span>
+          <input type="number" step="1" min="0" [ngModel]="cv1()" (ngModelChange)="cv1.set(+$event)"
+            style="width:52px;border:1px solid var(--gray-border);border-radius:4px;padding:3px 6px;font-size:12px;text-align:center;background:var(--field-bg)" />
+          <span style="font-size:11px;color:var(--brand);font-weight:700;margin-left:4px">{{ kgLong1() | number:'1.1-1' }} kg</span>
+        </div>
+      </div>
+
+      <!-- Grupo Inferior -->
+      <div style="margin-bottom:10px">
+        <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Inferior</div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <button *ngFor="let d of diams" class="vbtn" [class.sel]="al2()===d" (click)="al2.set(d)">{{labelDiam(d)}}</button>
+          <span style="font-size:11px;color:var(--gray-muted);margin-left:10px">Cant.:</span>
+          <input type="number" step="1" min="0" [ngModel]="cv2()" (ngModelChange)="cv2.set(+$event)"
+            style="width:52px;border:1px solid var(--gray-border);border-radius:4px;padding:3px 6px;font-size:12px;text-align:center;background:var(--field-bg)" />
+          <span style="font-size:11px;color:var(--brand);font-weight:700;margin-left:4px">{{ kgLong2() | number:'1.1-1' }} kg</span>
+        </div>
+      </div>
+
+      <!-- Grupo 3 (lateral/extra) -->
+      <div style="margin-bottom:10px">
+        <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Extra / lateral (opcional)</div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <button *ngFor="let d of diams" class="vbtn" [class.sel]="al3()===d" (click)="al3.set(d)">{{labelDiam(d)}}</button>
+          <span style="font-size:11px;color:var(--gray-muted);margin-left:10px">Cant.:</span>
+          <input type="number" step="1" min="0" [ngModel]="cv3()" (ngModelChange)="cv3.set(+$event)"
+            style="width:52px;border:1px solid var(--gray-border);border-radius:4px;padding:3px 6px;font-size:12px;text-align:center;background:var(--field-bg)" />
+          <span style="font-size:11px;color:var(--brand);font-weight:700;margin-left:4px">{{ kgLong3() | number:'1.1-1' }} kg</span>
+        </div>
+      </div>
+
+      <!-- Grupo 4 (piel/adicional) -->
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Piel / adicional (opcional)</div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <button *ngFor="let d of diams" class="vbtn" [class.sel]="al4()===d" (click)="al4.set(d)">{{labelDiam(d)}}</button>
+          <span style="font-size:11px;color:var(--gray-muted);margin-left:10px">Cant.:</span>
+          <input type="number" step="1" min="0" [ngModel]="cv4()" (ngModelChange)="cv4.set(+$event)"
+            style="width:52px;border:1px solid var(--gray-border);border-radius:4px;padding:3px 6px;font-size:12px;text-align:center;background:var(--field-bg)" />
+          <span style="font-size:11px;color:var(--brand);font-weight:700;margin-left:4px">{{ kgLong4() | number:'1.1-1' }} kg</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ESTRIBOS -->
+    <div class="card">
+      <div class="card-title">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8B4513" stroke-width="2">
+          <rect x="5" y="5" width="14" height="14" rx="1"/>
+        </svg>
+        Estribos
+      </div>
+      <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Diámetro estribo</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+        <button *ngFor="let d of diams" class="vbtn" [class.sel]="at()===d" (click)="at.set(d)">{{labelDiam(d)}}</button>
+      </div>
+
+      <ng-container *ngIf="modoArmado()==='simple'">
+        <div class="row4">
+          <div class="f">
+            <label>Separación (cm)</label>
+            <input type="number" step="5" [ngModel]="sep1()" (ngModelChange)="sep1.set(+$event)" />
+          </div>
+          <div class="f">
+            <label>Acero estribos (kg)</label>
+            <input type="text" readonly [ngModel]="kgEst() | number:'1.1-1'" style="font-weight:700;color:var(--brand)" />
+          </div>
+          <div class="f"></div>
+          <div class="f"></div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="modoArmado()==='tramos'">
+        <div style="font-size:11px;color:var(--gray-muted);margin-bottom:10px">
+          Modo avanzado: define separaciones en zona de confinamiento / zona media / extremo.
+        </div>
+        <div class="row4">
+          <div class="f">
+            <label>Lz1 — Long. zona 1 (m)</label>
+            <input type="number" step="0.05" [ngModel]="lz1()" (ngModelChange)="lz1.set(+$event)" />
+          </div>
+          <div class="f">
+            <label>Sep. zona 1 (cm)</label>
+            <input type="number" step="5" [ngModel]="sep1av()" (ngModelChange)="sep1av.set(+$event)" />
+          </div>
+          <div class="f">
+            <label>Sep. zona media (cm)</label>
+            <input type="number" step="5" [ngModel]="sep2av()" (ngModelChange)="sep2av.set(+$event)" />
+          </div>
+          <div class="f">
+            <label>Sep. zona final (cm)</label>
+            <input type="number" step="5" [ngModel]="sep3av()" (ngModelChange)="sep3av.set(+$event)" />
+          </div>
+        </div>
+        <div style="margin-top:6px;font-size:11px;color:var(--brand);font-weight:700">
+          Acero estribos total: {{ kgEst() | number:'1.1-1' }} kg
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- VISTA DE SECCIÓN TRANSVERSAL -->
+    <div class="card" style="background:var(--gray-3)">
+      <div class="card-title">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8B4513" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2v20"/>
+        </svg>
+        Vista de la sección transversal
+      </div>
+      <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+
+        <!-- SVG diagrama -->
+        <div style="flex-shrink:0;text-align:center">
+          <svg width="220" height="220" viewBox="0 0 220 220" style="border:1.5px solid var(--gray-border);border-radius:8px;background:#fdfaf6;display:block">
+            <!-- RECTANGULAR -->
+            <ng-container *ngIf="cvShape()==='rect'">
+              <!-- Hormigón -->
+              <rect [attr.x]="110 - B()*cvSvgScale()/2"
+                    [attr.y]="110 - H()*cvSvgScale()/2"
+                    [attr.width]="B()*cvSvgScale()"
+                    [attr.height]="H()*cvSvgScale()"
+                    fill="#EFE6DA" stroke="#C9B79C" stroke-width="2"/>
+              <!-- Estribos -->
+              <rect [attr.x]="110 - B()*cvSvgScale()/2 + rec()/100*cvSvgScale()"
+                    [attr.y]="110 - H()*cvSvgScale()/2 + rec()/100*cvSvgScale()"
+                    [attr.width]="B()*cvSvgScale() - 2*rec()/100*cvSvgScale()"
+                    [attr.height]="H()*cvSvgScale() - 2*rec()/100*cvSvgScale()"
+                    fill="none" stroke="#8B4513" stroke-width="1.8" stroke-dasharray="none"/>
+              <!-- Dim B (abajo) -->
+              <line [attr.x1]="110 - B()*cvSvgScale()/2"
+                    [attr.y1]="110 + H()*cvSvgScale()/2 + 6"
+                    [attr.x2]="110 + B()*cvSvgScale()/2"
+                    [attr.y2]="110 + H()*cvSvgScale()/2 + 6"
+                    stroke="#888" stroke-width="1" marker-end="url(#arrow)"/>
+              <text [attr.x]="110" [attr.y]="110 + H()*cvSvgScale()/2 + 18"
+                    text-anchor="middle" font-size="10" fill="#666" font-weight="700">B = {{ B()*100|number:'1.0-0' }} cm</text>
+              <!-- Dim H (izquierda) -->
+              <text [attr.x]="110 - B()*cvSvgScale()/2 - 6"
+                    [attr.y]="110"
+                    text-anchor="middle" font-size="10" fill="#666" font-weight="700"
+                    [attr.transform]="'rotate(-90, ' + (110 - B()*cvSvgScale()/2 - 14) + ', 110)'">H = {{ H()*100|number:'1.0-0' }} cm</text>
+            </ng-container>
+
+            <!-- CIRCULAR -->
+            <ng-container *ngIf="cvShape()==='circ'">
+              <!-- Hormigón -->
+              <circle cx="110" cy="110" [attr.r]="D()*cvSvgScale()/2" fill="#EFE6DA" stroke="#C9B79C" stroke-width="2"/>
+              <!-- Estribos (espiral simplificada) -->
+              <circle cx="110" cy="110"
+                      [attr.r]="D()*cvSvgScale()/2 - rec()/100*cvSvgScale()"
+                      fill="none" stroke="#8B4513" stroke-width="1.8"/>
+              <!-- Dim D -->
+              <text [attr.x]="110" [attr.y]="110 + D()*cvSvgScale()/2 + 16"
+                    text-anchor="middle" font-size="10" fill="#666" font-weight="700">Ø = {{ D()*100|number:'1.0-0' }} cm</text>
+            </ng-container>
+
+            <!-- BARRAS DE ACERO -->
+            <g *ngFor="let b of cvBarPts()">
+              <circle [attr.cx]="b.x" [attr.cy]="b.y" [attr.r]="5"
+                      [attr.fill]="b.c" stroke="#fff" stroke-width="1"/>
+            </g>
+
+            <!-- Indicador recubrimiento -->
+            <text x="4" y="12" font-size="8" fill="#aaa">rec. {{ rec() }} cm</text>
+          </svg>
+
+          <!-- Info dinámica debajo -->
+          <div style="margin-top:8px;font-size:10px;color:var(--gray-muted);text-align:center;max-width:220px">
+            <span *ngIf="cvShape()==='rect'">{{ B()*100|number:'1.0-0' }}×{{ H()*100|number:'1.0-0' }} cm</span>
+            <span *ngIf="cvShape()==='circ'">Ø {{ D()*100|number:'1.0-0' }} cm</span>
+            · {{ cvKind() }} · {{ volumenNeto()|number:'1.2-2' }} m³ neto
+          </div>
+        </div>
+
+        <!-- Leyenda + resumen de barras -->
+        <div style="flex:1;min-width:180px">
+          <div style="font-weight:700;color:#8b4513;font-size:12px;margin-bottom:10px">Distribución de barras</div>
+
+          <!-- Sup -->
+          <div *ngIf="cv1()>0" style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
+            <span style="width:11px;height:11px;border-radius:50%;background:#185fa5;flex-shrink:0;display:inline-block"></span>
+            <span style="font-size:11px;color:var(--gray-text)">
+              <strong>Superior:</strong> {{ cv1() }} Ø {{ labelDiam(al1()) }}
+              — {{ kgLong1()|number:'1.1-1' }} kg
+            </span>
+          </div>
+          <!-- Inf -->
+          <div *ngIf="cv2()>0" style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
+            <span style="width:11px;height:11px;border-radius:50%;background:#d85a30;flex-shrink:0;display:inline-block"></span>
+            <span style="font-size:11px;color:var(--gray-text)">
+              <strong>Inferior:</strong> {{ cv2() }} Ø {{ labelDiam(al2()) }}
+              — {{ kgLong2()|number:'1.1-1' }} kg
+            </span>
+          </div>
+          <!-- Lateral -->
+          <div *ngIf="cv3()>0" style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
+            <span style="width:11px;height:11px;border-radius:50%;background:#9a7b1e;flex-shrink:0;display:inline-block"></span>
+            <span style="font-size:11px;color:var(--gray-text)">
+              <strong>Lateral:</strong> {{ cv3() }} Ø {{ labelDiam(al3()) }}
+              — {{ kgLong3()|number:'1.1-1' }} kg
+            </span>
+          </div>
+          <!-- Piel -->
+          <div *ngIf="cv4()>0" style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
+            <span style="width:11px;height:11px;border-radius:50%;background:#8B4513;flex-shrink:0;display:inline-block"></span>
+            <span style="font-size:11px;color:var(--gray-text)">
+              <strong>Piel / adicional:</strong> {{ cv4() }} Ø {{ labelDiam(al4()) }}
+              — {{ kgLong4()|number:'1.1-1' }} kg
+            </span>
+          </div>
+          <!-- Estribos -->
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
+            <span style="width:11px;height:3px;background:#8B4513;flex-shrink:0;display:inline-block;border-radius:1px"></span>
+            <span style="font-size:11px;color:var(--gray-text)">
+              <strong>Estribos:</strong> Ø {{ labelDiam(at()) }} @
+              <ng-container *ngIf="modoArmado()==='simple'">{{ sep1() }} cm</ng-container>
+              <ng-container *ngIf="modoArmado()==='tramos'">{{ sep1av() }}/{{ sep2av() }}/{{ sep3av() }} cm</ng-container>
+              — {{ kgEst()|number:'1.1-1' }} kg
+            </span>
+          </div>
+
+          <!-- Totales -->
+          <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--gray-border)">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div style="background:#fff;border-radius:7px;padding:8px 10px;border:1px solid var(--gray-border)">
+                <div style="font-size:9px;font-weight:700;color:var(--gray-muted);text-transform:uppercase">Acero total</div>
+                <div style="font-size:17px;font-weight:800;color:var(--brand)">{{ kgTotal()|number:'1.0-0' }} <span style="font-size:11px">kg</span></div>
+              </div>
+              <div style="background:#fff;border-radius:7px;padding:8px 10px;border:1px solid var(--gray-border)">
+                <div style="font-size:9px;font-weight:700;color:var(--gray-muted);text-transform:uppercase">Cuantía</div>
+                <div style="font-size:17px;font-weight:800;color:var(--brand)">{{ (volumenPresupuestado()>0 ? kgTotal()/volumenPresupuestado() : 0)|number:'1.0-0' }} <span style="font-size:11px">kg/m³</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- DIAGRAMA DE ZONAS DE ESTRIBOS (modo avanzado) -->
+      <div *ngIf="modoArmado()==='tramos' && cvKind()==='viga'" style="margin-top:16px;padding-top:14px;border-top:1px dashed var(--gray-border)">
+        <div style="font-size:11px;font-weight:700;color:var(--brand);margin-bottom:10px;text-transform:uppercase;letter-spacing:.04em">Diagrama de zonas de confinamiento</div>
+        <div style="position:relative">
+          <!-- Beam diagram -->
+          <div style="display:flex;align-items:stretch;height:44px;border-radius:5px;overflow:hidden;font-size:10px;font-weight:700;color:#fff">
+            <div [style.flex]="lz1()" style="background:#8B4513;display:flex;align-items:center;justify-content:center;min-width:40px">
+              Lz1 {{ lz1() }} m<br>@{{ sep1av() }} cm
+            </div>
+            <div [style.flex]="Math.max(longTotal()-lz1()-lz3(), 0.01)" style="background:#b87040;display:flex;align-items:center;justify-content:center;flex:1">
+              Zona media @{{ sep2av() }} cm
+            </div>
+            <div [style.flex]="lz3()" style="background:#8B4513;display:flex;align-items:center;justify-content:center;min-width:40px">
+              Lz3 {{ lz3() }} m<br>@{{ sep3av() }} cm
+            </div>
+          </div>
+          <!-- Length indicator -->
+          <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:9px;color:var(--gray-muted)">
+            <span>0 m</span>
+            <span>{{ longTotal()|number:'1.2-2' }} m total</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ENCOFRADO -->
+    <div class="card">
+      <div class="card-title">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8B4513" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <line x1="3" y1="9" x2="21" y2="9"/>
+          <line x1="9" y1="3" x2="9" y2="21"/>
+        </svg>
+        Encofrado
+      </div>
+      <div class="seg-row" style="margin-bottom:12px">
+        <button class="seg" [class.active]="encMetodo()==='madera'" (click)="encMetodo.set('madera')">Encofrar con madera</button>
+        <button class="seg" [class.active]="encMetodo()==='sin'" (click)="encMetodo.set('sin')">Sin encofrado</button>
+      </div>
+
+      <ng-container *ngIf="encMetodo()==='madera'">
+        <div class="row4">
+          <div class="f">
+            <label>Área a encofrar (m²)</label>
+            <input type="text" readonly [ngModel]="encofradoM2() | number:'1.2-2'" style="font-weight:700;color:var(--brand)" />
+          </div>
+          <div class="f">
+            <label>PU englobado (RD$/m²)</label>
+            <input type="number" step="1" [ngModel]="encofM2PU()" (ngModelChange)="encofM2PU.set(+$event)" />
+          </div>
+          <div class="f"></div>
+          <div class="f"></div>
+        </div>
+
+        <!-- Toggle detalle madera -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px">
+          <div style="font-size:11px;font-weight:700;color:var(--gray-muted);text-transform:uppercase;letter-spacing:.05em">Detalle de madera de encofrado</div>
+          <div class="pill-switch" [class.on]="encofModo()==='desglosado'" [class.off]="encofModo()==='englobado'"
+            (click)="encofModo.set(encofModo()==='desglosado'?'englobado':'desglosado')">
+            <div class="pill-track"><div class="pill-knob"></div></div>
+            <span class="pill-label">{{ encofModo()==='desglosado' ? 'ON' : 'OFF' }}</span>
+          </div>
+        </div>
+
+        <div *ngIf="encofModo()==='desglosado'" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--gray-border)">
+          <div class="row4">
+            <div class="f">
+              <label>Material tablero</label>
+              <select [ngModel]="madTipo()" (ngModelChange)="madTipo.set($event)">
+                <option value="plywood">Plywood / plancha</option>
+                <option value="tabla">Tabla de pino</option>
+              </select>
+            </div>
+            <div class="f">
+              <label>Cuartones de refuerzo</label>
+              <select [ngModel]="madRefuerzo()" (ngModelChange)="madRefuerzo.set($event)">
+                <option value="si">Sí — incluir</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+            <div class="f">
+              <label>Sep. cuartones (m)</label>
+              <input type="number" step="0.05" [ngModel]="madSepc()" (ngModelChange)="madSepc.set(+$event)" />
+            </div>
+            <div class="f">
+              <label>Desp. madera (%)</label>
+              <input type="number" step="1" [ngModel]="madDesp()" (ngModelChange)="madDesp.set(+$event)" />
+            </div>
+          </div>
+          <div class="row4" style="margin-top:4px">
+            <div class="f">
+              <label>Reúsos</label>
+              <input type="number" step="1" min="1" [ngModel]="madUsos()" (ngModelChange)="madUsos.set(+$event)" />
+            </div>
+            <div class="f">
+              <label>Tableros (und)</label>
+              <input type="text" readonly [ngModel]="madTablas()" style="font-weight:700;color:var(--brand)" />
+            </div>
+            <div class="f">
+              <label>Cuartones (und)</label>
+              <input type="text" readonly [ngModel]="madCuartones()" style="font-weight:700;color:var(--brand)" />
+            </div>
+            <div class="f"></div>
+          </div>
+        </div>
+      </ng-container>
+
+      <div *ngIf="encMetodo()==='sin'"
+        style="background:#fff4e0;border:0.5px solid #e8c97a;border-radius:5px;padding:8px 12px;font-size:11px;color:#8a6a1f">
+        No se calcula costo de encofrado para este elemento.
+      </div>
+    </div>
+
+    <!-- CUADRILLA (colapsable) -->
+    <div class="card">
+      <button (click)="cuadrillaOn.set(!cuadrillaOn())"
+        style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:0;font-size:11px;font-weight:700;color:var(--gray-muted);text-transform:uppercase;letter-spacing:.05em;width:100%">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
+        </svg>
+        Opciones avanzadas — cuadrilla
+        <i class="ph" [class.ph-caret-down]="!cuadrillaOn()" [class.ph-caret-up]="cuadrillaOn()" style="margin-left:auto;font-size:13px"></i>
+      </button>
+      <div *ngIf="cuadrillaOn()" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--gray-border)">
+        <div class="row4">
+          <div class="f">
+            <label>Concreteros (jornales)</label>
+            <input type="number" step="1" min="0" [ngModel]="qConcretero()" (ngModelChange)="qConcretero.set(+$event)" />
+          </div>
+          <div class="f">
+            <label>Fierreros (jornales)</label>
+            <input type="number" step="1" min="0" [ngModel]="qFierrero()" (ngModelChange)="qFierrero.set(+$event)" />
+          </div>
+          <div class="f">
+            <label>Carpinteros (jornales)</label>
+            <input type="number" step="1" min="0" [ngModel]="qCarpintero()" (ngModelChange)="qCarpintero.set(+$event)" />
+          </div>
+          <div class="f">
+            <label>Capataz (jornales)</label>
+            <input type="number" step="1" min="0" [ngModel]="qCapataz()" (ngModelChange)="qCapataz.set(+$event)" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MÉTRICAS -->
+    <div class="metrics-row" style="grid-template-columns:repeat(4,1fr)">
+      <div class="metric">
+        <div class="m-lbl">Vol. Hormigón</div>
+        <div class="m-val">{{ volumenPresupuestado() | number:'1.2-2' }}</div>
+        <div class="m-unit">m³ total</div>
+      </div>
+      <div class="metric">
+        <div class="m-lbl">Acero Total</div>
+        <div class="m-val">{{ kgTotal() | number:'1.0-0' }}</div>
+        <div class="m-unit">kg aprox.</div>
+      </div>
+      <div class="metric" style="border-color:var(--brand);background:var(--brand-light)">
+        <div class="m-lbl" style="color:var(--brand-dark)">Long. Total</div>
+        <div class="m-val" style="font-size:30px;color:var(--brand-dark)">{{ longTotal() | number:'1.2-2' }}</div>
+        <div class="m-unit" style="color:var(--brand)">ml</div>
+      </div>
+      <div class="metric">
+        <div class="m-lbl">Cuantía</div>
+        <div class="m-val">{{ (volumenPresupuestado() > 0 ? kgTotal() / volumenPresupuestado() : 0) | number:'1.0-0' }}</div>
+        <div class="m-unit">kg/m³</div>
+      </div>
+    </div>
+
+    <!-- TABLA APU -->
+    <div class="card" *ngIf="apuData()" style="padding:0;overflow:hidden">
+      <div style="background:#3A3A3A;color:#fff;padding:8px 12px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:8px">
+        <i class="ph ph-list-numbers"></i> APU — {{ cvKind() === 'columna' ? 'Columna' : 'Viga' }}
+        <span style="background:var(--brand);color:#fff;border-radius:4px;padding:2px 8px;font-size:10px">por 1 m³</span>
+      </div>
+      <div style="padding:10px;overflow-x:auto">
+        <table class="sum-table" style="min-width:600px">
+          <thead>
+            <tr>
+              <th style="width:5%">No.</th>
+              <th style="width:37%;text-align:left">Descripción</th>
+              <th style="width:13%;text-align:right">Cantidad</th>
+              <th style="width:10%;text-align:left">Unid.</th>
+              <th style="width:10%;text-align:right">Factor</th>
+              <th style="width:12.5%;text-align:right">P.U.</th>
+              <th style="width:12.5%;text-align:left">Fuente</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="background:var(--gray-3)">
+              <td colspan="7" style="padding:4px 10px;font-weight:700;font-size:10px;color:var(--brand);text-transform:uppercase">I - Suministro</td>
+            </tr>
+            <ng-container *ngFor="let r of apuData()!.sec1">
+              <tr>
+                <td style="padding:6px 10px">{{ r.no }}</td>
+                <td style="padding:6px 10px">{{ r.desc }}</td>
+                <td style="padding:6px 10px;text-align:right">{{ r.qty | number:'1.3-3' }}</td>
+                <td style="padding:6px 10px">{{ r.unit }}</td>
+                <td style="padding:6px 10px;text-align:right">{{ r.factor }}</td>
+                <td style="padding:6px 10px;text-align:right">—</td>
+                <td style="padding:6px 10px">{{ r.fuente }}</td>
+              </tr>
+            </ng-container>
+            <tr style="background:var(--gray-3)">
+              <td colspan="7" style="padding:4px 10px;font-weight:700;font-size:10px;color:var(--brand);text-transform:uppercase">II - Mano de Obra</td>
+            </tr>
+            <ng-container *ngFor="let r of apuData()!.sec2">
+              <tr>
+                <td style="padding:6px 10px">{{ r.no }}</td>
+                <td style="padding:6px 10px">{{ r.desc }}</td>
+                <td style="padding:6px 10px;text-align:right">{{ r.qty | number:'1.3-3' }}</td>
+                <td style="padding:6px 10px">{{ r.unit }}</td>
+                <td style="padding:6px 10px;text-align:right">{{ r.factor }}</td>
+                <td style="padding:6px 10px;text-align:right">—</td>
+                <td style="padding:6px 10px">{{ r.fuente }}</td>
+              </tr>
+            </ng-container>
+            <ng-container *ngIf="apuData()!.sec3.length > 0">
+              <tr style="background:var(--gray-3)">
+                <td colspan="7" style="padding:4px 10px;font-weight:700;font-size:10px;color:var(--brand);text-transform:uppercase">III - Equipos</td>
+              </tr>
+              <ng-container *ngFor="let r of apuData()!.sec3">
+                <tr>
+                  <td style="padding:6px 10px">{{ r.no }}</td>
+                  <td style="padding:6px 10px">{{ r.desc }}</td>
+                  <td style="padding:6px 10px;text-align:right">{{ r.qty | number:'1.3-3' }}</td>
+                  <td style="padding:6px 10px">{{ r.unit }}</td>
+                  <td style="padding:6px 10px;text-align:right">{{ r.factor }}</td>
+                  <td style="padding:6px 10px;text-align:right">—</td>
+                  <td style="padding:6px 10px">{{ r.fuente }}</td>
+                </tr>
+              </ng-container>
+            </ng-container>
+          </tbody>
+        </table>
+        <p style="font-size:10px;color:#909090;margin-top:8px;font-style:italic;padding:0 10px">
+          * Análisis por 1 m³ de hormigón con su cuantía proporcional de acero y encofrado.
+        </p>
+      </div>
+    </div>
+
+    <!-- RESUMEN -->
+    <div class="card">
+      <div class="card-title">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8B4513" stroke-width="2">
+          <rect x="2" y="3" width="20" height="14" rx="2"/>
+        </svg>
+        Resumen
+      </div>
+      <table class="sum-table">
+        <thead>
+          <tr>
+            <th style="width:44%">Descripción</th>
+            <th style="width:8%">Unid.</th>
+            <th style="width:16%">Cantidad</th>
+            <th style="width:16%">P.U. (RD$)</th>
+            <th style="width:16%">Total (RD$)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Hormigón {{ cvKind() }} — f'c {{ fc() }} kg/cm²</td>
+            <td>m³</td>
+            <td>{{ volumenPresupuestado() | number:'1.3-3' }}</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>Acero de refuerzo total</td>
+            <td>kg</td>
+            <td>{{ kgTotal() | number:'1.0-0' }}</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+          <tr *ngIf="encMetodo()==='madera'">
+            <td>Encofrado</td>
+            <td>m²</td>
+            <td>{{ encofradoM2() | number:'1.2-2' }}</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </ng-container>
+  <!-- /isEditing -->
+
+</div>

@@ -14,7 +14,7 @@ interface AreaVerde {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './apu-jardineria.html',
-  styles: [``]
+
 })
 export class ApuJardineria implements OnInit, OnChanges {
   @Input() apuParameters: any;
@@ -34,11 +34,9 @@ export class ApuJardineria implements OnInit, OnChanges {
     this.areas().reduce((s, a) => s + (a.largo||0)*(a.ancho||0)*(a.cant||1), 0)
   );
 
-  private _firstEmit = false;
-
   constructor() {
     effect(() => {
-      const params = {
+      this.parametersChange.emit({
         areas: this.areas(),
         tipoVegetacion: this.tipoVegetacion(),
         incluye_riego: this.incluye_riego(),
@@ -46,9 +44,7 @@ export class ApuJardineria implements OnInit, OnChanges {
         incluye_tierra: this.incluye_tierra(),
         incluye_plantas: this.incluye_plantas(),
         cantidad_calculada: +this.areaNeta().toFixed(2),
-      };
-      if (!this._firstEmit) { this._firstEmit = true; return; }
-      this.parametersChange.emit(params);
+      });
     });
   }
 

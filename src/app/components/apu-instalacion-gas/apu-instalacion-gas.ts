@@ -13,7 +13,7 @@ interface PuntoGas {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './apu-instalacion-gas.html',
-  styles: [``]
+
 })
 export class ApuInstalacionGas implements OnInit, OnChanges {
   @Input() apuParameters: any;
@@ -53,11 +53,9 @@ export class ApuInstalacionGas implements OnInit, OnChanges {
     this.TIPOS.filter(t => this.puntosByTipo(t) > 0)
   );
 
-  private _firstEmit = false;
-
   constructor() {
     effect(() => {
-      const params = {
+      this.parametersChange.emit({
         puntos: this.puntos(),
         tipoGas: this.tipoGas(),
         diametro: this.diametro(),
@@ -65,9 +63,7 @@ export class ApuInstalacionGas implements OnInit, OnChanges {
         incluye_prueba: this.incluye_prueba(),
         incluye_medidor: this.incluye_medidor(),
         cantidad_calculada: this.totalPuntos(),
-      };
-      if (!this._firstEmit) { this._firstEmit = true; return; }
-      this.parametersChange.emit(params);
+      });
     });
   }
 

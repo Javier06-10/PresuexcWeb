@@ -1,10 +1,22 @@
+<div class="page-header">
+  <div style="display:flex;flex-direction:column;gap:5px;flex:1;min-width:0">
+    <div class="page-title">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8B4513" stroke-width="2">
+        <rect x="2" y="14" width="20" height="8" rx="1"/>
+        <path d="M4 14V6M8 14V4M12 14V6M16 14V4M20 14V6"/>
+      </svg>
+      Losa de Fundación / Platea
+    </div>
+  </div>
+</div>
+
 <div style="display:flex;flex-direction:column;gap:10px">
 
-  <!-- Tramos -->
+  <!-- Card: Dimensiones / Zonas -->
   <div class="card">
     <div class="card-title">
       <i class="ph ph-squares-four" style="font-size:13px;color:var(--brand)"></i>
-      Losa de Fundación / Platea
+      Dimensiones — Zonas de losa
     </div>
     <table style="width:100%;border-collapse:collapse;font-size:12px">
       <thead>
@@ -25,24 +37,29 @@
               onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
               onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'" />
           </td>
-          <td style="padding:5px 4px"><input type="number" step="0.5" [ngModel]="t.largo" (ngModelChange)="updateTramo(i,'largo',+$event)"
-            style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
-            onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
-            onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'" /></td>
-          <td style="padding:5px 4px"><input type="number" step="0.5" [ngModel]="t.ancho" (ngModelChange)="updateTramo(i,'ancho',+$event)"
-            style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
-            onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
-            onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'" /></td>
-          <td style="padding:5px 4px"><input type="number" step="1" min="1" [ngModel]="t.cant" (ngModelChange)="updateTramo(i,'cant',+$event)"
-            style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
-            onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
-            onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'" /></td>
+          <td style="padding:5px 4px">
+            <input type="number" step="0.5" [ngModel]="t.largo" (ngModelChange)="updateTramo(i,'largo',+$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'" />
+          </td>
+          <td style="padding:5px 4px">
+            <input type="number" step="0.5" [ngModel]="t.ancho" (ngModelChange)="updateTramo(i,'ancho',+$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'" />
+          </td>
+          <td style="padding:5px 4px">
+            <input type="number" step="1" min="1" [ngModel]="t.cant" (ngModelChange)="updateTramo(i,'cant',+$event)"
+              style="border:1px solid var(--gray-border);border-radius:4px;padding:5px 4px;font-size:12px;background:var(--field-bg);width:100%;text-align:center"
+              onfocus="this.style.borderColor='var(--brand)';this.style.background='#fff'"
+              onblur="this.style.borderColor='var(--gray-border)';this.style.background='var(--field-bg)'" />
+          </td>
           <td style="padding:5px 8px;text-align:center;font-weight:700;font-size:13px;color:var(--brand)">
             {{ ((t.largo||0)*(t.ancho||0)*(t.cant||1)) | number:'1.2-2' }}
           </td>
           <td style="padding:5px 4px;text-align:center">
-            <button *ngIf="tramos().length > 1" (click)="removeTramo(i)"
-              style="background:var(--red);color:#fff;border:none;border-radius:4px;padding:4px 7px;cursor:pointer;font-size:12px;display:flex;align-items:center">
+            <button *ngIf="tramos().length > 1" (click)="removeTramo(i)" class="btn-rm">
               <i class="ph ph-trash"></i>
             </button>
           </td>
@@ -56,15 +73,18 @@
         </tr>
       </tfoot>
     </table>
-    <button (click)="addTramo()" style="margin-top:10px;background:var(--gray-3);color:var(--gray-muted);border:1px dashed var(--gray-border);border-radius:6px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px">
+    <button (click)="addTramo()" class="btn-add" style="margin-top:10px">
       <i class="ph ph-plus"></i> Añadir Zona
     </button>
   </div>
 
-  <div class="row2">
-    <!-- Especificaciones -->
-    <div class="card" style="margin-bottom:0">
-      <div class="card-title"><i class="ph ph-sliders" style="font-size:13px;color:var(--brand)"></i> Especificaciones</div>
+  <!-- Card: Especificaciones generales -->
+  <div class="card">
+    <div class="card-title">
+      <i class="ph ph-sliders" style="font-size:13px;color:var(--brand)"></i>
+      Especificaciones
+    </div>
+    <div class="row4">
       <div class="f">
         <label>Espesor (cm)</label>
         <input type="number" step="5" [ngModel]="espesor()" (ngModelChange)="espesor.set(+$event)" />
@@ -86,138 +106,197 @@
         <label>Desperdicio (%)</label>
         <input type="number" step="1" [ngModel]="desp()" (ngModelChange)="desp.set(+$event)" />
       </div>
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;margin-top:4px">
-        <input type="checkbox" [ngModel]="encOn()" (ngModelChange)="encOn.set($event)"
-          style="width:16px;height:16px;accent-color:var(--brand)" />
-        Encofrado perimetral
-      </label>
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;margin-top:8px">
-        <input type="checkbox" [ngModel]="doble()" (ngModelChange)="doble.set($event)"
-          style="width:16px;height:16px;accent-color:var(--brand)" />
-        Parrilla doble (superior + inferior)
-      </label>
     </div>
-
-    <!-- Cómputo -->
-    <div class="card" style="margin-bottom:0">
-      <div class="card-title"><i class="ph ph-calculator" style="font-size:13px;color:var(--brand)"></i> Cómputo</div>
-      <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
-        <div style="display:flex;justify-content:space-between">
-          <span style="color:var(--gray-muted)">Área neta:</span>
-          <span style="font-weight:700">{{ areaNeta() | number:'1.2-2' }} m²</span>
-        </div>
-        <div style="display:flex;justify-content:space-between">
-          <span style="color:var(--gray-muted)">Espesor:</span>
-          <span style="font-weight:700">{{ espesor() }} cm</span>
-        </div>
-        <div style="display:flex;justify-content:space-between">
-          <span style="color:var(--gray-muted)">Vol. neto:</span>
-          <span style="font-weight:700">{{ volNeto() | number:'1.3-3' }} m³</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;border-top:1px solid var(--gray-border);padding-top:6px">
-          <span style="color:var(--brand);font-weight:700">Vol. presup. (+{{desp()}}%):</span>
-          <span style="font-weight:800;color:var(--brand);font-size:14px">{{ volPres() | number:'1.3-3' }} m³</span>
-        </div>
-        <div style="margin-top:6px;border-top:1px solid var(--gray-border);padding-top:6px">
-          <div style="display:flex;justify-content:space-between">
-            <span style="color:var(--gray-muted)">Acero inferior:</span>
-            <span style="font-weight:700">{{ (kgInfX()+kgInfY()) | number:'1.0-0' }} kg</span>
-          </div>
-          <div *ngIf="doble()" style="display:flex;justify-content:space-between">
-            <span style="color:var(--gray-muted)">Acero superior:</span>
-            <span style="font-weight:700">{{ (kgSupX()+kgSupY()) | number:'1.0-0' }} kg</span>
-          </div>
-          <div *ngIf="doble()&&burros()" style="display:flex;justify-content:space-between">
-            <span style="color:var(--gray-muted)">Burros/silletas:</span>
-            <span style="font-weight:700">{{ kgBurros() | number:'1.0-0' }} kg</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;margin-top:4px">
-            <span style="color:var(--brand);font-weight:700">Total acero:</span>
-            <span style="font-weight:800;color:var(--brand)">{{ kgTotal() | number:'1.0-0' }} kg</span>
-          </div>
-        </div>
-        <div *ngIf="encOn()" style="display:flex;justify-content:space-between">
-          <span style="color:var(--gray-muted)">Encofrado perimetral:</span>
-          <span style="font-weight:700">{{ encofrado() | number:'1.2-2' }} m²</span>
-        </div>
+    <div class="row4" style="margin-top:4px">
+      <div class="f">
+        <label>Vol. neto (m³)</label>
+        <input type="text" readonly [ngModel]="volNeto() | number:'1.3-3'" style="font-weight:700;color:var(--brand)" />
       </div>
+      <div class="f">
+        <label>Vol. presup. (+{{ desp() }}%)</label>
+        <input type="text" readonly [ngModel]="volPres() | number:'1.3-3'" style="font-weight:800;color:var(--brand)" />
+      </div>
+      <div class="f"></div>
+      <div class="f"></div>
     </div>
   </div>
 
-  <!-- Parrilla inferior -->
+  <!-- Card: Parrilla inferior -->
   <div class="card">
-    <div class="card-title"><i class="ph ph-grid-four" style="font-size:13px;color:var(--brand)"></i> Parrilla Inferior</div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <div>
-        <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Dir. X — ∅ / separación (cm)</div>
-        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-          <button *ngFor="let d of diams" class="vbtn" [class.sel]="dxi()===d" (click)="dxi.set(d)">{{labelDiam(d)}}</button>
-          <span style="font-size:11px;color:var(--gray-muted);margin-left:8px">sep:</span>
-          <input type="number" step="5" [ngModel]="sxi()" (ngModelChange)="sxi.set(+$event)"
-            style="width:60px;border:1px solid var(--gray-border);border-radius:4px;padding:3px 6px;font-size:12px;text-align:center;background:var(--field-bg)" />
-          <span style="font-size:11px;color:var(--gray-muted)">cm · {{ kgInfX() | number:'1.0-0' }} kg</span>
-        </div>
+    <div class="card-title">
+      <i class="ph ph-grid-four" style="font-size:13px;color:var(--brand)"></i>
+      Parrilla Inferior
+    </div>
+
+    <div style="margin-bottom:10px">
+      <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Dir. X — ∅ / separación (cm)</div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <button *ngFor="let d of diams" class="vbtn" [class.sel]="dxi()===d" (click)="dxi.set(d)">{{labelDiam(d)}}</button>
+        <span style="font-size:11px;color:var(--gray-muted);margin-left:8px">sep:</span>
+        <input type="number" step="5" [ngModel]="sxi()" (ngModelChange)="sxi.set(+$event)"
+          style="width:60px;border:1px solid var(--gray-border);border-radius:4px;padding:3px 6px;font-size:12px;text-align:center;background:var(--field-bg)" />
+        <span style="font-size:11px;color:var(--gray-muted)">cm</span>
+        <span style="font-size:11px;color:var(--brand);font-weight:700;margin-left:6px">{{ kgInfX() | number:'1.0-0' }} kg</span>
       </div>
-      <div>
-        <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Dir. Y — ∅ / separación (cm)</div>
-        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-          <button *ngFor="let d of diams" class="vbtn" [class.sel]="dyi()===d" (click)="dyi.set(d)">{{labelDiam(d)}}</button>
-          <span style="font-size:11px;color:var(--gray-muted);margin-left:8px">sep:</span>
-          <input type="number" step="5" [ngModel]="syi()" (ngModelChange)="syi.set(+$event)"
-            style="width:60px;border:1px solid var(--gray-border);border-radius:4px;padding:3px 6px;font-size:12px;text-align:center;background:var(--field-bg)" />
-          <span style="font-size:11px;color:var(--gray-muted)">cm · {{ kgInfY() | number:'1.0-0' }} kg</span>
-        </div>
+    </div>
+
+    <div>
+      <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Dir. Y — ∅ / separación (cm)</div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <button *ngFor="let d of diams" class="vbtn" [class.sel]="dyi()===d" (click)="dyi.set(d)">{{labelDiam(d)}}</button>
+        <span style="font-size:11px;color:var(--gray-muted);margin-left:8px">sep:</span>
+        <input type="number" step="5" [ngModel]="syi()" (ngModelChange)="syi.set(+$event)"
+          style="width:60px;border:1px solid var(--gray-border);border-radius:4px;padding:3px 6px;font-size:12px;text-align:center;background:var(--field-bg)" />
+        <span style="font-size:11px;color:var(--gray-muted)">cm</span>
+        <span style="font-size:11px;color:var(--brand);font-weight:700;margin-left:6px">{{ kgInfY() | number:'1.0-0' }} kg</span>
+      </div>
+    </div>
+
+    <!-- Toggle parrilla doble -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid var(--gray-border)">
+      <div style="font-size:12px;font-weight:700;color:var(--gray-text)">Parrilla doble (superior + inferior)</div>
+      <div class="pill-switch" [class.on]="doble()" [class.off]="!doble()" (click)="doble.set(!doble())">
+        <div class="pill-track"><div class="pill-knob"></div></div>
+        <span class="pill-label">{{ doble() ? 'ON' : 'OFF' }}</span>
       </div>
     </div>
   </div>
 
-  <!-- Parrilla superior (si doble) -->
+  <!-- Card: Parrilla superior (si doble=ON) -->
   <div *ngIf="doble()" class="card">
-    <div class="card-title"><i class="ph ph-stack" style="font-size:13px;color:var(--brand)"></i> Parrilla Superior</div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <div>
-        <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Dir. X — ∅ / separación (cm)</div>
-        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-          <button *ngFor="let d of diams" class="vbtn" [class.sel]="dxs()===d" (click)="dxs.set(d)">{{labelDiam(d)}}</button>
-          <span style="font-size:11px;color:var(--gray-muted);margin-left:8px">sep:</span>
-          <input type="number" step="5" [ngModel]="sxs()" (ngModelChange)="sxs.set(+$event)"
-            style="width:60px;border:1px solid var(--gray-border);border-radius:4px;padding:3px 6px;font-size:12px;text-align:center;background:var(--field-bg)" />
-        </div>
+    <div class="card-title">
+      <i class="ph ph-stack" style="font-size:13px;color:var(--brand)"></i>
+      Parrilla Superior
+    </div>
+
+    <div style="margin-bottom:10px">
+      <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Dir. X — ∅ / separación (cm)</div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <button *ngFor="let d of diams" class="vbtn" [class.sel]="dxs()===d" (click)="dxs.set(d)">{{labelDiam(d)}}</button>
+        <span style="font-size:11px;color:var(--gray-muted);margin-left:8px">sep:</span>
+        <input type="number" step="5" [ngModel]="sxs()" (ngModelChange)="sxs.set(+$event)"
+          style="width:60px;border:1px solid var(--gray-border);border-radius:4px;padding:3px 6px;font-size:12px;text-align:center;background:var(--field-bg)" />
+        <span style="font-size:11px;color:var(--gray-muted)">cm</span>
+        <span style="font-size:11px;color:var(--brand);font-weight:700;margin-left:6px">{{ kgSupX() | number:'1.0-0' }} kg</span>
       </div>
-      <div>
-        <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Dir. Y — ∅ / separación (cm)</div>
-        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-          <button *ngFor="let d of diams" class="vbtn" [class.sel]="dys()===d" (click)="dys.set(d)">{{labelDiam(d)}}</button>
-          <span style="font-size:11px;color:var(--gray-muted);margin-left:8px">sep:</span>
-          <input type="number" step="5" [ngModel]="sys()" (ngModelChange)="sys.set(+$event)"
-            style="width:60px;border:1px solid var(--gray-border);border-radius:4px;padding:3px 6px;font-size:12px;text-align:center;background:var(--field-bg)" />
+    </div>
+
+    <div>
+      <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">Dir. Y — ∅ / separación (cm)</div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <button *ngFor="let d of diams" class="vbtn" [class.sel]="dys()===d" (click)="dys.set(d)">{{labelDiam(d)}}</button>
+        <span style="font-size:11px;color:var(--gray-muted);margin-left:8px">sep:</span>
+        <input type="number" step="5" [ngModel]="sys()" (ngModelChange)="sys.set(+$event)"
+          style="width:60px;border:1px solid var(--gray-border);border-radius:4px;padding:3px 6px;font-size:12px;text-align:center;background:var(--field-bg)" />
+        <span style="font-size:11px;color:var(--gray-muted)">cm</span>
+        <span style="font-size:11px;color:var(--brand);font-weight:700;margin-left:6px">{{ kgSupY() | number:'1.0-0' }} kg</span>
+      </div>
+    </div>
+
+    <!-- Burros / silletas -->
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--gray-border)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-size:12px;font-weight:700;color:var(--gray-text)">Burros / silletas separadoras</div>
+        <div class="pill-switch" [class.on]="burros()" [class.off]="!burros()" (click)="burros.set(!burros())">
+          <div class="pill-track"><div class="pill-knob"></div></div>
+          <span class="pill-label">{{ burros() ? 'ON' : 'OFF' }}</span>
         </div>
       </div>
 
-      <!-- Burros/silletas -->
-      <div style="border-top:1px solid var(--gray-border);padding-top:10px">
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;margin-bottom:8px">
-          <input type="checkbox" [ngModel]="burros()" (ngModelChange)="burros.set($event)"
-            style="width:16px;height:16px;accent-color:var(--brand)" />
-          Incluir burros / silletas separadoras
-        </label>
-        <div *ngIf="burros()" style="display:flex;flex-direction:column;gap:8px">
-          <div>
-            <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:6px;text-transform:uppercase">∅ burro</div>
-            <div style="display:flex;gap:6px;flex-wrap:wrap">
-              <button *ngFor="let d of diams" class="vbtn" [class.sel]="dBurro()===d" (click)="dBurro.set(d)">{{labelDiam(d)}}</button>
-            </div>
+      <div *ngIf="burros()" style="display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:11px;font-weight:700;color:var(--gray-muted);margin-bottom:4px;text-transform:uppercase">∅ burro</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+          <button *ngFor="let d of diams" class="vbtn" [class.sel]="dBurro()===d" (click)="dBurro.set(d)">{{labelDiam(d)}}</button>
+        </div>
+        <div class="row4">
+          <div class="f">
+            <label>Sep. X (cm)</label>
+            <input type="number" step="10" [ngModel]="sBurroX()" (ngModelChange)="sBurroX.set(+$event)" />
           </div>
-          <div class="row2" style="gap:8px">
-            <div class="f"><label>Sep. X (cm)</label><input type="number" step="10" [ngModel]="sBurroX()" (ngModelChange)="sBurroX.set(+$event)" /></div>
-            <div class="f"><label>Sep. Y (cm)</label><input type="number" step="10" [ngModel]="sBurroY()" (ngModelChange)="sBurroY.set(+$event)" /></div>
+          <div class="f">
+            <label>Sep. Y (cm)</label>
+            <input type="number" step="10" [ngModel]="sBurroY()" (ngModelChange)="sBurroY.set(+$event)" />
           </div>
+          <div class="f">
+            <label>Acero burros (kg)</label>
+            <input type="text" readonly [ngModel]="kgBurros() | number:'1.0-0'" style="font-weight:700;color:var(--brand)" />
+          </div>
+          <div class="f"></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Metrics -->
+  <!-- Card: Hormigón -->
+  <div class="card">
+    <div class="card-title">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8B4513" stroke-width="2">
+        <path d="M3 7l9-4 9 4-9 4-9-4z"/>
+        <path d="M3 7v10l9 4 9-4V7"/>
+      </svg>
+      Hormigón
+    </div>
+    <div class="seg-row" style="margin-bottom:10px">
+      <button class="seg" [class.active]="tipoVaciado()==='insitu'" (click)="tipoVaciado.set('insitu')">Preparado en obra</button>
+      <button class="seg" [class.active]="tipoVaciado()==='premez'" (click)="tipoVaciado.set('premez')">Premezclado</button>
+    </div>
+    <div class="row4">
+      <div class="f">
+        <label>f'c (kg/cm²)</label>
+        <select [ngModel]="fc()" (ngModelChange)="fc.set(+$event)">
+          <option [value]="210">210</option>
+          <option [value]="250">250</option>
+          <option [value]="280">280</option>
+          <option [value]="350">350</option>
+        </select>
+      </div>
+      <div class="f">
+        <label>Vol. presup. (m³)</label>
+        <input type="text" readonly [ngModel]="volPres() | number:'1.3-3'" style="font-weight:700;color:var(--brand)" />
+      </div>
+      <div class="f" *ngIf="tipoVaciado()==='premez'">
+        <label>Desperdicio (%)</label>
+        <input type="number" step="1" [ngModel]="desp()" (ngModelChange)="desp.set(+$event)" />
+      </div>
+      <div class="f"></div>
+    </div>
+  </div>
+
+  <!-- Card: Encofrado perimetral -->
+  <div class="card">
+    <div class="card-title">
+      <i class="ph ph-frame-corners" style="font-size:13px;color:var(--brand)"></i>
+      Encofrado Perimetral
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="font-size:12px;font-weight:700;color:var(--gray-text)">Incluir encofrado perimetral</div>
+      <div class="pill-switch" [class.on]="encOn()" [class.off]="!encOn()" (click)="encOn.set(!encOn())">
+        <div class="pill-track"><div class="pill-knob"></div></div>
+        <span class="pill-label">{{ encOn() ? 'ON' : 'OFF' }}</span>
+      </div>
+    </div>
+
+    <ng-container *ngIf="encOn()">
+      <div class="seg-row" style="margin-bottom:10px">
+        <button class="seg" [class.active]="encMetodoLf()==='madera'" (click)="encMetodoLf.set('madera')">Madera</button>
+        <button class="seg" [class.active]="encMetodoLf()==='tierra'" (click)="encMetodoLf.set('tierra')">Contra tierra</button>
+      </div>
+      <div class="row4">
+        <div class="f">
+          <label>Área encofrado (m²)</label>
+          <input type="text" readonly [ngModel]="encofrado() | number:'1.2-2'" style="font-weight:700;color:var(--brand)" />
+        </div>
+        <div class="f">
+          <label>Perímetro total (m)</label>
+          <input type="text" readonly [ngModel]="perimetro() | number:'1.2-2'" style="font-weight:700" />
+        </div>
+        <div class="f"></div>
+        <div class="f"></div>
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- Métricas -->
   <div class="metrics-row">
     <div class="metric">
       <div class="m-lbl">Área Neta</div>
@@ -239,6 +318,215 @@
       <div class="m-val">{{ kgTotal() | number:'1.0-0' }}</div>
       <div class="m-unit">kg</div>
     </div>
+    <div class="metric" *ngIf="encOn()">
+      <div class="m-lbl">Encofrado</div>
+      <div class="m-val">{{ encofrado() | number:'1.1-1' }}</div>
+      <div class="m-unit">m²</div>
+    </div>
+  </div>
+
+  <!-- TABLA APU INTEGRADA -->
+  <div class="card" style="padding:0;overflow:hidden">
+    <div style="background:#3A3A3A;color:#fff;padding:8px 12px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:8px">
+      <i class="ph ph-list-numbers"></i> Análisis de Precio Unitario (APU)
+      <span style="background:var(--brand);color:#fff;border-radius:4px;padding:2px 8px;font-size:10px">por 1 m³</span>
+    </div>
+    <div style="padding:10px;overflow-x:auto">
+      <table class="sum-table" style="min-width:600px">
+        <thead>
+          <tr>
+            <th style="width:5%">No.</th>
+            <th style="width:37%;text-align:left">Descripción</th>
+            <th style="width:13%;text-align:right">Cantidad</th>
+            <th style="width:10%;text-align:left">Unid.</th>
+            <th style="width:10%;text-align:right">Factor</th>
+            <th style="width:12.5%;text-align:right">P.U.</th>
+            <th style="width:12.5%;text-align:left">Fuente</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- I - Suministro -->
+          <tr style="background:var(--gray-3)">
+            <td colspan="7" style="padding:4px 10px;font-weight:700;font-size:10px;color:var(--brand);text-transform:uppercase">I - Suministro</td>
+          </tr>
+          <tr *ngIf="(kgInfX()+kgInfY()) > 0">
+            <td style="padding:6px 10px">1.01</td>
+            <td style="padding:6px 10px">Acero parrilla inferior (X+Y)</td>
+            <td style="padding:6px 10px;text-align:right">{{ ((kgInfX()+kgInfY()) / (volPres()||1)) | number:'1.3-3' }}</td>
+            <td style="padding:6px 10px">KG</td>
+            <td style="padding:6px 10px;text-align:right">1.07</td>
+            <td style="padding:6px 10px;text-align:right">—</td>
+            <td style="padding:6px 10px">Acero</td>
+          </tr>
+          <tr *ngIf="doble() && (kgSupX()+kgSupY()) > 0">
+            <td style="padding:6px 10px">1.02</td>
+            <td style="padding:6px 10px">Acero parrilla superior (X+Y)</td>
+            <td style="padding:6px 10px;text-align:right">{{ ((kgSupX()+kgSupY()) / (volPres()||1)) | number:'1.3-3' }}</td>
+            <td style="padding:6px 10px">KG</td>
+            <td style="padding:6px 10px;text-align:right">1.07</td>
+            <td style="padding:6px 10px;text-align:right">—</td>
+            <td style="padding:6px 10px">Acero</td>
+          </tr>
+          <tr *ngIf="kgBurros() > 0">
+            <td style="padding:6px 10px">1.03</td>
+            <td style="padding:6px 10px">Acero burros / silletas</td>
+            <td style="padding:6px 10px;text-align:right">{{ (kgBurros() / (volPres()||1)) | number:'1.3-3' }}</td>
+            <td style="padding:6px 10px">KG</td>
+            <td style="padding:6px 10px;text-align:right">1.07</td>
+            <td style="padding:6px 10px;text-align:right">—</td>
+            <td style="padding:6px 10px">Acero</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 10px">1.04</td>
+            <td style="padding:6px 10px">Alambre de amarre</td>
+            <td style="padding:6px 10px;text-align:right">{{ ((kgTotal() / (volPres()||1)) * 0.05) | number:'1.3-3' }}</td>
+            <td style="padding:6px 10px">KG</td>
+            <td style="padding:6px 10px;text-align:right">1.00</td>
+            <td style="padding:6px 10px;text-align:right">—</td>
+            <td style="padding:6px 10px">Ferretería</td>
+          </tr>
+          <tr *ngIf="encOn()">
+            <td style="padding:6px 10px">1.05</td>
+            <td style="padding:6px 10px">Madera encofrado perimetral</td>
+            <td style="padding:6px 10px;text-align:right">{{ (encofrado() / (volPres()||1)) | number:'1.3-3' }}</td>
+            <td style="padding:6px 10px">M²</td>
+            <td style="padding:6px 10px;text-align:right">1.15</td>
+            <td style="padding:6px 10px;text-align:right">—</td>
+            <td style="padding:6px 10px">Maderera</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 10px">1.06</td>
+            <td style="padding:6px 10px">Hormigón f'c={{ fc() }} kg/cm²</td>
+            <td style="padding:6px 10px;text-align:right">1.000</td>
+            <td style="padding:6px 10px">M³</td>
+            <td style="padding:6px 10px;text-align:right">1.00</td>
+            <td style="padding:6px 10px;text-align:right">—</td>
+            <td style="padding:6px 10px">Hormigonera</td>
+          </tr>
+
+          <!-- II - Equipos -->
+          <tr style="background:var(--gray-3)">
+            <td colspan="7" style="padding:4px 10px;font-weight:700;font-size:10px;color:var(--brand);text-transform:uppercase">II - Equipos</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 10px">2.01</td>
+            <td style="padding:6px 10px">Herramientas menores</td>
+            <td style="padding:6px 10px;text-align:right">1.000</td>
+            <td style="padding:6px 10px">GL</td>
+            <td style="padding:6px 10px;text-align:right">1.00</td>
+            <td style="padding:6px 10px;text-align:right">—</td>
+            <td style="padding:6px 10px">Equipos</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 10px">2.02</td>
+            <td style="padding:6px 10px">Vibrador de concreto</td>
+            <td style="padding:6px 10px;text-align:right">{{ (1/12) | number:'1.3-3' }}</td>
+            <td style="padding:6px 10px">HR</td>
+            <td style="padding:6px 10px;text-align:right">1.00</td>
+            <td style="padding:6px 10px;text-align:right">—</td>
+            <td style="padding:6px 10px">Equipo</td>
+          </tr>
+
+          <!-- III - Mano de Obra -->
+          <tr style="background:var(--gray-3)">
+            <td colspan="7" style="padding:4px 10px;font-weight:700;font-size:10px;color:var(--brand);text-transform:uppercase">III - Mano de Obra</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 10px">3.01</td>
+            <td style="padding:6px 10px">Cuadrilla hormigonado</td>
+            <td style="padding:6px 10px;text-align:right">1.000</td>
+            <td style="padding:6px 10px">M³</td>
+            <td style="padding:6px 10px;text-align:right">1.00</td>
+            <td style="padding:6px 10px;text-align:right">—</td>
+            <td style="padding:6px 10px">Mano Obra</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 10px">3.02</td>
+            <td style="padding:6px 10px">Cuadrilla acero</td>
+            <td style="padding:6px 10px;text-align:right">{{ (kgTotal() / (volPres()||1)) | number:'1.3-3' }}</td>
+            <td style="padding:6px 10px">KG</td>
+            <td style="padding:6px 10px;text-align:right">1.00</td>
+            <td style="padding:6px 10px;text-align:right">—</td>
+            <td style="padding:6px 10px">Mano Obra</td>
+          </tr>
+          <tr *ngIf="encOn()">
+            <td style="padding:6px 10px">3.03</td>
+            <td style="padding:6px 10px">Cuadrilla encofrado</td>
+            <td style="padding:6px 10px;text-align:right">{{ (encofrado() / (volPres()||1)) | number:'1.3-3' }}</td>
+            <td style="padding:6px 10px">M²</td>
+            <td style="padding:6px 10px;text-align:right">1.00</td>
+            <td style="padding:6px 10px;text-align:right">—</td>
+            <td style="padding:6px 10px">Mano Obra</td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="font-size:10px;color:#909090;margin-top:8px;font-style:italic;padding:0 10px">
+        * Análisis por 1 m³ de hormigón con su cuantía proporcional de acero y encofrado.
+      </p>
+    </div>
+  </div>
+
+  <!-- Resumen -->
+  <div class="card">
+    <div class="card-title">
+      <i class="ph ph-table" style="font-size:13px;color:var(--brand)"></i>
+      Resumen de Partidas
+    </div>
+    <table class="sum-table">
+      <thead>
+        <tr>
+          <th style="width:44%">Descripción</th>
+          <th style="width:8%">Unid.</th>
+          <th style="width:16%">Cantidad</th>
+          <th style="width:16%">P.U. (RD$)</th>
+          <th style="width:16%">Total (RD$)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Losa de fundación — Hormigón f'c={{ fc() }}</td>
+          <td>m³</td>
+          <td>{{ volPres() | number:'1.3-3' }}</td>
+          <td>—</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>Acero parrilla inferior (X+Y)</td>
+          <td>kg</td>
+          <td>{{ (kgInfX()+kgInfY()) | number:'1.0-0' }}</td>
+          <td>—</td>
+          <td>—</td>
+        </tr>
+        <tr *ngIf="doble()">
+          <td>Acero parrilla superior (X+Y)</td>
+          <td>kg</td>
+          <td>{{ (kgSupX()+kgSupY()) | number:'1.0-0' }}</td>
+          <td>—</td>
+          <td>—</td>
+        </tr>
+        <tr *ngIf="doble() && burros() && kgBurros() > 0">
+          <td>Acero burros / silletas</td>
+          <td>kg</td>
+          <td>{{ kgBurros() | number:'1.0-0' }}</td>
+          <td>—</td>
+          <td>—</td>
+        </tr>
+        <tr *ngIf="encOn()">
+          <td>Encofrado perimetral</td>
+          <td>m²</td>
+          <td>{{ encofrado() | number:'1.2-2' }}</td>
+          <td>—</td>
+          <td>—</td>
+        </tr>
+        <tr style="background:var(--brand-light)">
+          <td style="font-weight:700;color:var(--brand)">Acero total</td>
+          <td style="color:var(--brand);font-weight:700">kg</td>
+          <td style="font-weight:800;color:var(--brand)">{{ kgTotal() | number:'1.0-0' }}</td>
+          <td></td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
 </div>

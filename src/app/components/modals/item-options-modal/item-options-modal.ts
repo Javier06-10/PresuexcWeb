@@ -236,6 +236,16 @@ export class ItemOptionsModal {
       return group ? group.templates : [];
   }
 
+  get allTemplatesFlat() {
+      let all: {id: string, name: string, unit: string, items: any[]}[] = [];
+      for (const cat of this.templateCategories) {
+          for (const group of cat.groups) {
+              all.push(...group.templates);
+          }
+      }
+      return all;
+  }
+
   availableUnits = computed(() => {
     const units = new Set<string>(['UND', 'M2', 'M3', 'ML', 'PA', 'GLB', 'KG', 'QQ', 'GL', 'P2', 'GAL', 'MES', 'DIA', 'HR']);
     
@@ -279,9 +289,15 @@ export class ItemOptionsModal {
     }
   }
 
+  onTemplateFlatChange() {
+    const tpl = this.allTemplatesFlat.find((t: any) => t.id === this.selectedTemplateId);
+    if (tpl) {
+        this.newApuName = tpl.name;
+    }
+  }
+
   async confirmUseTemplate() {
-    const templates = this.availableTemplates;
-    const tpl = templates.find((t: any) => t.id === this.selectedTemplateId);
+    const tpl = this.allTemplatesFlat.find((t: any) => t.id === this.selectedTemplateId);
     if (!tpl) return;
     
     this.newApuName = tpl.name;
@@ -341,7 +357,7 @@ export class ItemOptionsModal {
       
       this._linkApuToBudgetItem(item, created);
     } else {
-      alert("Error al crear el APU.");
+      showError("Error al crear el APU.");
     }
   }
 

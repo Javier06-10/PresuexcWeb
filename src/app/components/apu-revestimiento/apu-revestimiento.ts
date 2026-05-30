@@ -14,7 +14,7 @@ interface TramoRevestimiento {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './apu-revestimiento.html',
-  styles: [``]
+
 })
 export class ApuRevestimiento implements OnInit, OnChanges {
   @Input() apuParameters: any;
@@ -38,11 +38,9 @@ export class ApuRevestimiento implements OnInit, OnChanges {
     this.areaNeta() * (1 + (this.desperdicio()||0) / 100)
   );
 
-  private _firstEmit = false;
-
   constructor() {
     effect(() => {
-      const params = {
+      this.parametersChange.emit({
         tramos: this.tramos(),
         tipoMaterial: this.tipoMaterial(),
         formato: this.formato(),
@@ -50,9 +48,7 @@ export class ApuRevestimiento implements OnInit, OnChanges {
         con_fragua: this.con_fragua(),
         con_masilla: this.con_masilla(),
         cantidad_calculada: +this.areaPresupuestada().toFixed(2),
-      };
-      if (!this._firstEmit) { this._firstEmit = true; return; }
-      this.parametersChange.emit(params);
+      });
     });
   }
 

@@ -13,7 +13,7 @@ interface PuntoSanitario {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './apu-instalacion-sanitaria.html',
-  styles: [``]
+
 })
 export class ApuInstalacionSanitaria implements OnInit, OnChanges {
   @Input() apuParameters: any;
@@ -55,20 +55,16 @@ export class ApuInstalacionSanitaria implements OnInit, OnChanges {
     this.TIPOS.filter(t => this.puntosByTipo(t) > 0)
   );
 
-  private _firstEmit = false;
-
   constructor() {
     effect(() => {
-      const params = {
+      this.parametersChange.emit({
         puntos: this.puntos(),
         tipoTuberia: this.tipoTuberia(),
         diametro: this.diametro(),
         incluye_accesorios: this.incluye_accesorios(),
         incluye_mano_obra: this.incluye_mano_obra(),
         cantidad_calculada: this.totalPuntos(),
-      };
-      if (!this._firstEmit) { this._firstEmit = true; return; }
-      this.parametersChange.emit(params);
+      });
     });
   }
 

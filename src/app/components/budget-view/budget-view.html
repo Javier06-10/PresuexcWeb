@@ -400,11 +400,11 @@
           <ng-container *ngIf="matchApu(apu, 'zapata', '02.01')">
             <app-apu-hormigon-zapata [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-hormigon-zapata>
           </ng-container>
-          <ng-container *ngIf="matchApu(apu, 'columna', '02.02') || matchApu(apu, 'castillo', '02.02')">
-            <app-apu-hormigon-columna [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-hormigon-columna>
+          <ng-container *ngIf="matchApu(apu, 'columna', '02.02') || matchApu(apu, 'castillo', '02.02') || matchApu(apu, 'colviga', '') || matchApu(apu, 'columnas y vigas', '')">
+            <app-apu-hormigon-colviga [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-hormigon-colviga>
           </ng-container>
           <ng-container *ngIf="matchApu(apu, 'viga', '02.03') || matchApu(apu, 'nervio', '02.03')">
-            <app-apu-hormigon-viga [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-hormigon-viga>
+            <app-apu-hormigon-colviga [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-hormigon-colviga>
           </ng-container>
           <ng-container *ngIf="matchApu(apu, 'losa', '02.04') || matchApu(apu, 'entrepiso', '02.04')">
             <app-apu-hormigon-losa [apuParameters]="paramValues()" (parametersChange)="updateAllParams($event)"></app-apu-hormigon-losa>
@@ -719,10 +719,10 @@
         <app-apu-pilotes [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-pilotes>
       </ng-container>
       <ng-container *ngIf="qKey === 'columna'">
-        <app-apu-hormigon-columna [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-hormigon-columna>
+        <app-apu-hormigon-colviga [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-hormigon-colviga>
       </ng-container>
       <ng-container *ngIf="qKey === 'viga'">
-        <app-apu-hormigon-viga [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-hormigon-viga>
+        <app-apu-hormigon-colviga [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-hormigon-colviga>
       </ng-container>
       <ng-container *ngIf="qKey === 'losa'">
         <app-apu-hormigon-losa [apuParameters]="quickCalcParams()" (parametersChange)="updateQuickCalcParams($event)"></app-apu-hormigon-losa>

@@ -10,7 +10,11 @@
       "Bash(Select-String \"jspdf|xlsx\")",
       "mcp__claude_ai_Supabase__apply_migration",
       "mcp__claude_ai_Supabase__execute_sql",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(git stash *)",
+      "Bash(powershell -Command \"\\(Get-Item 'c:\\\\Users\\\\CELULARES 360\\\\Downloads\\\\columna y viga.html'\\).Length / 1MB\")",
+      "Bash(powershell -Command \"Select-String -Path 'c:\\\\Users\\\\CELULARES 360\\\\Downloads\\\\columna y viga.html' -Pattern 'colviga|columna.*viga|Columnas.*vigas' | Select-Object -First 5\")",
+      "Bash(powershell -Command \"Select-String -Path 'c:\\\\Users\\\\CELULARES 360\\\\Downloads\\\\columna y viga.html' -Pattern 'function cv|function vg' | wc -l\")"
     ]
   }
 }

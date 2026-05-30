@@ -15,7 +15,7 @@ interface ElementoAluminio {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './apu-carpinteria-aluminio.html',
-  styles: [``]
+
 })
 export class ApuCarpinteriaAluminio implements OnInit, OnChanges {
   @Input() apuParameters: any;
@@ -53,20 +53,16 @@ export class ApuCarpinteriaAluminio implements OnInit, OnChanges {
     this.elementos().reduce((s, e) => s + (e.cant||1), 0)
   );
 
-  private _firstEmit = false;
-
   constructor() {
     effect(() => {
-      const params = {
+      this.parametersChange.emit({
         elementos: this.elementos(),
         perfilTipo: this.perfilTipo(),
         vidrio: this.vidrio(),
         incluye_instalacion: this.incluye_instalacion(),
         incluye_sellado: this.incluye_sellado(),
         cantidad_calculada: +this.areaTotal().toFixed(2),
-      };
-      if (!this._firstEmit) { this._firstEmit = true; return; }
-      this.parametersChange.emit(params);
+      });
     });
   }
 
